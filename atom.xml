@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2016-11-28T09:59:54.000Z</updated>
+  <updated>2016-11-29T03:21:50.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -16,11 +16,96 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>贪婪和懒惰匹配模式使用小结</title>
+    <link href="https://weizhimiao.github.io/2016/11/29/%E8%B4%AA%E5%A9%AA%E5%92%8C%E6%87%92%E6%83%B0%E5%8C%B9%E9%85%8D%E6%A8%A1%E5%BC%8F%E4%BD%BF%E7%94%A8%E5%B0%8F%E7%BB%93/"/>
+    <id>https://weizhimiao.github.io/2016/11/29/贪婪和懒惰匹配模式使用小结/</id>
+    <published>2016-11-29T12:30:00.000Z</published>
+    <updated>2016-11-29T03:21:50.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>所谓的贪婪/懒惰匹配模式，就是指正则表达式在匹配字符串是的两种不同的匹配策略。<br>简单的说就是，贪婪匹配模式在正则匹配时会尽量匹配出尽可能多的字符；而懒惰匹配模式则相反，它会匹配尽可能少的字符。</p>
+<p>举例来说，</p>
+<p>我们要匹配以字符<code>a</code>开始，以<code>b</code>结束的字符串：假如我们要搜索的字符串是<code>aabab</code>，那么分别按照贪婪和懒惰两种模式来匹配，将会得到以下结果：</p>
+<ul>
+<li><code>aabab</code>(贪婪模式)</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161129/image.svg" alt="贪婪"></p>
+<ul>
+<li><code>aab</code>(懒惰模式)(为什么不是<code>ab</code>？)</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161129/image2.svg" alt="懒惰"></p>
+<a id="more"></a>
+<h2 id="正则表达式的这两种匹配模式的实现"><a href="#正则表达式的这两种匹配模式的实现" class="headerlink" title="正则表达式的这两种匹配模式的实现"></a>正则表达式的这两种匹配模式的实现</h2><ul>
+<li><strong>贪婪</strong> <code>a.*b</code> 一般当一个正则表达式能够匹配出多种结果时，默认将会匹配出尽可能多的字符串。</li>
+</ul>
+<ul>
+<li><strong>懒惰</strong> <code>a.*?b</code>只要表达式中的限定符后面加上一个问号。例如，（<code>.*?</code>）,则会匹配出符合条件的最短的字符。</li>
+</ul>
+<h2 id="懒惰模式的匹配原理"><a href="#懒惰模式的匹配原理" class="headerlink" title="懒惰模式的匹配原理"></a>懒惰模式的匹配原理</h2><p>简单的来说，就是在匹配喝不匹配都可以的情况下，优先不匹配，记录备选状态，并将匹配控制权交给正则表达式的下一个匹配字符。当后面的匹配失败时，回溯，进行匹配。</p>
+<h2 id="常用的懒惰限定符"><a href="#常用的懒惰限定符" class="headerlink" title="常用的懒惰限定符"></a>常用的懒惰限定符</h2><table>
+<thead>
+<tr>
+<th>懒惰限定符代码/语法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*?</code></td>
+<td>重复任意次，但尽可能少重复</td>
+</tr>
+<tr>
+<td><code>+?</code></td>
+<td>重复1次或多次，但尽可能少重复</td>
+</tr>
+<tr>
+<td><code>??</code></td>
+<td>重复0次或1次，但尽可能少重复</td>
+</tr>
+<tr>
+<td><code>{n,m}?</code></td>
+<td>重复n到m次，但尽可能少重复</td>
+</tr>
+<tr>
+<td><code>{n,}?</code></td>
+<td>重复n次以上，但尽可能少重复</td>
+</tr>
+</tbody>
+</table>
+<h2 id="示例中，采用a-b表达式进行匹配时，匹配的结果为什么不是ab"><a href="#示例中，采用a-b表达式进行匹配时，匹配的结果为什么不是ab" class="headerlink" title="示例中，采用a.*?b表达式进行匹配时，匹配的结果为什么不是ab"></a>示例中，采用<code>a.*?b</code>表达式进行匹配时，匹配的结果为什么不是<code>ab</code></h2><p>如果我们只考虑<code>.*?</code>这个表达式，<code>aabab</code>字符串中将会匹配出两组字符，一组是<code>aab</code>(1~3字符)，另一组时<code>ab</code>（第2~3个字符）。但为什么结果是<code>aab</code>?按照懒惰模式匹配，他应该匹配出符合条件的最短的字符（最短的字符应该是<code>ab</code>）。</p>
+<p>简单的说，正则表达式有一条规则，比懒惰/贪婪规则优先级更高：<strong><em>最先开始的匹配拥有最高优先权</em></strong>。</p>
+<p><strong>提示：</strong></p>
+<p>在实际开发中，涉及贪婪模式与懒惰模式的地方是很多的。在一定的情况下，使用懒惰模式可以减少回溯，提高效率。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;所谓的贪婪/懒惰匹配模式，就是指正则表达式在匹配字符串是的两种不同的匹配策略。&lt;br&gt;简单的说就是，贪婪匹配模式在正则匹配时会尽量匹配出尽可能多的字符；而懒惰匹配模式则相反，它会匹配尽可能少的字符。&lt;/p&gt;
+&lt;p&gt;举例来说，&lt;/p&gt;
+&lt;p&gt;我们要匹配以字符&lt;code&gt;a&lt;/code&gt;开始，以&lt;code&gt;b&lt;/code&gt;结束的字符串：假如我们要搜索的字符串是&lt;code&gt;aabab&lt;/code&gt;，那么分别按照贪婪和懒惰两种模式来匹配，将会得到以下结果：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;aabab&lt;/code&gt;(贪婪模式)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20161129/image.svg&quot; alt=&quot;贪婪&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;aab&lt;/code&gt;(懒惰模式)(为什么不是&lt;code&gt;ab&lt;/code&gt;？)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20161129/image2.svg&quot; alt=&quot;懒惰&quot;&gt;&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="正则表达式" scheme="https://weizhimiao.github.io/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/"/>
+    
+  </entry>
+  
+  <entry>
     <title>深入了解Memcached</title>
     <link href="https://weizhimiao.github.io/2016/11/27/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Memcached/"/>
     <id>https://weizhimiao.github.io/2016/11/27/深入了解Memcached/</id>
     <published>2016-11-27T14:30:00.000Z</published>
-    <updated>2016-11-28T09:59:54.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png" alt="Memcached多线程模型原理"></p>
 <a id="more"></a>
@@ -83,7 +168,7 @@
     <link href="https://weizhimiao.github.io/2016/11/16/%E6%96%87%E4%BB%B6%E9%94%81%E6%9C%BA%E5%88%B6%E5%AE%9E%E7%8E%B0%E4%B8%8E%E5%BA%94%E7%94%A8/"/>
     <id>https://weizhimiao.github.io/2016/11/16/文件锁机制实现与应用/</id>
     <published>2016-11-16T13:30:00.000Z</published>
-    <updated>2016-11-17T09:04:26.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<p>文件锁机制的作用：防止多个程序同时对一个不允许同时操作的工作做操作。</p>
 <a id="more"></a>
@@ -112,11 +197,102 @@
   </entry>
   
   <entry>
+    <title>sudo使用场景分析[转]</title>
+    <link href="https://weizhimiao.github.io/2016/11/16/sudo%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/11/16/sudo使用场景分析/</id>
+    <published>2016-11-16T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:39.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。</p>
+<ul>
+<li><p>情景一：用户无权限执行 root 命令</p>
+</li>
+<li><p>情景二：vim 编辑后发现忘记使用 sudo</p>
+</li>
+<li><p>情景三：执行 root 命令忘记加 sudo</p>
+</li>
+<li><p>情景四：shell 内置命令如何使用 sudo</p>
+</li>
+<li><p>情景五：sudo 操作记录日志</p>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="情景一：用户无权限执行-root-命令"><a href="#情景一：用户无权限执行-root-命令" class="headerlink" title="情景一：用户无权限执行 root 命令"></a>情景一：用户无权限执行 root 命令</h2><p>普通用户登录 shell 之后，如果自身没有权限访问某个文件或执行某个命令时，若该用户获得root授权，那么就可以在需要执行的命令之前加上 sudo，临时切换到root用户的权限，完成相关的操作。在sudo于1980年前后被写出之前，一般用户管理系统的方式是利用su切换为超级用户。但是使用su的缺点之一在于必须要先告知超级用户的密码，而sudo使一般用户不需要知道超级用户的密码即可获得权限。</p>
+<p>那么哪些用户可以临时获得 root 权限呢？这就需要在 <code>/etc/sudoers</code> 文件中进行配置：</p>
+<p>授权给单个用户：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">guohl   ALL=(ALL) ALL</div></pre></td></tr></table></figure></p>
+<p>上面这个例子中：</p>
+<ul>
+<li><p>guohl：允许使用 sudo 的用户名</p>
+</li>
+<li><p>ALL：允许从任何终端（任何机器）使用 sudo</p>
+</li>
+<li><p>(ALL)：允许以任何用户执行 sudo 命令</p>
+</li>
+<li><p>ALL：允许 sudo 权限执行任何命令</p>
+</li>
+</ul>
+<p>如果我们想让用户 test 只能在本主机（主机名为guohl-pc）以 root 账户执行/bin/chown、/bin/chmod 两条命令，那么就应该这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">test   guohl-pc=(root) /bin/chown,/bin/chmod</div></pre></td></tr></table></figure></p>
+<p>如果test 登录之后运行 sudo 命令，不满足上面三个条件命令均失败。</p>
+<p>授权给用户组:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># Allow members of group sudo to execute any command</div><div class="line"># (Note that later entries override this, so you might need to move it further down)</div><div class="line">%sudo ALL=(ALL) ALL</div><div class="line">和授权给单个用户类似，只不过将用户名在这里换成%组名，所有在该组中的用户都按照此规则进行授权。对于该例，所有在 sudo 组内的用户都有在任何终端（第一个ALL）、以任何用户（第二个ALL）、执行任何命令（第三个ALL）的权限，查看 /etc/group 文件可以知道哪些用户属于 sudo 组。</div></pre></td></tr></table></figure></p>
+<p>举例:</p>
+<p>如果当前帐号在 /etc/sudoers 文件中被授予 sudo 的权限，那么你就可以将任何 root 命令作为 sudo 命令的参数，使用 root 权限来执行该命令。举例来说，挂载一个文件系统只能由 root 来执行，但是一个普通用户也可以使用 sudo 来挂载：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$sudo mount /dev/sda7 /mnt</div><div class="line">[sudo] password for guohailin:</div></pre></td></tr></table></figure>
+<p>首次使用会要求你输入当前用户的密码，系统确实输入正确即以 root 权限来执行 mount 命令，接下来一段时间（默认为5分钟）再次使用 sudo 命令就不需要输密码了。</p>
+<h2 id="情景二：vim-编辑后发现忘记使用-sudo"><a href="#情景二：vim-编辑后发现忘记使用-sudo" class="headerlink" title="情景二：vim 编辑后发现忘记使用 sudo"></a>情景二：vim 编辑后发现忘记使用 sudo</h2><p>我们经常会遇到这样的一个囧境：使用 <code>vim</code> 对某个文件进行编辑，编辑完之后，按 ESC 之后回到普通模式，再按 <code>:wq</code> 准备保存退出时，发现没有权限对该文件进行修改，我们在使用 <code>vim</code> 命令时忘记在前面加 <code>sudo</code> 了。我就经常出现这种问题，之前的做法是只能不保存强退，再加上 <code>sudo</code> 重新编辑。</p>
+<p>但是今后我们再也不需要用这么愚蠢的做法了，我们可以在 vim 的普通模式下，按 <code>:w !sudo tee %</code>，这样就可以 root 权限来保存文件了，你也无需因为自己一时忘记加个 sudo 而沮丧懊恼了！</p>
+<h2 id="情景三：执行-root-命令忘记加-sudo"><a href="#情景三：执行-root-命令忘记加-sudo" class="headerlink" title="情景三：执行 root 命令忘记加 sudo"></a>情景三：执行 root 命令忘记加 sudo</h2><p>我们还会遇到这样稍微好一点的情形：输入一个长长的命令，按 Enter 之后出现无权限操作，因为我们忘记加 sudo 了。大多人的做法是按 ↑ 回到上一条命令，在该命令之前加上 sudo，再执行该命令。</p>
+<p>以后，我们无需这样了，只要输入 <code>sudo !!</code> 即可，这里的 <code>!!</code> 代表上一条命令。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ head -n 4 /etc/sudoers</div><div class="line">head: cannot open `/etc/sudoers&apos; for reading: Permission denied</div><div class="line"></div><div class="line">$ sudo !!</div><div class="line">sudo head -n 4 /etc/sudoers</div><div class="line"># /etc/sudoers</div><div class="line">#</div><div class="line"># This file MUST be edited with the &apos;visudo&apos; command as root.</div><div class="line">#</div></pre></td></tr></table></figure></p>
+<h2 id="情景四：shell-内置命令如何使用-sudo"><a href="#情景四：shell-内置命令如何使用-sudo" class="headerlink" title="情景四：shell 内置命令如何使用 sudo"></a>情景四：shell 内置命令如何使用 sudo</h2><p>shell 是一个交互式的应用程序，在执行外部命令时通过 fork 来创建一个子进程，再通过 exec 来加载外部命令的程序来执行，但是如果一个命令是 shell 内置命令，那么只能直接由 shell 来运行。sudo 的意思是，以别的用户（如root）的权限来 fork 一个进程，加载程序并运行，因此 sudo 后面不能跟 shell 的内置命令，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /sys/kernel/debugfs</div><div class="line">sudo: cd: command not found</div></pre></td></tr></table></figure>
+<p>在这种情况，我们又没有 root 账户的密码，我们怎样执行该命令呢？有种办法就是使用 sudo 获得root shell 的权限，然后在root shell 中执行该命令。进入root shell 很简单，输入sudo bash 确认本用户的密码即可，此时你会发现命令提示符显示当前是 root。一旦获得root shell，你可以执行任何命令而不需要在每条命令前输入sudo了。</p>
+<p>另外，常用的shell 内置命令在<a href="http://www.thegeekstuff.com/2010/08/bash-shell-builtin-commands/" target="_blank" rel="external">这里</a> 有简单介绍，我们可以使用 type 命令来查看命令的类型，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ type ls</div><div class="line">ls is /bin/ls</div><div class="line">$ type umask</div><div class="line">umask is a shell builtin</div></pre></td></tr></table></figure>
+<h2 id="情景五：sudo-操作记录日志"><a href="#情景五：sudo-操作记录日志" class="headerlink" title="情景五：sudo 操作记录日志"></a>情景五：sudo 操作记录日志</h2><p>作为一个 Linux 系统的管理员，不仅可以让指定的用户或用户组作为root用户或其它用户来运行某些命令，还能将指定的用户所输入的命令和参数作详细的记录。而sudo的日志功能就可以用户跟踪用户输入的命令，这不仅能增进系统的安全性，还能用来进行故障检修。但是要记录sudo的日志还要一些简单的配置：</p>
+<p>1、创建sudo日志文件</p>
+<p>我们将sudo日志文件放置在 <code>/var/log/sudo.log</code> 文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo touch /var/log/sudo.log</div></pre></td></tr></table></figure></p>
+<p>2、修改 <code>/etc/rsyslog.conf</code> 配置文件</p>
+<p>我使用系统为<code>Ubuntu13.04</code>为改名字，但有些系统名为<code>/etc/syslog.conf</code>，注意不同发行版之间的差别，在该文件加入下面一行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">local2.debug    /var/log/sudo.log    #空白不能用空格，必须用tab</div></pre></td></tr></table></figure>
+<p>3、修改 /etc/sudoers 配置文件</p>
+<p>注意网上很多关于sudo日志文件配置都缺少这一步！在该文件中加入下面一行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Defaults    logfile=/var/log/sudo.log</div></pre></td></tr></table></figure></p>
+<p>4、重启 syslog 服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service rsyslog restart</div></pre></td></tr></table></figure></p>
+<p>5、查看 sudo 日志记录：</p>
+<p>经过上面的配置，sudo 的所有成功和不成功的sudo</p>
+<p>命令都记录到文件/var/log/sudo.log 中，例如我运行几条sudo 命令之后，查看该文件的记录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ cat sudo.log</div><div class="line">Sep 20 22:10:51 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/cat /etc/sudoers</div><div class="line">Sep 20 22:11:36 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/usr/sbin/service rsyslog restart</div><div class="line">Sep 20 22:11:45 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls</div><div class="line">Sep 20 22:12:08 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls /root/</div></pre></td></tr></table></figure></p>
+<p>[原文：<a href="http://www.cnblogs.com/hazir/p/sudo_command.html" target="_blank" rel="external">http://www.cnblogs.com/hazir/p/sudo_command.html</a>]</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;情景一：用户无权限执行 root 命令&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景二：vim 编辑后发现忘记使用 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景三：执行 root 命令忘记加 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景四：shell 内置命令如何使用 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景五：sudo 操作记录日志&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
+    
+    
+      <category term="sudo" scheme="https://weizhimiao.github.io/tags/sudo/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Bash脚本15分钟进阶教程[转]</title>
     <link href="https://weizhimiao.github.io/2016/11/16/Bash%E8%84%9A%E6%9C%AC15%E5%88%86%E9%92%9F%E8%BF%9B%E9%98%B6%E6%95%99%E7%A8%8B/"/>
     <id>https://weizhimiao.github.io/2016/11/16/Bash脚本15分钟进阶教程/</id>
     <published>2016-11-16T12:30:00.000Z</published>
-    <updated>2016-11-17T09:26:40.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<p>这里的技术技巧最初是来自谷歌的“Testing on the Toilet” (TOTT)。这里是一个修订和扩增版本。</p>
 <ul>
@@ -309,102 +485,11 @@
   </entry>
   
   <entry>
-    <title>sudo使用场景分析[转]</title>
-    <link href="https://weizhimiao.github.io/2016/11/16/sudo%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/11/16/sudo使用场景分析/</id>
-    <published>2016-11-16T12:30:00.000Z</published>
-    <updated>2016-11-17T08:56:17.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。</p>
-<ul>
-<li><p>情景一：用户无权限执行 root 命令</p>
-</li>
-<li><p>情景二：vim 编辑后发现忘记使用 sudo</p>
-</li>
-<li><p>情景三：执行 root 命令忘记加 sudo</p>
-</li>
-<li><p>情景四：shell 内置命令如何使用 sudo</p>
-</li>
-<li><p>情景五：sudo 操作记录日志</p>
-</li>
-</ul>
-<a id="more"></a>
-<h2 id="情景一：用户无权限执行-root-命令"><a href="#情景一：用户无权限执行-root-命令" class="headerlink" title="情景一：用户无权限执行 root 命令"></a>情景一：用户无权限执行 root 命令</h2><p>普通用户登录 shell 之后，如果自身没有权限访问某个文件或执行某个命令时，若该用户获得root授权，那么就可以在需要执行的命令之前加上 sudo，临时切换到root用户的权限，完成相关的操作。在sudo于1980年前后被写出之前，一般用户管理系统的方式是利用su切换为超级用户。但是使用su的缺点之一在于必须要先告知超级用户的密码，而sudo使一般用户不需要知道超级用户的密码即可获得权限。</p>
-<p>那么哪些用户可以临时获得 root 权限呢？这就需要在 <code>/etc/sudoers</code> 文件中进行配置：</p>
-<p>授权给单个用户：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">guohl   ALL=(ALL) ALL</div></pre></td></tr></table></figure></p>
-<p>上面这个例子中：</p>
-<ul>
-<li><p>guohl：允许使用 sudo 的用户名</p>
-</li>
-<li><p>ALL：允许从任何终端（任何机器）使用 sudo</p>
-</li>
-<li><p>(ALL)：允许以任何用户执行 sudo 命令</p>
-</li>
-<li><p>ALL：允许 sudo 权限执行任何命令</p>
-</li>
-</ul>
-<p>如果我们想让用户 test 只能在本主机（主机名为guohl-pc）以 root 账户执行/bin/chown、/bin/chmod 两条命令，那么就应该这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">test   guohl-pc=(root) /bin/chown,/bin/chmod</div></pre></td></tr></table></figure></p>
-<p>如果test 登录之后运行 sudo 命令，不满足上面三个条件命令均失败。</p>
-<p>授权给用户组:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># Allow members of group sudo to execute any command</div><div class="line"># (Note that later entries override this, so you might need to move it further down)</div><div class="line">%sudo ALL=(ALL) ALL</div><div class="line">和授权给单个用户类似，只不过将用户名在这里换成%组名，所有在该组中的用户都按照此规则进行授权。对于该例，所有在 sudo 组内的用户都有在任何终端（第一个ALL）、以任何用户（第二个ALL）、执行任何命令（第三个ALL）的权限，查看 /etc/group 文件可以知道哪些用户属于 sudo 组。</div></pre></td></tr></table></figure></p>
-<p>举例:</p>
-<p>如果当前帐号在 /etc/sudoers 文件中被授予 sudo 的权限，那么你就可以将任何 root 命令作为 sudo 命令的参数，使用 root 权限来执行该命令。举例来说，挂载一个文件系统只能由 root 来执行，但是一个普通用户也可以使用 sudo 来挂载：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$sudo mount /dev/sda7 /mnt</div><div class="line">[sudo] password for guohailin:</div></pre></td></tr></table></figure>
-<p>首次使用会要求你输入当前用户的密码，系统确实输入正确即以 root 权限来执行 mount 命令，接下来一段时间（默认为5分钟）再次使用 sudo 命令就不需要输密码了。</p>
-<h2 id="情景二：vim-编辑后发现忘记使用-sudo"><a href="#情景二：vim-编辑后发现忘记使用-sudo" class="headerlink" title="情景二：vim 编辑后发现忘记使用 sudo"></a>情景二：vim 编辑后发现忘记使用 sudo</h2><p>我们经常会遇到这样的一个囧境：使用 <code>vim</code> 对某个文件进行编辑，编辑完之后，按 ESC 之后回到普通模式，再按 <code>:wq</code> 准备保存退出时，发现没有权限对该文件进行修改，我们在使用 <code>vim</code> 命令时忘记在前面加 <code>sudo</code> 了。我就经常出现这种问题，之前的做法是只能不保存强退，再加上 <code>sudo</code> 重新编辑。</p>
-<p>但是今后我们再也不需要用这么愚蠢的做法了，我们可以在 vim 的普通模式下，按 <code>:w !sudo tee %</code>，这样就可以 root 权限来保存文件了，你也无需因为自己一时忘记加个 sudo 而沮丧懊恼了！</p>
-<h2 id="情景三：执行-root-命令忘记加-sudo"><a href="#情景三：执行-root-命令忘记加-sudo" class="headerlink" title="情景三：执行 root 命令忘记加 sudo"></a>情景三：执行 root 命令忘记加 sudo</h2><p>我们还会遇到这样稍微好一点的情形：输入一个长长的命令，按 Enter 之后出现无权限操作，因为我们忘记加 sudo 了。大多人的做法是按 ↑ 回到上一条命令，在该命令之前加上 sudo，再执行该命令。</p>
-<p>以后，我们无需这样了，只要输入 <code>sudo !!</code> 即可，这里的 <code>!!</code> 代表上一条命令。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ head -n 4 /etc/sudoers</div><div class="line">head: cannot open `/etc/sudoers&apos; for reading: Permission denied</div><div class="line"></div><div class="line">$ sudo !!</div><div class="line">sudo head -n 4 /etc/sudoers</div><div class="line"># /etc/sudoers</div><div class="line">#</div><div class="line"># This file MUST be edited with the &apos;visudo&apos; command as root.</div><div class="line">#</div></pre></td></tr></table></figure></p>
-<h2 id="情景四：shell-内置命令如何使用-sudo"><a href="#情景四：shell-内置命令如何使用-sudo" class="headerlink" title="情景四：shell 内置命令如何使用 sudo"></a>情景四：shell 内置命令如何使用 sudo</h2><p>shell 是一个交互式的应用程序，在执行外部命令时通过 fork 来创建一个子进程，再通过 exec 来加载外部命令的程序来执行，但是如果一个命令是 shell 内置命令，那么只能直接由 shell 来运行。sudo 的意思是，以别的用户（如root）的权限来 fork 一个进程，加载程序并运行，因此 sudo 后面不能跟 shell 的内置命令，如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /sys/kernel/debugfs</div><div class="line">sudo: cd: command not found</div></pre></td></tr></table></figure>
-<p>在这种情况，我们又没有 root 账户的密码，我们怎样执行该命令呢？有种办法就是使用 sudo 获得root shell 的权限，然后在root shell 中执行该命令。进入root shell 很简单，输入sudo bash 确认本用户的密码即可，此时你会发现命令提示符显示当前是 root。一旦获得root shell，你可以执行任何命令而不需要在每条命令前输入sudo了。</p>
-<p>另外，常用的shell 内置命令在<a href="http://www.thegeekstuff.com/2010/08/bash-shell-builtin-commands/" target="_blank" rel="external">这里</a> 有简单介绍，我们可以使用 type 命令来查看命令的类型，如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ type ls</div><div class="line">ls is /bin/ls</div><div class="line">$ type umask</div><div class="line">umask is a shell builtin</div></pre></td></tr></table></figure>
-<h2 id="情景五：sudo-操作记录日志"><a href="#情景五：sudo-操作记录日志" class="headerlink" title="情景五：sudo 操作记录日志"></a>情景五：sudo 操作记录日志</h2><p>作为一个 Linux 系统的管理员，不仅可以让指定的用户或用户组作为root用户或其它用户来运行某些命令，还能将指定的用户所输入的命令和参数作详细的记录。而sudo的日志功能就可以用户跟踪用户输入的命令，这不仅能增进系统的安全性，还能用来进行故障检修。但是要记录sudo的日志还要一些简单的配置：</p>
-<p>1、创建sudo日志文件</p>
-<p>我们将sudo日志文件放置在 <code>/var/log/sudo.log</code> 文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo touch /var/log/sudo.log</div></pre></td></tr></table></figure></p>
-<p>2、修改 <code>/etc/rsyslog.conf</code> 配置文件</p>
-<p>我使用系统为<code>Ubuntu13.04</code>为改名字，但有些系统名为<code>/etc/syslog.conf</code>，注意不同发行版之间的差别，在该文件加入下面一行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">local2.debug    /var/log/sudo.log    #空白不能用空格，必须用tab</div></pre></td></tr></table></figure>
-<p>3、修改 /etc/sudoers 配置文件</p>
-<p>注意网上很多关于sudo日志文件配置都缺少这一步！在该文件中加入下面一行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Defaults    logfile=/var/log/sudo.log</div></pre></td></tr></table></figure></p>
-<p>4、重启 syslog 服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service rsyslog restart</div></pre></td></tr></table></figure></p>
-<p>5、查看 sudo 日志记录：</p>
-<p>经过上面的配置，sudo 的所有成功和不成功的sudo</p>
-<p>命令都记录到文件/var/log/sudo.log 中，例如我运行几条sudo 命令之后，查看该文件的记录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ cat sudo.log</div><div class="line">Sep 20 22:10:51 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/cat /etc/sudoers</div><div class="line">Sep 20 22:11:36 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/usr/sbin/service rsyslog restart</div><div class="line">Sep 20 22:11:45 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls</div><div class="line">Sep 20 22:12:08 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls /root/</div></pre></td></tr></table></figure></p>
-<p>[原文：<a href="http://www.cnblogs.com/hazir/p/sudo_command.html" target="_blank" rel="external">http://www.cnblogs.com/hazir/p/sudo_command.html</a>]</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;情景一：用户无权限执行 root 命令&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景二：vim 编辑后发现忘记使用 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景三：执行 root 命令忘记加 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景四：shell 内置命令如何使用 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景五：sudo 操作记录日志&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
-    
-    
-      <category term="sudo" scheme="https://weizhimiao.github.io/tags/sudo/"/>
-    
-  </entry>
-  
-  <entry>
     <title>常见的排序算法与实现（PHP）汇总</title>
     <link href="https://weizhimiao.github.io/2016/11/07/%E5%B8%B8%E8%A7%81%E7%9A%84%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E4%B8%8E%E5%AE%9E%E7%8E%B0%EF%BC%88PHP%EF%BC%89%E6%B1%87%E6%80%BB/"/>
     <id>https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/</id>
     <published>2016-11-07T12:30:00.000Z</published>
-    <updated>2016-11-07T09:51:46.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<ul>
 <li>冒泡排序</li>
@@ -545,7 +630,7 @@
     <link href="https://weizhimiao.github.io/2016/11/01/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
     <id>https://weizhimiao.github.io/2016/11/01/Linux中常用的shell脚本（二）/</id>
     <published>2016-11-01T12:30:00.000Z</published>
-    <updated>2016-11-10T02:52:55.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://n.sinaimg.cn/games/3ece443e/20161030/bash.png" alt="Linux中常用的shell脚本"></p>
 <a id="more"></a>
@@ -584,7 +669,7 @@
     <link href="https://weizhimiao.github.io/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/"/>
     <id>https://weizhimiao.github.io/2016/10/30/Linux中常用的shell脚本/</id>
     <published>2016-10-30T12:30:00.000Z</published>
-    <updated>2016-10-30T12:05:05.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://n.sinaimg.cn/games/3ece443e/20161030/bash.png" alt="Linux中常用的shell脚本"></p>
 <a id="more"></a>
@@ -633,7 +718,7 @@
     <link href="https://weizhimiao.github.io/2016/10/29/Linux%E4%B8%AD%E9%80%9A%E8%BF%87inotify-tools%E5%AE%9E%E7%8E%B0%E7%9B%91%E6%8E%A7%E6%96%87%E4%BB%B6%E5%8F%98%E5%8C%96/"/>
     <id>https://weizhimiao.github.io/2016/10/29/Linux中通过inotify-tools实现监控文件变化/</id>
     <published>2016-10-29T12:30:00.000Z</published>
-    <updated>2016-10-31T01:41:03.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<p>inotify-tools 是一个用C语言库，一个为Linux提供简单inotify接口的命令行程序。这些程序可以用于监视文件系统事件并执行相应操作。这些程序是用C语言来写的，除了需要Linux内核的inotify支持外，没有其他的依赖。inotify-tools 3.14是目前最新版本，其于2010年3月7日发布。</p>
 <p>那么什么inotify又是什么？</p>
@@ -703,7 +788,7 @@
     <link href="https://weizhimiao.github.io/2016/10/27/Javascript%E4%B8%AD%E7%94%A8instanceof%E8%BF%90%E7%AE%97%E7%AC%A6%E5%AE%9E%E7%8E%B0%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AE%89%E5%85%A8%E5%88%9B%E5%BB%BA/"/>
     <id>https://weizhimiao.github.io/2016/10/27/Javascript中用instanceof运算符实现对象的安全创建/</id>
     <published>2016-10-27T12:30:00.000Z</published>
-    <updated>2016-10-27T02:14:31.000Z</updated>
+    <updated>2016-11-29T02:32:39.000Z</updated>
     
     <content type="html"><![CDATA[<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Book = <span class="function"><span class="keyword">function</span>(<span class="params">title, time, type</span>)</span>&#123;</div><div class="line">  <span class="keyword">if</span>(<span class="keyword">this</span> <span class="keyword">instanceof</span> Book)&#123;</div><div class="line">    <span class="keyword">this</span>.title = title;</div><div class="line">    <span class="keyword">this</span>.time = time;</div><div class="line">    <span class="keyword">this</span>.type = type;</div><div class="line">  &#125; <span class="keyword">else</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Book(title, time, type);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <a id="more"></a>
@@ -749,7 +834,7 @@
     <link href="https://weizhimiao.github.io/2016/10/23/PHP%E6%A0%B9%E6%8D%AE%E6%96%87%E4%BB%B6%E5%A4%B4%E6%A3%80%E6%B5%8B%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B/"/>
     <id>https://weizhimiao.github.io/2016/10/23/PHP根据文件头检测文件类型/</id>
     <published>2016-10-23T10:30:00.000Z</published>
-    <updated>2016-10-26T13:46:17.000Z</updated>
+    <updated>2016-11-29T02:32:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>文件签名一般都在文件的头部，如果你用十六进制方式查看文件，你就可以看到文件的一些签名信息。如用uestudio以十六进制方式查看zip格式的文件，其文件内容头部有50 4B 03 04这样的十六进制信息。同理jpg文件状况有FF D8 FF E0 xx xx 4A 46这样的十六进制信息，其实这此十六进制都是表示一些特殊字条。</p>
 <a id="more"></a>
@@ -773,11 +858,239 @@
   </entry>
   
   <entry>
+    <title>Xdebug之远程调试</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之远程调试/</id>
+    <published>2016-10-22T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
+<a id="more"></a>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的（远程）调试器允许您检查数据结构，交互式地浏览和调试您的代码。 正在使用的协议是打开的，称为DBGp。 此协议在Xdebug 2中实现，并替换不再支持的旧的GDB类协议。</p>
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Xdebug 2捆绑了一个用于DBGp协议的简单命令行客户端。 还有一些其他客户端实现（免费和商业）。 我不是任何这些的作者，所以请参考原作者的支持：</p>
+<ul>
+<li>Dev-PHP (IDE: Windows)</li>
+<li>Eclipse plugin (IDE).</li>
+<li>Emacs plugin (Editor Plugin).</li>
+<li>KDevelop (IDE: Linux (KDE); Open Source).</li>
+<li>ActiveState’s Komodo (IDE: Windows, Linux, Mac; Commercial).</li>
+<li>MacGDBP (Standalone client for Mac OS X; Free)</li>
+<li>NetBeans (IDE: Windows, Linux, Mac OS X and Solaris).</li>
+<li>Notepad++ plugin (Editor: Windows).</li>
+<li>WaterProof’s PHPEdit (IDE, from version 2.10: Windows; Commercial).</li>
+<li>PHPEclipse (Editor Plugin).</li>
+<li>Devsense’s PHP Tools for Visual Studio (MS Visual Studio Plugin; Commercial).</li>
+<li>JetBrain’s PhpStorm (IDE; Commercial).</li>
+<li>Protoeditor (Editor: Linux).</li>
+<li>pugdebug (Standalone client for Linux, Windows and Mac OS X; Open Source).</li>
+<li>VIM plugin (Editor Plugin).</li>
+<li>jcx software’s VS.Php (MS Visual Studio Plugin; Commercial).</li>
+<li>Xdebug Chrome App (Chrome Application; Open Source)</li>
+<li>XDebugClient (Standalone client for Windows).</li>
+</ul>
+<p>用于调试的简单命令行客户机与debugclient目录中的Xdebug捆绑在一起。</p>
+<h2 id="启动调试器"><a href="#启动调试器" class="headerlink" title="启动调试器"></a>启动调试器</h2><p>为了启用Xdebug的调试器，您需要在php.ini中进行一些配置设置。 这些设置为xdebug.remote_enable以启用调试器xdebug.remote_host和xdebug.remote_port来配置调试器应连接到的IP地址和端口。 还有一个xdebug.remote_connect_back设置，如果您的开发服务器与多个开发人员共享，则可以使用此设置。</p>
+<p>如果希望调试器在发生错误情况（PHP错误或异常）时启动会话，则还需要更改xdebug.remote_mode设置。 此设置的允许值为“req”（默认值），这使得调试器在脚本启动时启动会话，或者“jit”，当会话只应在错误时启动。</p>
+<p>完成所有这些设置后，Xdebug仍然不会在脚本运行时自动启动调试会话。 你需要激活Xdebug的调试器，你可以通过三种方式：</p>
+<p>1、当从命令行运行脚本时，您需要设置一个环境变量，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name&quot;</div><div class="line">php myscript.php</div></pre></td></tr></table></figure></p>
+<p>您还可以在此相同的环境变量中配置xdebug.remote_host，xdebug.remote_port，xdebug.remote_mode和xdebug.remote_handler，只要使用空格分隔值即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name remote_host=localhost profiler_enable=1&quot;</div></pre></td></tr></table></figure></p>
+<p>通过XDEBUG_CONFIG设置可以获得的所有设置也可以使用正常的php.ini设置进行设置。</p>
+<p>2、如果要调试通过Web浏览器启动的脚本，只需将XDEBUG_SESSION_START = session_name作为参数添加到URL。 而不是使用GET参数，您还可以将XDEBUG_SESSION_START设置为POST参数，或通过cookie。 请参阅下一节，了解调试会话如何在浏览器窗口中工作。</p>
+<p>3、通过Web服务器运行PHP时激活调试器的另一种方法是安装以下四个浏览器扩展之一。 它们中的每一个都允许您通过单击一个按钮来启用调试器。 当这些扩展是活动的，他们直接设置XDEBUG_SESSION cookie，而不是通过XDEBUG_SESSION_START进一步的HTTP调试会话中描述。 扩展名为：</p>
+<ul>
+<li><p>The easiest Xdebug</p>
+<blockquote>
+<p>这个扩展的Firefox是为了使IDE的调试更容易。 您可以在<a href="https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。" target="_blank" rel="external">https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。</a></p>
+</blockquote>
+</li>
+<li><p>Xdebug Helper for Chrome</p>
+<blockquote>
+<p>Chrome的此扩展程序将帮助您通过一次点击启用/禁用调试和分析。 您可以在<a href="https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。" target="_blank" rel="external">https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。</a></p>
+</blockquote>
+</li>
+<li><p>Xdebug Toggler for Safari</p>
+<blockquote>
+<p>Safari的这个扩展允许你从Safari中自动启动Xdebug调试。 你可以从Github <a href="https://github.com/benmatselby/xdebug-toggler获取它。" target="_blank" rel="external">https://github.com/benmatselby/xdebug-toggler获取它。</a></p>
+</blockquote>
+</li>
+<li><p>Xdebug launcher for Opera</p>
+<blockquote>
+<p>这个扩展的Opera允许您从Opera启动Xdebug会话。</p>
+</blockquote>
+</li>
+</ul>
+<p>在你开始你的脚本之前，你需要告诉你的客户端它可以接收调试连接，请参考具体客户端的文档如何做到这一点。 要使用捆绑的客户端，只需在编译和安装后启动它。 您可以通过运行“debugclient”启动它。</p>
+<p>当debugclient启动时，它将显示以下信息，然后等待，直到调试服务器启动连接：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Xdebug Simple DBGp client (0.10.0)</div><div class="line">Copyright 2002-2007 by Derick Rethans.</div><div class="line">- libedit support: enabled</div><div class="line"></div><div class="line">Waiting for debug server to connect.</div></pre></td></tr></table></figure></p>
+<p>在建立连接后，将显示调试服务器的输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Connect</div><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;iso-8859-1&quot;?&gt;</div><div class="line">&lt;init xmlns=&quot;urn:debugger_protocol_v1&quot;</div><div class="line">      xmlns:xdebug=&quot;http://xdebug.org/dbgp/xdebug&quot;</div><div class="line">      fileuri=&quot;file:///home/httpd/www.xdebug.org/html/docs/index.php&quot;</div><div class="line">      language=&quot;PHP&quot;</div><div class="line">      protocol_version=&quot;1.0&quot;</div><div class="line">      appid=&quot;13202&quot;</div><div class="line">      idekey=&quot;derick&quot;&gt;</div><div class="line">  &lt;engine version=&quot;2.0.0RC4-dev&quot;&gt;&lt;![CDATA[Xdebug]]&gt;&lt;/engine&gt;</div><div class="line">  &lt;author&gt;&lt;![CDATA[Derick Rethans]]&gt;&lt;/author&gt;</div><div class="line">  &lt;url&gt;&lt;![CDATA[http://xdebug.org]]&gt;&lt;/url&gt;</div><div class="line">  &lt;copyright&gt;&lt;![CDATA[Copyright (c) 2002-2007 by Derick Rethans]]&gt;&lt;/copyright&gt;</div><div class="line">&lt;/init&gt;</div><div class="line">(cmd)</div></pre></td></tr></table></figure></p>
+<p>现在，您可以使用DBGp文档页面中说明的命令集。 当脚本结束时，调试服务器与客户端断开连接，并且调试客户端在等待新连接时恢复。</p>
+<h2 id="通讯建立"><a href="#通讯建立" class="headerlink" title="通讯建立"></a>通讯建立</h2><h3 id="使用静态IP-单个开发者"><a href="#使用静态IP-单个开发者" class="headerlink" title="使用静态IP /单个开发者"></a>使用静态IP /单个开发者</h3><p>通过远程调试，嵌入在PHP中的Xdebug就像客户端，而IDE作为服务器。 以下动画显示了通信通道的设置：</p>
+<p><img src="https://xdebug.org/images/docs/dbgp-setup.gif" alt="img"></p>
+<ul>
+<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
+<li>IDE在IP 10.0.1.42上，因此xdebug.remote_host设置为10.0.1.42</li>
+<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
+<li>HTTP请求在运行IDE的计算机上启动</li>
+<li>Xdebug连接到10.0.1.42:9000</li>
+<li>调试运行，提供HTTP响应</li>
+</ul>
+<h3 id="与未知IP-多开发者"><a href="#与未知IP-多开发者" class="headerlink" title="与未知IP /多开发者"></a>与未知IP /多开发者</h3><p>如果使用xdebug.remote_connect_back，设置稍有不同：</p>
+<p><img src="https://xdebug.org/images/docs/dbgp-setup2.gif" alt="img"></p>
+<ul>
+<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
+<li>IDE处于未知IP，因此xdebug.remote_connect_back设置为1</li>
+<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
+<li>发出HTTP请求后，Xdebug将从HTTP头中检测IP地址</li>
+<li>Xdebug连接到端口9000上检测到的IP（10.0.1.42）</li>
+<li>调试运行，提供HTTP响应</li>
+</ul>
+<h2 id="HTTP调试会话"><a href="#HTTP调试会话" class="headerlink" title="HTTP调试会话"></a>HTTP调试会话</h2><p>Xdebug包含通过浏览器启动时跟踪调试会话的功能：Cookie。 这是这样工作：</p>
+<ul>
+<li><p>当URL变量XDEBUG_SESSION_START = name附加到URL或通过具有相同名称的POST变量时，-Xdebug会发出名为“XDEBUG_SESSION”的cookie，并将值设置为XDEBUG_SESSION_START URL参数的值。 cookie的到期时间为1小时。 当连接到“idekey”属性中的debugclient时，DBGp协议也将此相同的值传递给init包。</p>
+</li>
+<li><p>当有一个GET（或POST）变量XDEBUG_SESSION_START或XDEBUG_SESSION cookie被设置时，Xdebug将尝试连接到一个调试客户端。</p>
+</li>
+<li><p>要停止调试会话（并销毁cookie），只需添加URL参数XDEBUG_SESSION_STOP即可。 Xdebug将不再尝试连接到调试客户端。</p>
+</li>
+</ul>
+<h2 id="多用户调试"><a href="#多用户调试" class="headerlink" title="多用户调试"></a>多用户调试</h2><p>Xdebug仅允许您在执行远程调试时指定一个IP地址与xdebug.remote_host连接。它不会自动连接回浏览器运行的计算机的IP地址，除非您使用xdebug.remote_connect_back。</p>
+<p>如果所有开发人员在同一（开发）服务器上的不同项目上工作，则可以通过Apache的.htaccess功能为每个目录设置xdebug.remote_host设置，方法是使用php_value xdebug.remote_host = 10.0.0.5。但是，对于多个开发人员在同一代码上工作的情况，.htaccess技巧不工作，因为代码所在的目录是相同的。</p>
+<p>有两个解决方案。首先，你可以使用DBGp代理。有关如何使用此代理的概述，请参阅多个用户调试中的文章。您可以在ActiveState的网站上下载代理作为python远程调试包的一部分。 Komodo FAQ中还有一些文档。</p>
+<p>其次，您可以使用Xdebug 2.1中引入的xdebug.remote_connect_back设置。</p>
+<h2 id="实施细则"><a href="#实施细则" class="headerlink" title="实施细则"></a>实施细则</h2><p>Xdebug的DBGp协议的context_names命令的实现不依赖于栈级别。 在每个调试器会话期间返回的值总是相同的，因此，可以安全地缓存。</p>
+<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-extended-info"><a href="#xdebug-extended-info" class="headerlink" title="xdebug.extended_info"></a>xdebug.extended_info</h3><p>类型：整数，默认值：1</p>
+<p>控制Xdebug是否应该为PHP解析器强制执行’extended_info’模式;这允许Xdebug使用远程调试器执行文件/行断点。当跟踪或剖析脚本时，通常希望关闭此选项，因为PHP生成的oparrays将增加大约三分之一的大小减慢脚本。此设置不能在带有ini_set（）的脚本中设置，但只能在php.ini中设置。</p>
+<h3 id="xdebug-idekey"><a href="#xdebug-idekey" class="headerlink" title="xdebug.idekey"></a>xdebug.idekey</h3><p>类型：字符串，默认值：<em> complex </em></p>
+<p>控制哪个IDE密钥Xdebug应该传递到DBGp调试器处理程序。默认值基于环境设置。首先查询环境设置DBGP_IDEKEY，然后查询USER和最后一个USERNAME。默认值设置为找到的第一个环境变量。如果找不到，则设置为默认的“”。如果设置此设置，它始终覆盖环境变量。</p>
+<h3 id="xdebug-remote-addr-header"><a href="#xdebug-remote-addr-header" class="headerlink" title="xdebug.remote_addr_header"></a>xdebug.remote_addr_header</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.4中引入</p>
+<p>如果xdebug.remote_addr_header配置为非空字符串，那么该值将用作$ SERVER超全局数组中的键，以确定用于查找用于“连接回”的IP地址或主机名的头。此设置仅与xdebug.remote_connect_back结合使用，否则将被忽略。</p>
+<h3 id="xdebug-remote-autostart"><a href="#xdebug-remote-autostart" class="headerlink" title="xdebug.remote_autostart"></a>xdebug.remote_autostart</h3><p>类型：布尔值，默认值：0</p>
+<p>通常，您需要使用特定的HTTP GET / POST变量来启动远程调试（请参阅远程调试）。当此设置设置为1时，Xdebug将始终尝试启动远程调试会话并尝试连接到客户端，即使GET / POST / COOKIE变量不存在。</p>
+<h3 id="xdebug-remote-connect-back"><a href="#xdebug-remote-connect-back" class="headerlink" title="xdebug.remote_connect_back"></a>xdebug.remote_connect_back</h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
+<p>如果启用，xdebug.remote_host设置将被忽略，Xdebug将尝试连接到发出HTTP请求的客户端。它检查$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量以找出要使用的IP地址。</p>
+<p>如果配置了xdebug.remote_addr_header，那么将在$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量之前检查具有配置名称的$ SERVER变量。</p>
+<p>此设置不适用于通过CLI进行调试，因为$ SERVER标题变量在那里不可用。</p>
+<p>请注意，没有可用的过滤器，任何可以连接到Web服务器的人都能够启动调试会话，即使他们的地址与xdebug.remote_host不匹配。</p>
+<h3 id="xdebug-remote-cookie-expire-time"><a href="#xdebug-remote-cookie-expire-time" class="headerlink" title="xdebug.remote_cookie_expire_time"></a>xdebug.remote_cookie_expire_time</h3><p>类型：整数，默认值：3600，在Xdebug&gt; 2.1中引入</p>
+<p>此设置可用于增加（或减少）远程调试会话通过会话cookie保持活动的时间。</p>
+<h3 id="xdebug-remote-enable"><a href="#xdebug-remote-enable" class="headerlink" title="xdebug.remote_enable"></a>xdebug.remote_enable</h3><p>类型：布尔值，默认值：0</p>
+<p>此开关控制Xdebug是否应尝试联系正在侦听主机上的调试客户端，并使用设置xdebug.remote_host和xdebug.remote_port设置的端口。如果无法建立连接，脚本将继续，就像此设置为0。</p>
+<h3 id="xdebug-remote-handler"><a href="#xdebug-remote-handler" class="headerlink" title="xdebug.remote_handler"></a>xdebug.remote_handler</h3><p>类型：字符串，默认值：dbgp</p>
+<p>可以是“php3”选择旧的PHP 3式调试器输出，“gdb”启用GDB像调试器接口或’dbgp’ - 调试器协议。 DBGp协议是唯一支持的协议。</p>
+<p>注意：Xdebug 2.1和更高版本只支持’db​​gp’作为协议。</p>
+<h3 id="xdebug-remote-host"><a href="#xdebug-remote-host" class="headerlink" title="xdebug.remote_host"></a>xdebug.remote_host</h3><p>类型：字符串，默认值：localhost<br>选择运行调试客户端的主机，您可以使用主机名或IP地址。如果启用xdebug.remote_connect_back，将忽略此设置。</p>
+<h3 id="xdebug-remote-log"><a href="#xdebug-remote-log" class="headerlink" title="xdebug.remote_log"></a>xdebug.remote_log</h3><p>类型：字符串，默认值：</p>
+<p>如果设置为某个值，则将其用作所有远程调试器通信记录到的文件的文件名。 该文件始终以附加模式打开，因此默认情况下不会被覆盖。 没有可用的并发保护。 该文件的格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Log opened at 2007-05-27 14:28:15</div><div class="line">-&gt; &lt;init xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/dbgp/x ... ight&gt;&lt;/init&gt;</div><div class="line"></div><div class="line">&lt;- step_into -i 1</div><div class="line">-&gt; &lt;response xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/db ... &gt;&lt;/response&gt;</div></pre></td></tr></table></figure></p>
+<h3 id="xdebug-remote-mode"><a href="#xdebug-remote-mode" class="headerlink" title="xdebug.remote_mode"></a>xdebug.remote_mode</h3><p>类型：字符串，默认值：req</p>
+<p>选择启动调试连接的时间。 此设置可以有两个不同的值：</p>
+<ul>
+<li><p>req</p>
+<blockquote>
+<p>一旦脚本启动，Xdebug将尝试连接到调试客户端。</p>
+</blockquote>
+</li>
+<li><p>jit</p>
+<blockquote>
+<p>Xdebug只会在出现错误情况时尝试连接到调试客户端。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="xdebug-remote-port"><a href="#xdebug-remote-port" class="headerlink" title="xdebug.remote_port"></a>xdebug.remote_port</h3><p>类型：整数，默认值：9000</p>
+<p>Xdebug尝试在远程主机上连接的端口。 端口9000是客户端和捆绑的debugclient的默认值。 由于许多客户端使用此端口号，最好保持此设置不变。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="bool-xdebug-break（）"><a href="#bool-xdebug-break（）" class="headerlink" title="bool xdebug_break（）"></a>bool xdebug_break（）</h3><p>向调试客户端发出断点。</p>
+<p>此函数使调试器在特定行上断开，就好像在此行上设置了正常的文件/行断点。</p>
+<p>over~</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Xdebug之常见问题</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之常见问题/</id>
+    <published>2016-10-22T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<ul>
+<li><p>xdebug的使用</p>
+</li>
+<li><p>xdebug的编译安装</p>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="xdebug的使用"><a href="#xdebug的使用" class="headerlink" title="xdebug的使用"></a>xdebug的使用</h2><p>问：phpinfo（）报告Xdebug已安装和启用，但我仍然不会得到任何堆栈跟踪时发生错误。</p>
+<p>A1：你必须搜索所有的PHP库，并包含任何“set_error<em>handler”调用的文件。如果有任何，你必须将其注释掉，或者更改handler函数的主体以调用xdebug</em> * api函数。</p>
+<p>A2：您没有在php.ini中将display_errors设置为1</p>
+<hr>
+<p>问：Xdebug不格式化输出。</p>
+<p>A：确保php.ini中的PHP的html_errors设置为1</p>
+<hr>
+<p>问：调试客户端没有收到任何连接，我怎么办？</p>
+<p>A：您可能忘记设置环境变量或向URL中添加必要的信息。有关详细信息，请参阅文档。</p>
+<p>A：您检查过防火墙设置了吗？确保Xdebug正在侦听的端口（默认为9000）未被阻止。</p>
+<p>A：你使用FastCGI，可能是通过FPM（FastCGI过程管理器）？它默认使用相同的端口作为Xdebug（9000），因此您需要将其中一个更改为不同的数字。在Xdebug，你可以使用xdebug.remote_port。</p>
+<p>A：如果你使用SELinux运行，你应该确保它不会阻止连接;查找关于name_connect或与Xdebug端口相关的任何警告。您可能必须明确允许访问。访问此网站或搜索“selinux name_connect apache”有关如何执行此操作的详细信息</p>
+<h2 id="xdebug的编译安装"><a href="#xdebug的编译安装" class="headerlink" title="xdebug的编译安装"></a>xdebug的编译安装</h2><p>问：我没有phpize工具。</p>
+<p>答：Debian和Ubuntu用户需要用apt安装php5-dev软件包。</p>
+<hr>
+<p>问：如何处理：Xdebug需要Zend Engine API版本xxxxxxxx。安装的Zend Engine API版本2xxxxxxxx较新。</p>
+<p>A：此消息意味着您正在尝试加载Xdebug的PHP版本，它不是为它构建的。如果你自己编译PHP，很可能是因为你编译Xdebug对PHP头，属于你运行的不同的PHP版本。例如，你使用PHP 5.3，你使用的头仍然是PHP 5.2。如果你使用一个预编译的二进制文件，那么你使用的是错误的。</p>
+<p>要诊断这是否是您的问题，请执行以下步骤：</p>
+<ul>
+<li><p>通过查看phpinfo（）（或“php -i”）输出，检查您正在运行的PHP版本的“Zend Extension”API号。您可以在输出的顶部找到它，与PHP徽标和PHP版本在同一个块中。例如，对于PHP 5.2，数字是“220060519”，对于PHP 5.3，它是“220090626”。</p>
+</li>
+<li><p>当您完成编译步骤时，检查“phpize”的输出。您要查找的数字是在“Zend Extension Api No”的行上。</p>
+</li>
+</ul>
+<p>如果上面的两个数字不匹配，你正在使用错误的PHP头文件进行编译。请参阅下一个常见问题条目以确定要使用的phpize。</p>
+<hr>
+<p>问：Xdebug仅作为PHP扩展加载，而不是作为Zend扩展。<br>定制的安装指导可能已指向此条目。</p>
+<p>为了使Xdebug正常工作，包括断点等，它需要它作为Zend扩展加载，而不只是作为一个普通的PHP扩展。有些安装工具（PEAR / PECL）有时建议您使用extension = xdebug.so加载Xdebug。这是不正确的。为了解决这个问题，请在顶部块中“加载配置文件”和“其他.ini文件解析”下列出的任何INI文件中查找一行extension = xdebug.so。删除此行，并返回到定制安装说明。</p>
+<hr>
+<p>问：我如何找到使用哪个phpize？</p>
+<p>A：运行：“phpize –help”。这将显示phpize的完整路径。此路径应该与您具有CLI二进制文件“php-config”和安装的“pear”和“pecl”二进制文件的路径相同。如果你运行“php-config –version”它应该显示与你运行的PHP版本相同。如果它不匹配，并且可能在路径上找到错误的“phpize”二进制，您可以运行configure如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/full/path/to/php/bin/phpize</div><div class="line">./configure --with-php-config=/full/path/to/php/bin/php-config</div></pre></td></tr></table></figure>
+<hr>
+<p>问：我使用XAMPP，但我似乎不能得到打包的xdebug扩展正常工作。</p>
+<p>A：如果你取消注释“extension = php_xdebug.dll”行，这是预期的。 Xdebug需要加载zend_extension_ts =“C：\ path \ to \ php_xdebug.dll”指令。 你也可能必须禁用加载Zend优化器，因为它默认情况下启用，并且不能很好地与Xdebug。 因此，查找php.ini中的相关条目，并将其注释掉。 从PHP 5.3起，您总是需要使用zend_extension PHP.ini设置名称，而不是zend_extension_ts。<br>问：在Debian，我看到以下问题与Xdebug的构建….任何修复？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/usr/lib/libc_nonshared.a(stat.oS)(.text.__i686.get_pc_thunk.bx+0x0):</div><div class="line">In function `__i686.get_pc_thunk.bx&apos;:</div><div class="line">: multiple definition of `__i686.get_pc_thunk.bx&apos;</div><div class="line">/usr/lib/gcc-lib/i486-linux/3.3.5/crtbeginS.o</div><div class="line">(.gnu.linkonce.t.__i686.get_pc_thunk.bx+0x0): first defined here</div><div class="line">collect2: ld returned 1 exit status</div><div class="line">make: *** [xdebug.la] Error 1</div></pre></td></tr></table></figure>
+<p>A：这是Debian本身的问题，有关更多信息，请参阅<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>和<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;ul&gt;
+&lt;li&gt;&lt;p&gt;xdebug的使用&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;xdebug的编译安装&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Xdebug之变量显示功能</title>
     <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%A0%86%E6%A0%88%E8%B7%9F%E8%B8%AA/"/>
     <id>https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/</id>
     <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-10-22T16:07:31.000Z</updated>
+    <updated>2016-11-29T02:32:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
 <p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
@@ -1012,7 +1325,7 @@
     <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%8F%98%E9%87%8F%E6%98%BE%E7%A4%BA%E5%8A%9F%E8%83%BD/"/>
     <id>https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/</id>
     <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-10-22T16:07:20.000Z</updated>
+    <updated>2016-11-29T02:32:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。</p>
 <a id="more"></a>
@@ -1121,66 +1434,121 @@
   </entry>
   
   <entry>
-    <title>Xdebug之常见问题</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之常见问题/</id>
+    <title>Xdebug之PHP脚本剖析</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8BPHP%E8%84%9A%E6%9C%AC%E5%89%96%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之PHP脚本剖析/</id>
     <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-10-22T16:06:16.000Z</updated>
+    <updated>2016-11-29T02:32:38.000Z</updated>
     
-    <content type="html"><![CDATA[<ul>
-<li><p>xdebug的使用</p>
-</li>
-<li><p>xdebug的编译安装</p>
-</li>
-</ul>
+    <content type="html"><![CDATA[<p>Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。</p>
 <a id="more"></a>
-<h2 id="xdebug的使用"><a href="#xdebug的使用" class="headerlink" title="xdebug的使用"></a>xdebug的使用</h2><p>问：phpinfo（）报告Xdebug已安装和启用，但我仍然不会得到任何堆栈跟踪时发生错误。</p>
-<p>A1：你必须搜索所有的PHP库，并包含任何“set_error<em>handler”调用的文件。如果有任何，你必须将其注释掉，或者更改handler函数的主体以调用xdebug</em> * api函数。</p>
-<p>A2：您没有在php.ini中将display_errors设置为1</p>
-<hr>
-<p>问：Xdebug不格式化输出。</p>
-<p>A：确保php.ini中的PHP的html_errors设置为1</p>
-<hr>
-<p>问：调试客户端没有收到任何连接，我怎么办？</p>
-<p>A：您可能忘记设置环境变量或向URL中添加必要的信息。有关详细信息，请参阅文档。</p>
-<p>A：您检查过防火墙设置了吗？确保Xdebug正在侦听的端口（默认为9000）未被阻止。</p>
-<p>A：你使用FastCGI，可能是通过FPM（FastCGI过程管理器）？它默认使用相同的端口作为Xdebug（9000），因此您需要将其中一个更改为不同的数字。在Xdebug，你可以使用xdebug.remote_port。</p>
-<p>A：如果你使用SELinux运行，你应该确保它不会阻止连接;查找关于name_connect或与Xdebug端口相关的任何警告。您可能必须明确允许访问。访问此网站或搜索“selinux name_connect apache”有关如何执行此操作的详细信息</p>
-<h2 id="xdebug的编译安装"><a href="#xdebug的编译安装" class="headerlink" title="xdebug的编译安装"></a>xdebug的编译安装</h2><p>问：我没有phpize工具。</p>
-<p>答：Debian和Ubuntu用户需要用apt安装php5-dev软件包。</p>
-<hr>
-<p>问：如何处理：Xdebug需要Zend Engine API版本xxxxxxxx。安装的Zend Engine API版本2xxxxxxxx较新。</p>
-<p>A：此消息意味着您正在尝试加载Xdebug的PHP版本，它不是为它构建的。如果你自己编译PHP，很可能是因为你编译Xdebug对PHP头，属于你运行的不同的PHP版本。例如，你使用PHP 5.3，你使用的头仍然是PHP 5.2。如果你使用一个预编译的二进制文件，那么你使用的是错误的。</p>
-<p>要诊断这是否是您的问题，请执行以下步骤：</p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的Profiler是一个强大的工具，使您能够分析您的PHP代码并确定瓶颈，或者通常查看代码的哪些部分很慢，并可以使用速度提升。<br>Xdebug 2中的分析器以高速缓存磨削兼容文件的形式输出分析信息。这允许您使用优秀的KCacheGrind工具（Linux，KDE）来分析概要分析数据。</p>
 <ul>
-<li><p>通过查看phpinfo（）（或“php -i”）输出，检查您正在运行的PHP版本的“Zend Extension”API号。您可以在输出的顶部找到它，与PHP徽标和PHP版本在同一个块中。例如，对于PHP 5.2，数字是“220060519”，对于PHP 5.3，它是“220090626”。</p>
+<li><p>如果你在Linux上，你可以安装KCacheGrind通过你最喜欢的包管理器。</p>
 </li>
-<li><p>当您完成编译步骤时，检查“phpize”的输出。您要查找的数字是在“Zend Extension Api No”的行上。</p>
+<li><p>如果你在Windows上，有预编译的QCacheGrind二进制文件可用。 （QCacheGrind是没有KDE绑定的KCacheGrind）。</p>
+</li>
+<li><p>如果你在Mac OSX上，还有如何构建QCacheGrind的说明。</p>
 </li>
 </ul>
-<p>如果上面的两个数字不匹配，你正在使用错误的PHP头文件进行编译。请参阅下一个常见问题条目以确定要使用的phpize。</p>
-<hr>
-<p>问：Xdebug仅作为PHP扩展加载，而不是作为Zend扩展。<br>定制的安装指导可能已指向此条目。</p>
-<p>为了使Xdebug正常工作，包括断点等，它需要它作为Zend扩展加载，而不只是作为一个普通的PHP扩展。有些安装工具（PEAR / PECL）有时建议您使用extension = xdebug.so加载Xdebug。这是不正确的。为了解决这个问题，请在顶部块中“加载配置文件”和“其他.ini文件解析”下列出的任何INI文件中查找一行extension = xdebug.so。删除此行，并返回到定制安装说明。</p>
-<hr>
-<p>问：我如何找到使用哪个phpize？</p>
-<p>A：运行：“phpize –help”。这将显示phpize的完整路径。此路径应该与您具有CLI二进制文件“php-config”和安装的“pear”和“pecl”二进制文件的路径相同。如果你运行“php-config –version”它应该显示与你运行的PHP版本相同。如果它不匹配，并且可能在路径上找到错误的“phpize”二进制，您可以运行configure如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/full/path/to/php/bin/phpize</div><div class="line">./configure --with-php-config=/full/path/to/php/bin/php-config</div></pre></td></tr></table></figure>
-<hr>
-<p>问：我使用XAMPP，但我似乎不能得到打包的xdebug扩展正常工作。</p>
-<p>A：如果你取消注释“extension = php_xdebug.dll”行，这是预期的。 Xdebug需要加载zend_extension_ts =“C：\ path \ to \ php_xdebug.dll”指令。 你也可能必须禁用加载Zend优化器，因为它默认情况下启用，并且不能很好地与Xdebug。 因此，查找php.ini中的相关条目，并将其注释掉。 从PHP 5.3起，您总是需要使用zend_extension PHP.ini设置名称，而不是zend_extension_ts。<br>问：在Debian，我看到以下问题与Xdebug的构建….任何修复？</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/usr/lib/libc_nonshared.a(stat.oS)(.text.__i686.get_pc_thunk.bx+0x0):</div><div class="line">In function `__i686.get_pc_thunk.bx&apos;:</div><div class="line">: multiple definition of `__i686.get_pc_thunk.bx&apos;</div><div class="line">/usr/lib/gcc-lib/i486-linux/3.3.5/crtbeginS.o</div><div class="line">(.gnu.linkonce.t.__i686.get_pc_thunk.bx+0x0): first defined here</div><div class="line">collect2: ld returned 1 exit status</div><div class="line">make: *** [xdebug.la] Error 1</div></pre></td></tr></table></figure>
-<p>A：这是Debian本身的问题，有关更多信息，请参阅<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>和<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>。</p>
+<p>Windows的用户可以选择使用WinCacheGrind。该功能不同于KCacheGrind，因此在此页面上记录使用KCacheGrind的部分不适用于此程序。 WinCacheGrind目前不支持Xdebug 2.3引入的cachegrind文件的文件和函数压缩。</p>
+<p>还有一个替代的配置文件信息呈现工具xdebugtoolkit，一个称为Webgrind的基于Web的前端，以及一个名为XCallGraph的基于Java的工具。</p>
+<p>如果您不能使用KDE（或不想使用KDE），kcachegrind软件包也会附带一个perl脚本“ct_annotate”，该脚本从profiler跟踪文件生成ASCII输出。</p>
+<h2 id="启动Profiler"><a href="#启动Profiler" class="headerlink" title="启动Profiler"></a>启动Profiler</h2><p>通过在php.ini中将xdebug.profiler_enable设置为1来启用分析。<br>这将指示Xdebug开始将分析信息写入使用xdebug.profiler_output_dir指令配置的转储目录。<br>生成的文件的名称始终以“cachegrind.out”开头。并以PHP（或Apache）进程的PID（进程ID）或包含最初调试的脚本的目录的crc32哈希结束。<br>请确保您的xdebug.profiler_output_dir中有足够的空间，因为分析器生成的信息量对于复杂脚本非常大，例如对于像eZ Publish这样的复杂应用程序，最多可以有500MB的空间。</p>
+<p>您还可以选择性地启用分析器，将xdebug.profiler_enable_trigger设置为1.<br>如果设置为1，那么可以使用名为XDEBUG_PROFILE的GET / POST或COOKIE变量启用分析器。<br>可以用于启用调试器（请参阅HTTP调试会话）的FireFox 2扩展也可以与此设置一起使用。为了使触发器正常工作，xdebug.profiler_enable需要设置为0。</p>
+<h2 id="分析Profiler"><a href="#分析Profiler" class="headerlink" title="分析Profiler"></a>分析Profiler</h2><p>生成配置文件信息文件后，可以使用 <a href="https://kcachegrind.github.io/" target="_blank" rel="external">KCacheGrind</a> 打开它：</p>
+<p><img src="https://xdebug.org/images/docs/kc-open.png" alt="img"></p>
+<p>一旦打开文件，您就可以在KCacheGrind的不同窗格中获得大量信息。在左侧，找到“Flat Profile”窗格，其中显示了脚本中按照此函数中的时间花费及其所有子项排序的所​​有函数。第二列“Self”显示此函数（没有其子项）的时间花费，第三列“Called”显示特定函数的调用频率，最后一列“Function”显示函数的名称。 Xdebug通过用“php ::”作为前缀来更改内部PHP函数名称，并且包含文件也以特殊方式处理。调用include（和include_one，require和require_once）后跟“::”和包含文件的文件名。在左边的截图中你可以看到“include :: / home / httpd / ez_34 / v …”，内部PHP函数的例子是“php :: mysql_query”。前两列中的数字可以是脚本的完整运行时间的百分比（如在示例中）或绝对时间（1单位是1 / 1,000,000秒）。您可以使用右侧显示的按钮在两种模式之间切换。</p>
+<p><img src="https://xdebug.org/images/docs/kc-profile.png" alt="img"></p>
+<p>右侧的窗格包含上窗格和下窗格。 上面的图显示了有关称为当前所选函数的函数的信息（“eztemplatedesignresource-&gt; executecompiledtemplate”）。下面的窗格显示当前所选函数调用的函数的信息。</p>
+<p><img src="https://xdebug.org/images/docs/kc-right-call.png" alt="img"></p>
+<p>上方窗格中的“成本”列显示从列表中的函数调用时当前所选函数的时间花费。 添加的“费用”列中的数字将始终为100％。 下方窗格中的“成本”列显示从列表中调用函数所花费的时间。 在添加此列表中的数字时，您很可能永远不会达到100％，因为所选的函数本身也需要时间来执行。</p>
+<p><img src="https://xdebug.org/images/docs/kc-right-callers.png" alt="img"></p>
+<p>“所有呼叫者”和“所有呼叫”选项卡不仅显示从其调用该函数的直接调用，而且还显示所有直接调用的函数调用，还显示函数调用更多级别上下调用。 左侧屏幕截图中的上部窗格显示了所有调用当前所选函数的函数，直接和间接地使用堆栈上它们之间的其他函数。 “距离”列显示列出的和当前选择的函数调用之间有多少个函数调用（-1）。 如果两个函数之间有不同的距离，则显示为一个范围（例如“5-24”）。 括号中的数字是中值距离。 下面的窗格是类似的，除了它显示从当前选择的函数调用的函数的信息，再次是直接或间接。</p>
+<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-profiler-append"><a href="#xdebug-profiler-append" class="headerlink" title="xdebug.profiler_append"></a>xdebug.profiler_append</h3><p>类型：整数，默认值：0</p>
+<p>当此设置设置为1时，当新请求映射到同一文件时（不在xdebug.profiler_output_name设置上），将不会覆盖分析器文件，而是使用新配置文件附加文件。</p>
+<h3 id="xdebug-profiler-enable"><a href="#xdebug-profiler-enable" class="headerlink" title="xdebug.profiler_enable"></a>xdebug.profiler_enable</h3><p>类型：整数，默认值：0</p>
+<p>启用Xdebug的概要分析器，它在概要文件输出目录中创建文件。这些文件可以由KCacheGrind读取以可视化您的数据。<br>无法使用ini_set（）在脚本中设置此设置。如果要选择性地启用分析器，请将xdebug.profiler_enable_trigger设置为1，而不使用此设置。</p>
+<h3 id="xdebug-profiler-enable-trigger"><a href="#xdebug-profiler-enable-trigger" class="headerlink" title="xdebug.profiler_enable_trigger"></a>xdebug.profiler_enable_trigger</h3><p>类型：整数，默认值：0</p>
+<p>当此设置设置为1时，可以使用XDEBUG_PROFILE GET / POST参数触发剖析器文件的生成，或者设置名为XDEBUG_PROFILE的cookie。<br>这将然后将分析器数据写入定义的目录。为了防止profiler为每个请求生成概要文件文件，您需要将xdebug.profiler_enable设置为0.对触发器本身的访问可以通过xdebug.profiler_enable_trigger_value配置。</p>
+<h3 id="xdebug-profiler-enable-trigger-value"><a href="#xdebug-profiler-enable-trigger-value" class="headerlink" title="xdebug.profiler_enable_trigger_value"></a>xdebug.profiler_enable_trigger_value</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.3中引入</p>
+<p>此设置可用于限制谁可以使用xdebug.profiler_enable_trigger中概述的XDEBUG_PROFILE功能。当从空字符串的默认值更改时，cookie，GET或POST参数的值需要使用此设置匹配共享机密集，<br>以便分析器启动。</p>
+<h3 id="xdebug-profiler-output-dir"><a href="#xdebug-profiler-output-dir" class="headerlink" title="xdebug.profiler_output_dir"></a>xdebug.profiler_output_dir</h3><p>类型：字符串，默认值：/ tmp</p>
+<p>将写入分析器输出的目录，确保PHP将运行的用户具有对该目录的写入权限。无法使用ini_set（）在脚本中设置此设置。</p>
+<h3 id="xdebug-profiler-output-name"><a href="#xdebug-profiler-output-name" class="headerlink" title="xdebug.profiler_output_name"></a>xdebug.profiler_output_name</h3><p>类型：字符串，默认值：cachegrind.out。％p</p>
+<p>此设置确定用于将跟踪转储到的文件的名称。设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。有几个格式说明符可以用于格式化文件名。</p>
+<p>有关受支持的说明符，请参见 <a href="https://xdebug.org/docs/all_settings#trace_output_name" target="_blank" rel="external">xdebug.trace_output_name</a> 文档。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="string-xdebug-get-profiler-filename（）"><a href="#string-xdebug-get-profiler-filename（）" class="headerlink" title="string xdebug get profiler filename（）"></a>string xdebug get profiler filename（）</h3><p>返回配置文件信息文件名</p>
+<p>返回用于将配置文件信息保存到的文件的名称。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;xdebug的使用&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;xdebug的编译安装&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+      &lt;p&gt;Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Xdebug之代码覆盖率分析</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之代码覆盖率分析/</id>
+    <published>2016-10-22T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
+<a id="more"></a>
+<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-coverage-enable"><a href="#xdebug-coverage-enable" class="headerlink" title="xdebug.coverage_enable"></a>xdebug.coverage_enable</h3><p>类型：boolean，默认值：1，在Xdebug&gt; = 2.2中引入</p>
+<p>如果此设置设置为0，则Xdebug不会设置内部结构以允许代码覆盖。 这加快了Xdebug相当有点，但当然，代码覆盖率分析将不工作。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="boolean-xdebug-code-coverage-started（）"><a href="#boolean-xdebug-code-coverage-started（）" class="headerlink" title="boolean xdebug_code_coverage_started（）"></a>boolean xdebug_code_coverage_started（）</h3><p>返回代码覆盖是否处于活动状态。</p>
+<p>返回代码覆盖是否已开始。</p>
+<p>Example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<p>Returns:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">bool(false)</div><div class="line">bool(true)</div></pre></td></tr></table></figure>
+<h3 id="array-xdebug-get-code-coverage（）"><a href="#array-xdebug-get-code-coverage（）" class="headerlink" title="array xdebug_get_code_coverage（）"></a>array xdebug_get_code_coverage（）</h3><p>返回代码覆盖率信息</p>
+<p>返回一个结构，其中包含有关在脚本中执行哪些行（包括include文件）的信息。 以下示例显示了一个特定文件的代码覆盖率：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">a</span><span class="params">($a)</span> </span>&#123;</div><div class="line">        <span class="keyword">echo</span> $a * <span class="number">2.5</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">b</span><span class="params">($count)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $count; $i++) &#123;</div><div class="line">            a($i + <span class="number">0.17</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    b(<span class="number">6</span>);</div><div class="line">    b(<span class="number">10</span>);</div><div class="line"></div><div class="line">    var_dump(xdebug_get_code_coverage());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;/home/httpd/html/test/xdebug/docs/xdebug_get_code_coverage.php&apos; =&gt;</div><div class="line">    array</div><div class="line">      5 =&gt; int 1</div><div class="line">      6 =&gt; int 1</div><div class="line">      7 =&gt; int 1</div><div class="line">      9 =&gt; int 1</div><div class="line">      10 =&gt; int 1</div><div class="line">      11 =&gt; int 1</div><div class="line">      12 =&gt; int 1</div><div class="line">      13 =&gt; int 1</div><div class="line">      15 =&gt; int 1</div><div class="line">      16 =&gt; int 1</div><div class="line">      18 =&gt; int 1</div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-start-code-coverage（-int-options-）"><a href="#void-xdebug-start-code-coverage（-int-options-）" class="headerlink" title="void xdebug_start_code_coverage（[int options]）"></a>void xdebug_start_code_coverage（[int options]）</h3><p>开始代码覆盖</p>
+<p>此函数开始收集代码覆盖的信息。 收集的信息包括一个二维数组，其主要索引为执行的文件名，辅助键为行号。 元素中的值表示行是否已执行或它是否具有不可达行。</p>
+<p>每行的返回值为：</p>
+<ul>
+<li><p>1：这行被执行</p>
+</li>
+<li><p>-1：此行未执行</p>
+</li>
+<li><p>-2：这行没有可执行代码就可以了</p>
+</li>
+</ul>
+<p>值-1仅在启用XDEBUG_CC_UNUSED时返回，并且仅当启用了XDEBUG_CC_UNUSED和XDEBUG_CC_DEAD_CODE时才返回值-2。</p>
+<p>此函数有两个选项，用作位字段：</p>
+<ul>
+<li><p>XDEBUG_CC_UNUSED</p>
+<blockquote>
+<p>启用代码扫描，以确定哪行有可执行代码。 如果没有这个选项，返回的数组将只包含实际执行的行。</p>
+</blockquote>
+</li>
+<li><p>XDEBUG_CC_DEAD_CODE</p>
+<blockquote>
+<p>启用分支分析以确定是否可以执行代码。<br>启用这些选项会使代码覆盖率显着降低。<br>您可以使用以下示例中所示的选项。</p>
+</blockquote>
+</li>
+</ul>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_code_coverage( XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-stop-code-coverage（-int-cleanup-true-）"><a href="#void-xdebug-stop-code-coverage（-int-cleanup-true-）" class="headerlink" title="void xdebug_stop_code_coverage（[int cleanup = true]）"></a>void xdebug_stop_code_coverage（[int cleanup = true]）</h3><p>停止代码覆盖</p>
+<p>此功能停止收集信息，内存中的信息将被销毁。 如果传递“false”作为参数，那么代码覆盖率信息不会被销毁，因此您可以再次使用xdebug_start_code_coverage（）函数恢复信息收集。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。&lt;/p&gt;
     
     </summary>
     
@@ -1196,7 +1564,7 @@
     <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%87%BD%E6%95%B0%E8%BD%A8%E8%BF%B9%E8%B7%9F%E8%B8%AA/"/>
     <id>https://weizhimiao.github.io/2016/10/22/Xdebug之函数轨迹跟踪/</id>
     <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-10-22T16:07:06.000Z</updated>
+    <updated>2016-11-29T02:32:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。</p>
 <p>那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。<br>函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。</p>
@@ -1469,294 +1837,11 @@
   </entry>
   
   <entry>
-    <title>Xdebug之代码覆盖率分析</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之代码覆盖率分析/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-10-22T16:06:51.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
-<a id="more"></a>
-<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-coverage-enable"><a href="#xdebug-coverage-enable" class="headerlink" title="xdebug.coverage_enable"></a>xdebug.coverage_enable</h3><p>类型：boolean，默认值：1，在Xdebug&gt; = 2.2中引入</p>
-<p>如果此设置设置为0，则Xdebug不会设置内部结构以允许代码覆盖。 这加快了Xdebug相当有点，但当然，代码覆盖率分析将不工作。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="boolean-xdebug-code-coverage-started（）"><a href="#boolean-xdebug-code-coverage-started（）" class="headerlink" title="boolean xdebug_code_coverage_started（）"></a>boolean xdebug_code_coverage_started（）</h3><p>返回代码覆盖是否处于活动状态。</p>
-<p>返回代码覆盖是否已开始。</p>
-<p>Example:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<p>Returns:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">bool(false)</div><div class="line">bool(true)</div></pre></td></tr></table></figure>
-<h3 id="array-xdebug-get-code-coverage（）"><a href="#array-xdebug-get-code-coverage（）" class="headerlink" title="array xdebug_get_code_coverage（）"></a>array xdebug_get_code_coverage（）</h3><p>返回代码覆盖率信息</p>
-<p>返回一个结构，其中包含有关在脚本中执行哪些行（包括include文件）的信息。 以下示例显示了一个特定文件的代码覆盖率：</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">a</span><span class="params">($a)</span> </span>&#123;</div><div class="line">        <span class="keyword">echo</span> $a * <span class="number">2.5</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">b</span><span class="params">($count)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $count; $i++) &#123;</div><div class="line">            a($i + <span class="number">0.17</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    b(<span class="number">6</span>);</div><div class="line">    b(<span class="number">10</span>);</div><div class="line"></div><div class="line">    var_dump(xdebug_get_code_coverage());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;/home/httpd/html/test/xdebug/docs/xdebug_get_code_coverage.php&apos; =&gt;</div><div class="line">    array</div><div class="line">      5 =&gt; int 1</div><div class="line">      6 =&gt; int 1</div><div class="line">      7 =&gt; int 1</div><div class="line">      9 =&gt; int 1</div><div class="line">      10 =&gt; int 1</div><div class="line">      11 =&gt; int 1</div><div class="line">      12 =&gt; int 1</div><div class="line">      13 =&gt; int 1</div><div class="line">      15 =&gt; int 1</div><div class="line">      16 =&gt; int 1</div><div class="line">      18 =&gt; int 1</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-start-code-coverage（-int-options-）"><a href="#void-xdebug-start-code-coverage（-int-options-）" class="headerlink" title="void xdebug_start_code_coverage（[int options]）"></a>void xdebug_start_code_coverage（[int options]）</h3><p>开始代码覆盖</p>
-<p>此函数开始收集代码覆盖的信息。 收集的信息包括一个二维数组，其主要索引为执行的文件名，辅助键为行号。 元素中的值表示行是否已执行或它是否具有不可达行。</p>
-<p>每行的返回值为：</p>
-<ul>
-<li><p>1：这行被执行</p>
-</li>
-<li><p>-1：此行未执行</p>
-</li>
-<li><p>-2：这行没有可执行代码就可以了</p>
-</li>
-</ul>
-<p>值-1仅在启用XDEBUG_CC_UNUSED时返回，并且仅当启用了XDEBUG_CC_UNUSED和XDEBUG_CC_DEAD_CODE时才返回值-2。</p>
-<p>此函数有两个选项，用作位字段：</p>
-<ul>
-<li><p>XDEBUG_CC_UNUSED</p>
-<blockquote>
-<p>启用代码扫描，以确定哪行有可执行代码。 如果没有这个选项，返回的数组将只包含实际执行的行。</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_CC_DEAD_CODE</p>
-<blockquote>
-<p>启用分支分析以确定是否可以执行代码。<br>启用这些选项会使代码覆盖率显着降低。<br>您可以使用以下示例中所示的选项。</p>
-</blockquote>
-</li>
-</ul>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_code_coverage( XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-stop-code-coverage（-int-cleanup-true-）"><a href="#void-xdebug-stop-code-coverage（-int-cleanup-true-）" class="headerlink" title="void xdebug_stop_code_coverage（[int cleanup = true]）"></a>void xdebug_stop_code_coverage（[int cleanup = true]）</h3><p>停止代码覆盖</p>
-<p>此功能停止收集信息，内存中的信息将被销毁。 如果传递“false”作为参数，那么代码覆盖率信息不会被销毁，因此您可以再次使用xdebug_start_code_coverage（）函数恢复信息收集。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之远程调试</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之远程调试/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-10-22T16:07:44.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
-<a id="more"></a>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的（远程）调试器允许您检查数据结构，交互式地浏览和调试您的代码。 正在使用的协议是打开的，称为DBGp。 此协议在Xdebug 2中实现，并替换不再支持的旧的GDB类协议。</p>
-<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Xdebug 2捆绑了一个用于DBGp协议的简单命令行客户端。 还有一些其他客户端实现（免费和商业）。 我不是任何这些的作者，所以请参考原作者的支持：</p>
-<ul>
-<li>Dev-PHP (IDE: Windows)</li>
-<li>Eclipse plugin (IDE).</li>
-<li>Emacs plugin (Editor Plugin).</li>
-<li>KDevelop (IDE: Linux (KDE); Open Source).</li>
-<li>ActiveState’s Komodo (IDE: Windows, Linux, Mac; Commercial).</li>
-<li>MacGDBP (Standalone client for Mac OS X; Free)</li>
-<li>NetBeans (IDE: Windows, Linux, Mac OS X and Solaris).</li>
-<li>Notepad++ plugin (Editor: Windows).</li>
-<li>WaterProof’s PHPEdit (IDE, from version 2.10: Windows; Commercial).</li>
-<li>PHPEclipse (Editor Plugin).</li>
-<li>Devsense’s PHP Tools for Visual Studio (MS Visual Studio Plugin; Commercial).</li>
-<li>JetBrain’s PhpStorm (IDE; Commercial).</li>
-<li>Protoeditor (Editor: Linux).</li>
-<li>pugdebug (Standalone client for Linux, Windows and Mac OS X; Open Source).</li>
-<li>VIM plugin (Editor Plugin).</li>
-<li>jcx software’s VS.Php (MS Visual Studio Plugin; Commercial).</li>
-<li>Xdebug Chrome App (Chrome Application; Open Source)</li>
-<li>XDebugClient (Standalone client for Windows).</li>
-</ul>
-<p>用于调试的简单命令行客户机与debugclient目录中的Xdebug捆绑在一起。</p>
-<h2 id="启动调试器"><a href="#启动调试器" class="headerlink" title="启动调试器"></a>启动调试器</h2><p>为了启用Xdebug的调试器，您需要在php.ini中进行一些配置设置。 这些设置为xdebug.remote_enable以启用调试器xdebug.remote_host和xdebug.remote_port来配置调试器应连接到的IP地址和端口。 还有一个xdebug.remote_connect_back设置，如果您的开发服务器与多个开发人员共享，则可以使用此设置。</p>
-<p>如果希望调试器在发生错误情况（PHP错误或异常）时启动会话，则还需要更改xdebug.remote_mode设置。 此设置的允许值为“req”（默认值），这使得调试器在脚本启动时启动会话，或者“jit”，当会话只应在错误时启动。</p>
-<p>完成所有这些设置后，Xdebug仍然不会在脚本运行时自动启动调试会话。 你需要激活Xdebug的调试器，你可以通过三种方式：</p>
-<p>1、当从命令行运行脚本时，您需要设置一个环境变量，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name&quot;</div><div class="line">php myscript.php</div></pre></td></tr></table></figure></p>
-<p>您还可以在此相同的环境变量中配置xdebug.remote_host，xdebug.remote_port，xdebug.remote_mode和xdebug.remote_handler，只要使用空格分隔值即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name remote_host=localhost profiler_enable=1&quot;</div></pre></td></tr></table></figure></p>
-<p>通过XDEBUG_CONFIG设置可以获得的所有设置也可以使用正常的php.ini设置进行设置。</p>
-<p>2、如果要调试通过Web浏览器启动的脚本，只需将XDEBUG_SESSION_START = session_name作为参数添加到URL。 而不是使用GET参数，您还可以将XDEBUG_SESSION_START设置为POST参数，或通过cookie。 请参阅下一节，了解调试会话如何在浏览器窗口中工作。</p>
-<p>3、通过Web服务器运行PHP时激活调试器的另一种方法是安装以下四个浏览器扩展之一。 它们中的每一个都允许您通过单击一个按钮来启用调试器。 当这些扩展是活动的，他们直接设置XDEBUG_SESSION cookie，而不是通过XDEBUG_SESSION_START进一步的HTTP调试会话中描述。 扩展名为：</p>
-<ul>
-<li><p>The easiest Xdebug</p>
-<blockquote>
-<p>这个扩展的Firefox是为了使IDE的调试更容易。 您可以在<a href="https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。" target="_blank" rel="external">https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。</a></p>
-</blockquote>
-</li>
-<li><p>Xdebug Helper for Chrome</p>
-<blockquote>
-<p>Chrome的此扩展程序将帮助您通过一次点击启用/禁用调试和分析。 您可以在<a href="https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。" target="_blank" rel="external">https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。</a></p>
-</blockquote>
-</li>
-<li><p>Xdebug Toggler for Safari</p>
-<blockquote>
-<p>Safari的这个扩展允许你从Safari中自动启动Xdebug调试。 你可以从Github <a href="https://github.com/benmatselby/xdebug-toggler获取它。" target="_blank" rel="external">https://github.com/benmatselby/xdebug-toggler获取它。</a></p>
-</blockquote>
-</li>
-<li><p>Xdebug launcher for Opera</p>
-<blockquote>
-<p>这个扩展的Opera允许您从Opera启动Xdebug会话。</p>
-</blockquote>
-</li>
-</ul>
-<p>在你开始你的脚本之前，你需要告诉你的客户端它可以接收调试连接，请参考具体客户端的文档如何做到这一点。 要使用捆绑的客户端，只需在编译和安装后启动它。 您可以通过运行“debugclient”启动它。</p>
-<p>当debugclient启动时，它将显示以下信息，然后等待，直到调试服务器启动连接：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Xdebug Simple DBGp client (0.10.0)</div><div class="line">Copyright 2002-2007 by Derick Rethans.</div><div class="line">- libedit support: enabled</div><div class="line"></div><div class="line">Waiting for debug server to connect.</div></pre></td></tr></table></figure></p>
-<p>在建立连接后，将显示调试服务器的输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Connect</div><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;iso-8859-1&quot;?&gt;</div><div class="line">&lt;init xmlns=&quot;urn:debugger_protocol_v1&quot;</div><div class="line">      xmlns:xdebug=&quot;http://xdebug.org/dbgp/xdebug&quot;</div><div class="line">      fileuri=&quot;file:///home/httpd/www.xdebug.org/html/docs/index.php&quot;</div><div class="line">      language=&quot;PHP&quot;</div><div class="line">      protocol_version=&quot;1.0&quot;</div><div class="line">      appid=&quot;13202&quot;</div><div class="line">      idekey=&quot;derick&quot;&gt;</div><div class="line">  &lt;engine version=&quot;2.0.0RC4-dev&quot;&gt;&lt;![CDATA[Xdebug]]&gt;&lt;/engine&gt;</div><div class="line">  &lt;author&gt;&lt;![CDATA[Derick Rethans]]&gt;&lt;/author&gt;</div><div class="line">  &lt;url&gt;&lt;![CDATA[http://xdebug.org]]&gt;&lt;/url&gt;</div><div class="line">  &lt;copyright&gt;&lt;![CDATA[Copyright (c) 2002-2007 by Derick Rethans]]&gt;&lt;/copyright&gt;</div><div class="line">&lt;/init&gt;</div><div class="line">(cmd)</div></pre></td></tr></table></figure></p>
-<p>现在，您可以使用DBGp文档页面中说明的命令集。 当脚本结束时，调试服务器与客户端断开连接，并且调试客户端在等待新连接时恢复。</p>
-<h2 id="通讯建立"><a href="#通讯建立" class="headerlink" title="通讯建立"></a>通讯建立</h2><h3 id="使用静态IP-单个开发者"><a href="#使用静态IP-单个开发者" class="headerlink" title="使用静态IP /单个开发者"></a>使用静态IP /单个开发者</h3><p>通过远程调试，嵌入在PHP中的Xdebug就像客户端，而IDE作为服务器。 以下动画显示了通信通道的设置：</p>
-<p><img src="https://xdebug.org/images/docs/dbgp-setup.gif" alt="img"></p>
-<ul>
-<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
-<li>IDE在IP 10.0.1.42上，因此xdebug.remote_host设置为10.0.1.42</li>
-<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
-<li>HTTP请求在运行IDE的计算机上启动</li>
-<li>Xdebug连接到10.0.1.42:9000</li>
-<li>调试运行，提供HTTP响应</li>
-</ul>
-<h3 id="与未知IP-多开发者"><a href="#与未知IP-多开发者" class="headerlink" title="与未知IP /多开发者"></a>与未知IP /多开发者</h3><p>如果使用xdebug.remote_connect_back，设置稍有不同：</p>
-<p><img src="https://xdebug.org/images/docs/dbgp-setup2.gif" alt="img"></p>
-<ul>
-<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
-<li>IDE处于未知IP，因此xdebug.remote_connect_back设置为1</li>
-<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
-<li>发出HTTP请求后，Xdebug将从HTTP头中检测IP地址</li>
-<li>Xdebug连接到端口9000上检测到的IP（10.0.1.42）</li>
-<li>调试运行，提供HTTP响应</li>
-</ul>
-<h2 id="HTTP调试会话"><a href="#HTTP调试会话" class="headerlink" title="HTTP调试会话"></a>HTTP调试会话</h2><p>Xdebug包含通过浏览器启动时跟踪调试会话的功能：Cookie。 这是这样工作：</p>
-<ul>
-<li><p>当URL变量XDEBUG_SESSION_START = name附加到URL或通过具有相同名称的POST变量时，-Xdebug会发出名为“XDEBUG_SESSION”的cookie，并将值设置为XDEBUG_SESSION_START URL参数的值。 cookie的到期时间为1小时。 当连接到“idekey”属性中的debugclient时，DBGp协议也将此相同的值传递给init包。</p>
-</li>
-<li><p>当有一个GET（或POST）变量XDEBUG_SESSION_START或XDEBUG_SESSION cookie被设置时，Xdebug将尝试连接到一个调试客户端。</p>
-</li>
-<li><p>要停止调试会话（并销毁cookie），只需添加URL参数XDEBUG_SESSION_STOP即可。 Xdebug将不再尝试连接到调试客户端。</p>
-</li>
-</ul>
-<h2 id="多用户调试"><a href="#多用户调试" class="headerlink" title="多用户调试"></a>多用户调试</h2><p>Xdebug仅允许您在执行远程调试时指定一个IP地址与xdebug.remote_host连接。它不会自动连接回浏览器运行的计算机的IP地址，除非您使用xdebug.remote_connect_back。</p>
-<p>如果所有开发人员在同一（开发）服务器上的不同项目上工作，则可以通过Apache的.htaccess功能为每个目录设置xdebug.remote_host设置，方法是使用php_value xdebug.remote_host = 10.0.0.5。但是，对于多个开发人员在同一代码上工作的情况，.htaccess技巧不工作，因为代码所在的目录是相同的。</p>
-<p>有两个解决方案。首先，你可以使用DBGp代理。有关如何使用此代理的概述，请参阅多个用户调试中的文章。您可以在ActiveState的网站上下载代理作为python远程调试包的一部分。 Komodo FAQ中还有一些文档。</p>
-<p>其次，您可以使用Xdebug 2.1中引入的xdebug.remote_connect_back设置。</p>
-<h2 id="实施细则"><a href="#实施细则" class="headerlink" title="实施细则"></a>实施细则</h2><p>Xdebug的DBGp协议的context_names命令的实现不依赖于栈级别。 在每个调试器会话期间返回的值总是相同的，因此，可以安全地缓存。</p>
-<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-extended-info"><a href="#xdebug-extended-info" class="headerlink" title="xdebug.extended_info"></a>xdebug.extended_info</h3><p>类型：整数，默认值：1</p>
-<p>控制Xdebug是否应该为PHP解析器强制执行’extended_info’模式;这允许Xdebug使用远程调试器执行文件/行断点。当跟踪或剖析脚本时，通常希望关闭此选项，因为PHP生成的oparrays将增加大约三分之一的大小减慢脚本。此设置不能在带有ini_set（）的脚本中设置，但只能在php.ini中设置。</p>
-<h3 id="xdebug-idekey"><a href="#xdebug-idekey" class="headerlink" title="xdebug.idekey"></a>xdebug.idekey</h3><p>类型：字符串，默认值：<em> complex </em></p>
-<p>控制哪个IDE密钥Xdebug应该传递到DBGp调试器处理程序。默认值基于环境设置。首先查询环境设置DBGP_IDEKEY，然后查询USER和最后一个USERNAME。默认值设置为找到的第一个环境变量。如果找不到，则设置为默认的“”。如果设置此设置，它始终覆盖环境变量。</p>
-<h3 id="xdebug-remote-addr-header"><a href="#xdebug-remote-addr-header" class="headerlink" title="xdebug.remote_addr_header"></a>xdebug.remote_addr_header</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.4中引入</p>
-<p>如果xdebug.remote_addr_header配置为非空字符串，那么该值将用作$ SERVER超全局数组中的键，以确定用于查找用于“连接回”的IP地址或主机名的头。此设置仅与xdebug.remote_connect_back结合使用，否则将被忽略。</p>
-<h3 id="xdebug-remote-autostart"><a href="#xdebug-remote-autostart" class="headerlink" title="xdebug.remote_autostart"></a>xdebug.remote_autostart</h3><p>类型：布尔值，默认值：0</p>
-<p>通常，您需要使用特定的HTTP GET / POST变量来启动远程调试（请参阅远程调试）。当此设置设置为1时，Xdebug将始终尝试启动远程调试会话并尝试连接到客户端，即使GET / POST / COOKIE变量不存在。</p>
-<h3 id="xdebug-remote-connect-back"><a href="#xdebug-remote-connect-back" class="headerlink" title="xdebug.remote_connect_back"></a>xdebug.remote_connect_back</h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
-<p>如果启用，xdebug.remote_host设置将被忽略，Xdebug将尝试连接到发出HTTP请求的客户端。它检查$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量以找出要使用的IP地址。</p>
-<p>如果配置了xdebug.remote_addr_header，那么将在$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量之前检查具有配置名称的$ SERVER变量。</p>
-<p>此设置不适用于通过CLI进行调试，因为$ SERVER标题变量在那里不可用。</p>
-<p>请注意，没有可用的过滤器，任何可以连接到Web服务器的人都能够启动调试会话，即使他们的地址与xdebug.remote_host不匹配。</p>
-<h3 id="xdebug-remote-cookie-expire-time"><a href="#xdebug-remote-cookie-expire-time" class="headerlink" title="xdebug.remote_cookie_expire_time"></a>xdebug.remote_cookie_expire_time</h3><p>类型：整数，默认值：3600，在Xdebug&gt; 2.1中引入</p>
-<p>此设置可用于增加（或减少）远程调试会话通过会话cookie保持活动的时间。</p>
-<h3 id="xdebug-remote-enable"><a href="#xdebug-remote-enable" class="headerlink" title="xdebug.remote_enable"></a>xdebug.remote_enable</h3><p>类型：布尔值，默认值：0</p>
-<p>此开关控制Xdebug是否应尝试联系正在侦听主机上的调试客户端，并使用设置xdebug.remote_host和xdebug.remote_port设置的端口。如果无法建立连接，脚本将继续，就像此设置为0。</p>
-<h3 id="xdebug-remote-handler"><a href="#xdebug-remote-handler" class="headerlink" title="xdebug.remote_handler"></a>xdebug.remote_handler</h3><p>类型：字符串，默认值：dbgp</p>
-<p>可以是“php3”选择旧的PHP 3式调试器输出，“gdb”启用GDB像调试器接口或’dbgp’ - 调试器协议。 DBGp协议是唯一支持的协议。</p>
-<p>注意：Xdebug 2.1和更高版本只支持’db​​gp’作为协议。</p>
-<h3 id="xdebug-remote-host"><a href="#xdebug-remote-host" class="headerlink" title="xdebug.remote_host"></a>xdebug.remote_host</h3><p>类型：字符串，默认值：localhost<br>选择运行调试客户端的主机，您可以使用主机名或IP地址。如果启用xdebug.remote_connect_back，将忽略此设置。</p>
-<h3 id="xdebug-remote-log"><a href="#xdebug-remote-log" class="headerlink" title="xdebug.remote_log"></a>xdebug.remote_log</h3><p>类型：字符串，默认值：</p>
-<p>如果设置为某个值，则将其用作所有远程调试器通信记录到的文件的文件名。 该文件始终以附加模式打开，因此默认情况下不会被覆盖。 没有可用的并发保护。 该文件的格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Log opened at 2007-05-27 14:28:15</div><div class="line">-&gt; &lt;init xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/dbgp/x ... ight&gt;&lt;/init&gt;</div><div class="line"></div><div class="line">&lt;- step_into -i 1</div><div class="line">-&gt; &lt;response xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/db ... &gt;&lt;/response&gt;</div></pre></td></tr></table></figure></p>
-<h3 id="xdebug-remote-mode"><a href="#xdebug-remote-mode" class="headerlink" title="xdebug.remote_mode"></a>xdebug.remote_mode</h3><p>类型：字符串，默认值：req</p>
-<p>选择启动调试连接的时间。 此设置可以有两个不同的值：</p>
-<ul>
-<li><p>req</p>
-<blockquote>
-<p>一旦脚本启动，Xdebug将尝试连接到调试客户端。</p>
-</blockquote>
-</li>
-<li><p>jit</p>
-<blockquote>
-<p>Xdebug只会在出现错误情况时尝试连接到调试客户端。</p>
-</blockquote>
-</li>
-</ul>
-<h3 id="xdebug-remote-port"><a href="#xdebug-remote-port" class="headerlink" title="xdebug.remote_port"></a>xdebug.remote_port</h3><p>类型：整数，默认值：9000</p>
-<p>Xdebug尝试在远程主机上连接的端口。 端口9000是客户端和捆绑的debugclient的默认值。 由于许多客户端使用此端口号，最好保持此设置不变。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="bool-xdebug-break（）"><a href="#bool-xdebug-break（）" class="headerlink" title="bool xdebug_break（）"></a>bool xdebug_break（）</h3><p>向调试客户端发出断点。</p>
-<p>此函数使调试器在特定行上断开，就好像在此行上设置了正常的文件/行断点。</p>
-<p>over~</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之PHP脚本剖析</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8BPHP%E8%84%9A%E6%9C%AC%E5%89%96%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之PHP脚本剖析/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-10-22T16:06:38.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。</p>
-<a id="more"></a>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的Profiler是一个强大的工具，使您能够分析您的PHP代码并确定瓶颈，或者通常查看代码的哪些部分很慢，并可以使用速度提升。<br>Xdebug 2中的分析器以高速缓存磨削兼容文件的形式输出分析信息。这允许您使用优秀的KCacheGrind工具（Linux，KDE）来分析概要分析数据。</p>
-<ul>
-<li><p>如果你在Linux上，你可以安装KCacheGrind通过你最喜欢的包管理器。</p>
-</li>
-<li><p>如果你在Windows上，有预编译的QCacheGrind二进制文件可用。 （QCacheGrind是没有KDE绑定的KCacheGrind）。</p>
-</li>
-<li><p>如果你在Mac OSX上，还有如何构建QCacheGrind的说明。</p>
-</li>
-</ul>
-<p>Windows的用户可以选择使用WinCacheGrind。该功能不同于KCacheGrind，因此在此页面上记录使用KCacheGrind的部分不适用于此程序。 WinCacheGrind目前不支持Xdebug 2.3引入的cachegrind文件的文件和函数压缩。</p>
-<p>还有一个替代的配置文件信息呈现工具xdebugtoolkit，一个称为Webgrind的基于Web的前端，以及一个名为XCallGraph的基于Java的工具。</p>
-<p>如果您不能使用KDE（或不想使用KDE），kcachegrind软件包也会附带一个perl脚本“ct_annotate”，该脚本从profiler跟踪文件生成ASCII输出。</p>
-<h2 id="启动Profiler"><a href="#启动Profiler" class="headerlink" title="启动Profiler"></a>启动Profiler</h2><p>通过在php.ini中将xdebug.profiler_enable设置为1来启用分析。<br>这将指示Xdebug开始将分析信息写入使用xdebug.profiler_output_dir指令配置的转储目录。<br>生成的文件的名称始终以“cachegrind.out”开头。并以PHP（或Apache）进程的PID（进程ID）或包含最初调试的脚本的目录的crc32哈希结束。<br>请确保您的xdebug.profiler_output_dir中有足够的空间，因为分析器生成的信息量对于复杂脚本非常大，例如对于像eZ Publish这样的复杂应用程序，最多可以有500MB的空间。</p>
-<p>您还可以选择性地启用分析器，将xdebug.profiler_enable_trigger设置为1.<br>如果设置为1，那么可以使用名为XDEBUG_PROFILE的GET / POST或COOKIE变量启用分析器。<br>可以用于启用调试器（请参阅HTTP调试会话）的FireFox 2扩展也可以与此设置一起使用。为了使触发器正常工作，xdebug.profiler_enable需要设置为0。</p>
-<h2 id="分析Profiler"><a href="#分析Profiler" class="headerlink" title="分析Profiler"></a>分析Profiler</h2><p>生成配置文件信息文件后，可以使用 <a href="https://kcachegrind.github.io/" target="_blank" rel="external">KCacheGrind</a> 打开它：</p>
-<p><img src="https://xdebug.org/images/docs/kc-open.png" alt="img"></p>
-<p>一旦打开文件，您就可以在KCacheGrind的不同窗格中获得大量信息。在左侧，找到“Flat Profile”窗格，其中显示了脚本中按照此函数中的时间花费及其所有子项排序的所​​有函数。第二列“Self”显示此函数（没有其子项）的时间花费，第三列“Called”显示特定函数的调用频率，最后一列“Function”显示函数的名称。 Xdebug通过用“php ::”作为前缀来更改内部PHP函数名称，并且包含文件也以特殊方式处理。调用include（和include_one，require和require_once）后跟“::”和包含文件的文件名。在左边的截图中你可以看到“include :: / home / httpd / ez_34 / v …”，内部PHP函数的例子是“php :: mysql_query”。前两列中的数字可以是脚本的完整运行时间的百分比（如在示例中）或绝对时间（1单位是1 / 1,000,000秒）。您可以使用右侧显示的按钮在两种模式之间切换。</p>
-<p><img src="https://xdebug.org/images/docs/kc-profile.png" alt="img"></p>
-<p>右侧的窗格包含上窗格和下窗格。 上面的图显示了有关称为当前所选函数的函数的信息（“eztemplatedesignresource-&gt; executecompiledtemplate”）。下面的窗格显示当前所选函数调用的函数的信息。</p>
-<p><img src="https://xdebug.org/images/docs/kc-right-call.png" alt="img"></p>
-<p>上方窗格中的“成本”列显示从列表中的函数调用时当前所选函数的时间花费。 添加的“费用”列中的数字将始终为100％。 下方窗格中的“成本”列显示从列表中调用函数所花费的时间。 在添加此列表中的数字时，您很可能永远不会达到100％，因为所选的函数本身也需要时间来执行。</p>
-<p><img src="https://xdebug.org/images/docs/kc-right-callers.png" alt="img"></p>
-<p>“所有呼叫者”和“所有呼叫”选项卡不仅显示从其调用该函数的直接调用，而且还显示所有直接调用的函数调用，还显示函数调用更多级别上下调用。 左侧屏幕截图中的上部窗格显示了所有调用当前所选函数的函数，直接和间接地使用堆栈上它们之间的其他函数。 “距离”列显示列出的和当前选择的函数调用之间有多少个函数调用（-1）。 如果两个函数之间有不同的距离，则显示为一个范围（例如“5-24”）。 括号中的数字是中值距离。 下面的窗格是类似的，除了它显示从当前选择的函数调用的函数的信息，再次是直接或间接。</p>
-<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-profiler-append"><a href="#xdebug-profiler-append" class="headerlink" title="xdebug.profiler_append"></a>xdebug.profiler_append</h3><p>类型：整数，默认值：0</p>
-<p>当此设置设置为1时，当新请求映射到同一文件时（不在xdebug.profiler_output_name设置上），将不会覆盖分析器文件，而是使用新配置文件附加文件。</p>
-<h3 id="xdebug-profiler-enable"><a href="#xdebug-profiler-enable" class="headerlink" title="xdebug.profiler_enable"></a>xdebug.profiler_enable</h3><p>类型：整数，默认值：0</p>
-<p>启用Xdebug的概要分析器，它在概要文件输出目录中创建文件。这些文件可以由KCacheGrind读取以可视化您的数据。<br>无法使用ini_set（）在脚本中设置此设置。如果要选择性地启用分析器，请将xdebug.profiler_enable_trigger设置为1，而不使用此设置。</p>
-<h3 id="xdebug-profiler-enable-trigger"><a href="#xdebug-profiler-enable-trigger" class="headerlink" title="xdebug.profiler_enable_trigger"></a>xdebug.profiler_enable_trigger</h3><p>类型：整数，默认值：0</p>
-<p>当此设置设置为1时，可以使用XDEBUG_PROFILE GET / POST参数触发剖析器文件的生成，或者设置名为XDEBUG_PROFILE的cookie。<br>这将然后将分析器数据写入定义的目录。为了防止profiler为每个请求生成概要文件文件，您需要将xdebug.profiler_enable设置为0.对触发器本身的访问可以通过xdebug.profiler_enable_trigger_value配置。</p>
-<h3 id="xdebug-profiler-enable-trigger-value"><a href="#xdebug-profiler-enable-trigger-value" class="headerlink" title="xdebug.profiler_enable_trigger_value"></a>xdebug.profiler_enable_trigger_value</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.3中引入</p>
-<p>此设置可用于限制谁可以使用xdebug.profiler_enable_trigger中概述的XDEBUG_PROFILE功能。当从空字符串的默认值更改时，cookie，GET或POST参数的值需要使用此设置匹配共享机密集，<br>以便分析器启动。</p>
-<h3 id="xdebug-profiler-output-dir"><a href="#xdebug-profiler-output-dir" class="headerlink" title="xdebug.profiler_output_dir"></a>xdebug.profiler_output_dir</h3><p>类型：字符串，默认值：/ tmp</p>
-<p>将写入分析器输出的目录，确保PHP将运行的用户具有对该目录的写入权限。无法使用ini_set（）在脚本中设置此设置。</p>
-<h3 id="xdebug-profiler-output-name"><a href="#xdebug-profiler-output-name" class="headerlink" title="xdebug.profiler_output_name"></a>xdebug.profiler_output_name</h3><p>类型：字符串，默认值：cachegrind.out。％p</p>
-<p>此设置确定用于将跟踪转储到的文件的名称。设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。有几个格式说明符可以用于格式化文件名。</p>
-<p>有关受支持的说明符，请参见 <a href="https://xdebug.org/docs/all_settings#trace_output_name" target="_blank" rel="external">xdebug.trace_output_name</a> 文档。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="string-xdebug-get-profiler-filename（）"><a href="#string-xdebug-get-profiler-filename（）" class="headerlink" title="string xdebug get profiler filename（）"></a>string xdebug get profiler filename（）</h3><p>返回配置文件信息文件名</p>
-<p>返回用于将配置文件信息保存到的文件的名称。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
     <title>PHP程序调试之Xdebug</title>
     <link href="https://weizhimiao.github.io/2016/10/22/PHP%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E4%B9%8BXdebug/"/>
     <id>https://weizhimiao.github.io/2016/10/22/PHP程序调试之Xdebug/</id>
     <published>2016-10-22T10:30:00.000Z</published>
-    <updated>2016-10-22T16:09:21.000Z</updated>
+    <updated>2016-11-29T02:32:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>Xdebug是一个开放源代码的PHP程序调试器(即一个Debug工具)，可以用来跟踪，调试和分析PHP程序的运行状况。</p>
 <a id="more"></a>
@@ -2009,7 +2094,7 @@
     <link href="https://weizhimiao.github.io/2016/10/21/apache%E4%B8%8A%E8%BF%90%E8%A1%8CPHP%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F%E6%B1%87%E6%80%BB/"/>
     <id>https://weizhimiao.github.io/2016/10/21/apache上运行PHP的几种方式汇总/</id>
     <published>2016-10-21T14:40:00.000Z</published>
-    <updated>2016-10-21T15:01:13.000Z</updated>
+    <updated>2016-11-29T02:32:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>之前也有整理过一篇 「apache中PHP的几种支持模式」的blog，但是感觉还是比较混乱，很多问题没有理清楚，一些方式也没有整理到。所以今天通过这篇blog再整理一下。</p>
 <ul>
@@ -2093,187 +2178,6 @@
     
       <category term="Apache" scheme="https://weizhimiao.github.io/categories/Apache/"/>
     
-    
-  </entry>
-  
-  <entry>
-    <title>httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP</title>
-    <link href="https://weizhimiao.github.io/2016/10/20/High-performance%20PHP%20on%20apache%20httpd%202.4.x%20using%20mod_proxy_fcgi%20and%20php-fpm/"/>
-    <id>https://weizhimiao.github.io/2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/</id>
-    <published>2016-10-20T14:40:00.000Z</published>
-    <updated>2016-10-21T03:14:14.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>内容</p>
-<ul>
-<li>apache httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP<ul>
-<li>php-fpm</li>
-<li>apache httpd 2.4<ul>
-<li>TCP套接字（IP和端口）方法</li>
-<li>unix域套接字（UDS）方法</li>
-<li>通过代理程序处理</li>
-<li>先睹为快<ul>
-<li>一个简单的例子</li>
-<li>一个更灵活的例子</li>
-</ul>
-</li>
-<li>性能和陷阱</li>
-<li>警告</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<a id="more"></a>
-<p>apache httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP</p>
-<p>随着apache httpd 2.4的发布，我们已经获得了一些非常整洁的功能关于apache和php：运行PHP作为一个fastCGI进程服务器的能力，并且这个fastCGI服务器可以直接从apache中通过一个专用的模块代理来实现 （mod_proxy_fcgi.）</p>
-<blockquote>
-<p>从2010年初的版本5.3.3开始，PHP已经将php-fpm fastCGI进程管理器合并到其代码库中，现在（从5.4.1开始）相当稳定。<br>php-fpm ， <a href="http://php-fpm.org/" target="_blank" rel="external">http://php-fpm.org/</a></p>
-</blockquote>
-<p>这意味着我们现在可以运行安全，快速和可靠的PHP代码，只给apache httpd和php.net版本使用; 没有更多的混乱像suphp、suexec 或者 mod_php。</p>
-<h2 id="php-fpm"><a href="#php-fpm" class="headerlink" title="php-fpm"></a>php-fpm</h2><p>准备：</p>
-<ul>
-<li><p>安装软件包</p>
-</li>
-<li><p>编辑配置文件</p>
-</li>
-<li><p>控制服务守护程序。</p>
-</li>
-</ul>
-<p>从5.3.3版本开始，PHP现在在源代码中包括fastCGI进程管理器（php-fpm）。<br>您的发行版或操作系统将其包含在库存PHP包中，或将其作为附加包提供;<br>我们可以通过向./configure选项添加“–enable-fpm”从源代码构建它。</p>
-<p>这为我们提供了一个新的二进制文件，称为php-fpm，一个名为php-fpm.conf的默认配置文件安装在/ etc中。</p>
-<p>此文件中的默认值是可以启动的，但请注意，你在本地安装的时候可能会有修改，其位置也可能会变。</p>
-<p>在这个配置文件中，您可以创建任意数量的fastcgi“池”，这些池由它们侦听的IP和端口定义，就像apache虚拟主机一样。</p>
-<p>每个池中最重要的设置是TCP套接字（IP和端口）或unix域套接字（UDS）php-fpm将监听接收fastCGI请求; 这是使用listen选项配置的。</p>
-<p>默认池[www]，配置为listen 127.0.0.1:9000：它将只响应本地环回网络接口（localhost）上的请求，在TCP端口9000上。</p>
-<p>另外，有趣的是 per-pool 的user和group选项，他们允许在指定的uid和gid下运行特定的fpm池。再见 suphp！</p>
-<p>让我们使用默认值作为运行并启动php-fpm守护进程; 如果您的发行版使用提供的init脚本，请运行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/etc/init.d/php-fpm start</div></pre></td></tr></table></figure>
-<p>如果没有，请手动启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">php-fpm -y /path/to/php-fpm.conf -c /path/to/custom/php.ini</div></pre></td></tr></table></figure></p>
-<p>如果你不提供php-fpm自己的php.ini文件，将使用全局php.ini。记住这一点，当你想要包括更多或更少的扩展比如CLI或CGI二进制使用，或需要改变一些其他值。</p>
-<p>你可以使用php [admin]（flag | value）以同样的方式包含每个池的php.ini值，方法与以前在apache中为mod_php定义的一样。</p>
-<p>有关所有可能的配置选项，请<a href="http://www.php.net/manual/en/install.fpm.configuration.php" target="_blank" rel="external">参阅fpm的官方PHP文档</a>。</p>
-<p>更改php-fpm.conf的loging选项，方便我们查看错误信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">error_log /var/log/php-fpm.log</div></pre></td></tr></table></figure></p>
-<p>如果不设置php-fpm日志文件，将按照php.ini中定义的方式记录错误。</p>
-<blockquote>
-<p>note:我们可以强制 php-fpm 重新加载它的配置文件，通过想php-fpm发送 SIGUSR2 信号。SIGUSR1将循环日志文件（完美的logrotate脚本！）一些实验很漫长</p>
-</blockquote>
-<p>注意：如果php-fpm在启动的时候没有出现报错，那么它就已经在监听端口等待连接了。</p>
-<h2 id="apache-httpd-2-4"><a href="#apache-httpd-2-4" class="headerlink" title="apache httpd 2.4"></a>apache httpd 2.4</h2><p>准备：</p>
-<ul>
-<li><p>编辑httpd.conf</p>
-</li>
-<li><p>理解vhost上下文</p>
-</li>
-<li><p>理解URL到文件系统命名空间映射</p>
-</li>
-<li><p>控制apache httpd守护进程</p>
-</li>
-</ul>
-<p>这个版本的apache httpd引入了两个值得注意的特性：一个新的代理模块专门用于fastCGI（mod_proxy_fcgi），并将 event MPM作为默认的apache进程管理器。</p>
-<p>与以前版本的worker MPM一样，当使用非线程安全的第三方PHP扩展时，此MPM的线程模型会导致问题。</p>
-<p>自从apache 2.2发布以来，这已经成为mod_php用户的一个祸根，实际上迫使他们将fastcgi解决方案拼凑在一起，或者使用更慢和内存饥饿的prefork MPM。</p>
-<p>要使用PHP fastCGI进程管理器工作，我们将使用一个新模块mod_proxy_fcgi，该模块专用于与（可能是外部）fastCGI服务器通信。</p>
-<p>确保您在httpd.conf中包含proxy_fcgi模块，以便我们可以使用其功能; 因为这需要基本代理模块，请确保两者都加载（取消注释）：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">LoadModule proxy_module modules/mod_proxy.so</div><div class="line">LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so</div></pre></td></tr></table></figure>
-<p>现在，有不同的方法实际转发请求的.php文件到这个模块，从转发所有的请求（使用ProxyPass），到只转发非常特定，或者通过重写文件或模式（使用带有[P]标志的mod_rewrite）的方法。</p>
-<p>我们选择介于复杂性和灵活性之间的方法（使用ProxyPassMatch），因为它允许您为特定vhost的所有PHP内容设置一个规则，但只会代理.php文件（或包含.php的urls）。</p>
-<h3 id="TCP套接字（IP和端口）方法"><a href="#TCP套接字（IP和端口）方法" class="headerlink" title="TCP套接字（IP和端口）方法"></a>TCP套接字（IP和端口）方法</h3><p>编辑所选主机的配置，并向其中添加以下行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000/path/to/your/documentroot/$1</div><div class="line">DirectoryIndex /index.php index.php</div></pre></td></tr></table></figure></p>
-<p>说明：<br>ProxyPassMatch</p>
-<blockquote>
-<p>只有与指定的正则表达式模式匹配的代理内容; 在这种情况下：</p>
-</blockquote>
-<p>^/(.*.php(/.*)?)$</p>
-<blockquote>
-<p>从文档根开始，匹配以.php结尾的所有内容（使用点转义），可选地后跟一个斜杠和您喜欢的任何继续路径（一些应用程序使用这个所谓的PathInfo将参数传递给php脚本）。</p>
-<p>^和$符号用于锚定URL的绝对开始和结束，以确保请求中的任何字符都不会转义我们的模式匹配。</p>
-<p>嵌套括号使我们能够将整个请求URI（减去前导斜杠）引用为$ 1，同时仍然保持尾随pathinfo可选。</p>
-</blockquote>
-<p>fcgi://127.0.0.1:9000</p>
-<blockquote>
-<p>通过mod_proxy_fcgi，使用fastCGI协议，转发到我们的php-fpm守护程序正在侦听的端口。<br>这确定哪个fastcgi池将服务由此规则代理的请求。</p>
-</blockquote>
-<p>/path/to/your/documentroot/</p>
-<blockquote>
-<p><strong>重要！</strong>  这必须与您的php文件的真实文件系统位置完全匹配，因为这是php-fpm守护程序将查找它们的位置。<br>php-fpm只是解释传递给它的php文件; 它不是一个Web服务器，也不了解您的Web服务器的命名空间，虚拟主机布局或别名。</p>
-<p><strong>重要！</strong>  请再看一遍以上内容</p>
-</blockquote>
-<p>$1</p>
-<blockquote>
-<p>从原始请求扩展到整个请求URI，减去前导斜杠（因为我们已经添加了上面的。）</p>
-</blockquote>
-<p>DirectoryIndex /index.php index.php</p>
-<blockquote>
-<p>对根目录/的请求，需要用默认索引文件映射到fcgi上。</p>
-<p>没有解决这个问题可能导致一个空白响应，通常被称为WSOD（死亡白屏），特别是如果仅代理包含php扩展名的请求URI，如本示例。</p>
-<p>处理流程将首先将针对/的请求映射到/index.php或相对于当前请求uri的任何其他index.php文件，然后正确地代理到PHP-FPM后端。</p>
-</blockquote>
-<h3 id="unix域套接字（UDS）方法"><a href="#unix域套接字（UDS）方法" class="headerlink" title="unix域套接字（UDS）方法"></a>unix域套接字（UDS）方法</h3><p>编辑所选主机的配置，并向其中添加以下行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ProxyPassMatch ^/(.*\.php(/.*)?)$ unix:/path/to/socket.sock|fcgi://127.0.0.1:9000/path/to/your/documentroot/</div></pre></td></tr></table></figure>
-<p>unix:/path/to/socket.sock</p>
-<blockquote>
-<p>您的fpm套接字的路径</p>
-<p><strong>请注意</strong>，使用此方法，捕获的请求URI（$ 1）不会在路径之后传递</p>
-</blockquote>
-<h3 id="Proxy-via-handler-通过代理程序处理"><a href="#Proxy-via-handler-通过代理程序处理" class="headerlink" title="Proxy via handler(通过代理程序处理)"></a>Proxy via handler(通过代理程序处理)</h3><p>使用这种方法，您可以在代理到php-fpm后端之前检查资源的存在。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">＃定义工作器将提高性能</div><div class="line">＃在这种情况下，重新使用worker（依赖于fcgi应用程序的支持）</div><div class="line">＃如果你有足够的空闲工作，这只会略微提高性能</div><div class="line">&lt;Proxy &quot;fcgi://localhost:9000/&quot; enablereuse=on max=10&gt;</div><div class="line">&lt;/Proxy&gt;</div><div class="line">&lt;FilesMatch &quot;\.php$&quot;&gt;</div><div class="line">    # 选择以下方法之一</div><div class="line">    # 1、使用标准的TCP套接字</div><div class="line">    # SetHandler &quot;proxy:fcgi://localhost:9000&quot;</div><div class="line">    # 2、如果您的版本的httpd是2.4.9或更新版本（或具有后端功能），您可以使用unix域套接字</div><div class="line">    # SetHandler &quot;proxy:unix:/path/to/app.sock|fcgi://localhost:9000&quot;</div><div class="line">&lt;/FilesMatch&gt;</div></pre></td></tr></table></figure></p>
-<h3 id="For-the-impatient"><a href="#For-the-impatient" class="headerlink" title="For the impatient"></a>For the impatient</h3><h4 id="Very-simple-example"><a href="#Very-simple-example" class="headerlink" title="Very simple example"></a>Very simple example</h4><p>首先, 创建一个文件/var/www/info.php 内容如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;?php phpinfo() ?&gt;</div></pre></td></tr></table></figure></p>
-<p>假设/ var / www是现有vhost的DocumentRoot。</p>
-<p>在此vhost内，添加以下行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ProxyPassMatch ^/info$ fcgi://127.0.0.1:9000/var/www/info.php</div></pre></td></tr></table></figure></p>
-<p>使用apachectl优雅重新加载apache，您现在可以使用<a href="http://example.com/info调用phpinfo页面" target="_blank" rel="external">http://example.com/info调用phpinfo页面</a></p>
-<p>这是一个非常简单的示例，将一个唯一的URL映射到单个PHP文件。</p>
-<h4 id="A-more-flexible-example"><a href="#A-more-flexible-example" class="headerlink" title="A more flexible example"></a>A more flexible example</h4><p>要使用其真实的php文件位置将vhost中的所有.php文件代理到fcgi服务器，您可以使用更灵活的匹配：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ProxyPassMatch ^/(.*\.php)$ fcgi://127.0.0.1:9000/var/www/$1</div></pre></td></tr></table></figure></p>
-<p>同样，假设/ var / www是所讨论的vhost的DocumentRoot.</p>
-<p>Reload apache with apachectl graceful and you can now call up the phpinfo page using <a href="http://example.com/yourscript.php" target="_blank" rel="external">http://example.com/yourscript.php</a><br>使用apachectl优雅重新加载apache，您现在可以使用<a href="http://example.com/yourscript.php调用phpinfo页面" target="_blank" rel="external">http://example.com/yourscript.php调用phpinfo页面</a></p>
-<h3 id="性能和陷阱"><a href="#性能和陷阱" class="headerlink" title="性能和陷阱"></a>性能和陷阱</h3><p>mod_proxy_fcgi现在支持unix域套接字自2.4.9（ [Unix域套接字支持mod_proxy_fcgi](<a href="https://issues.apache.org/bugzilla/show_bug.cgi?id=54101））" target="_blank" rel="external">https://issues.apache.org/bugzilla/show_bug.cgi?id=54101））</a></p>
-<p>这是很容易占满你的系统的可用套接字，通过ulimits等等。一些提示，以避免这一点：</p>
-<p>使用太多的套接字将导致apache给出一个（（(99)Cannot assign requested address:）的错误。 这意味着您的操作系统不允许创建新的套接字。</p>
-<p>在linux上，可以使用/ proc / sys / net / ipv4 / tcp_tw_reuse 建立尽可能多的套接字，但是在NAT之后将会出现很多有关使用这些套接字的警告。</p>
-<p>确保修改ulimit并允许apache用户和php-fpm用户都有足够的打开文件和进程。 ulimit -n 和 ulimit -u（nofile，最大文件打开数＆nproc，最大进程数）</p>
-<p>如果php-fpm没有足够大的nproc（最大进程数），它将退出（代码255，没有php 5.3的附加信息），没有附加消息。</p>
-<p>如果php-fpm没有足够大的nofile（最大文件打开数），你可能无法获得每个子进程的日志记录，如上所示。 它会在一般的错误日志中给出。</p>
-<p>如果apache和php-fpm作为同一用户运行（不必要或不推荐），且nproc太小，apache将无法启动，并显示以下消息（11）Resource temporarily unavailable：AH02162：setuid: unable to change to uid: 600</p>
-<p><strong>警告：</strong> 当ProxyPass向另一个服务器（在这种情况下，php-fpm守护程序）的请求，身份验证限制和放置在目录块或.htaccess文件中的其他配置可能被绕过。</p>
-<h3 id="Caveats（警告）"><a href="#Caveats（警告）" class="headerlink" title="Caveats（警告）"></a>Caveats（警告）</h3><p>有人可能会指出，贪婪的ProxyPassMatch伪指令可能允许由HTTP客户端上传的某些恶意内容。</p>
-<p>这不是一个全面的安全文件，而是将指出一个可能的注入向量，可以从本文档中的指令生成。</p>
-<p>例如，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/uploads/malicious.jpg/lalalaalala.php</div></pre></td></tr></table></figure></p>
-<p>将导致php-fpm处理该文件（/uploads/malicious.jpg），并且没有某些健全性检查，可能导致被攻击的服务器。</p>
-<p>这当然不推荐。 使用php上传的内容应该安全地保存在DocumentRoot之外，并且应该仔细检查pathinfo。</p>
-<p>此外，php-fpm应检查是否允许调用脚本。</p>
-<p>如果这样的限制不能容易地实现，则可以在用RewriteCond或FallbackResource在代理之前执行检查，以确保URI不被HTTP客户端改变。</p>
-<p><a href="http://wiki.apache.org/httpd/PHP-FPM" target="_blank" rel="external">【原文】</a></p>
-<p>over~</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;内容&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;apache httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP&lt;ul&gt;
-&lt;li&gt;php-fpm&lt;/li&gt;
-&lt;li&gt;apache httpd 2.4&lt;ul&gt;
-&lt;li&gt;TCP套接字（IP和端口）方法&lt;/li&gt;
-&lt;li&gt;unix域套接字（UDS）方法&lt;/li&gt;
-&lt;li&gt;通过代理程序处理&lt;/li&gt;
-&lt;li&gt;先睹为快&lt;ul&gt;
-&lt;li&gt;一个简单的例子&lt;/li&gt;
-&lt;li&gt;一个更灵活的例子&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;性能和陷阱&lt;/li&gt;
-&lt;li&gt;警告&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="PHP-FPM" scheme="https://weizhimiao.github.io/tags/PHP-FPM/"/>
-    
-      <category term="mod_proxy_fcgi" scheme="https://weizhimiao.github.io/tags/mod-proxy-fcgi/"/>
     
   </entry>
   

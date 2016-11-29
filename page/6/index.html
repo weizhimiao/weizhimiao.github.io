@@ -273,6 +273,130 @@
             
               
                 
+                <a class="post-title-link" href="/2016/09/28/Linux服务和进程管理/" itemprop="url">
+                  linux服务和进程管理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-28T18:30:00+08:00" content="2016-09-28">
+              2016-09-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/28/Linux服务和进程管理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/28/Linux服务和进程管理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><img src="http://n.sinaimg.cn/games/3ece443e/20160929/LinuxFuWuHeJinChengGuanLi.png?1" alt="Linux服务和进程管理"></p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/28/Linux服务和进程管理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/09/27/Nginx运行状态监控/" itemprop="url">
                   Nginx运行状态监控
                 </a>
@@ -521,8 +645,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/09/27/Redis安装与管理/" itemprop="url">
-                  Redis安装与管理
+                <a class="post-title-link" href="/2016/09/27/Redis高级应用/" itemprop="url">
+                  Redis高级应用
                 </a>
               
             
@@ -565,8 +689,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/09/27/Redis安装与管理/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis安装与管理/" itemprop="commentsCount"></span>
+                <a href="/2016/09/27/Redis高级应用/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis高级应用/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -592,28 +716,13 @@
 
       
         
-          <p>redis是一个key-value存储系统。<br>和Memcached类似，它支持存储的value类型相对更多，<br>包括string(字符串)、list(链表)、set(集合)和zset(有序集合)。<br>这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。</p>
-<p>在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。<br>区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。</p>
-<p>Redis 是一个高性能的key-value数据库。<br> redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。<br>它提供了Python，Ruby，Erlang，PHP客户端，使用很方便。</p>
-<ul>
-<li><p>Memcache</p>
-<blockquote>
-<p>内存缓存服务，缓存数据保存在内存中，一旦断电重启，数据将丢失</p>
-</blockquote>
-</li>
-<li><p>mangoDB</p>
-<blockquote>
-<p>开源免费的NOSQL 数据库，提供数据持久化服务，以文档的形式提供数据组织方式，而不是表</p>
-</blockquote>
-</li>
-<li><p>Redis</p>
-<blockquote>
-<p>开源免费的 NOSQL数据库，提供数据持久化服务，即能实现内存缓存服务，也能提供数据结构服务取代MySQL 自建索引用来弥补关系型数据的不足</p>
-</blockquote>
-</li>
+          <ul>
+<li>给redis服务器设置密码</li>
+<li>持久化</li>
+<li>主从备份</li>
 </ul>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/27/Redis安装与管理/#more" rel="contents">
+            <a class="btn" href="/2016/09/27/Redis高级应用/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -795,8 +904,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/09/27/Redis高级应用/" itemprop="url">
-                  Redis高级应用
+                <a class="post-title-link" href="/2016/09/27/Redis安装与管理/" itemprop="url">
+                  Redis安装与管理
                 </a>
               
             
@@ -839,8 +948,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/09/27/Redis高级应用/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis高级应用/" itemprop="commentsCount"></span>
+                <a href="/2016/09/27/Redis安装与管理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis安装与管理/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -866,13 +975,28 @@
 
       
         
-          <ul>
-<li>给redis服务器设置密码</li>
-<li>持久化</li>
-<li>主从备份</li>
+          <p>redis是一个key-value存储系统。<br>和Memcached类似，它支持存储的value类型相对更多，<br>包括string(字符串)、list(链表)、set(集合)和zset(有序集合)。<br>这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。</p>
+<p>在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。<br>区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。</p>
+<p>Redis 是一个高性能的key-value数据库。<br> redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。<br>它提供了Python，Ruby，Erlang，PHP客户端，使用很方便。</p>
+<ul>
+<li><p>Memcache</p>
+<blockquote>
+<p>内存缓存服务，缓存数据保存在内存中，一旦断电重启，数据将丢失</p>
+</blockquote>
+</li>
+<li><p>mangoDB</p>
+<blockquote>
+<p>开源免费的NOSQL 数据库，提供数据持久化服务，以文档的形式提供数据组织方式，而不是表</p>
+</blockquote>
+</li>
+<li><p>Redis</p>
+<blockquote>
+<p>开源免费的 NOSQL数据库，提供数据持久化服务，即能实现内存缓存服务，也能提供数据结构服务取代MySQL 自建索引用来弥补关系型数据的不足</p>
+</blockquote>
+</li>
 </ul>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/27/Redis高级应用/#more" rel="contents">
+            <a class="btn" href="/2016/09/27/Redis安装与管理/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1398,135 +1522,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/25/MySQL安装编译/" itemprop="url">
-                  MySQL编译安装
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-25T20:30:00+08:00" content="2016-09-25">
-              2016-09-25
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/25/MySQL安装编译/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/25/MySQL安装编译/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><img src="http://n.sinaimg.cn/games/3ece443e/20160925/mysql_log.png" alt="MySQL"><br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/25/MySQL安装编译/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1567,7 +1567,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">80</span>
+              <span class="site-state-item-count">81</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1575,7 +1575,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -1584,7 +1584,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">64</span>
+                <span class="site-state-item-count">66</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
