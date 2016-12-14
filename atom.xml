@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2016-11-29T03:21:50.000Z</updated>
+  <updated>2016-12-14T03:27:13.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://weizhimiao.github.io/2016/11/29/%E8%B4%AA%E5%A9%AA%E5%92%8C%E6%87%92%E6%83%B0%E5%8C%B9%E9%85%8D%E6%A8%A1%E5%BC%8F%E4%BD%BF%E7%94%A8%E5%B0%8F%E7%BB%93/"/>
     <id>https://weizhimiao.github.io/2016/11/29/贪婪和懒惰匹配模式使用小结/</id>
     <published>2016-11-29T12:30:00.000Z</published>
-    <updated>2016-11-29T03:21:50.000Z</updated>
+    <updated>2016-12-14T03:27:13.000Z</updated>
     
     <content type="html"><![CDATA[<p>所谓的贪婪/懒惰匹配模式，就是指正则表达式在匹配字符串是的两种不同的匹配策略。<br>简单的说就是，贪婪匹配模式在正则匹配时会尽量匹配出尽可能多的字符；而懒惰匹配模式则相反，它会匹配尽可能少的字符。</p>
 <p>举例来说，</p>
@@ -28,11 +28,11 @@
 <ul>
 <li><code>aabab</code>(贪婪模式)</li>
 </ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161129/image.svg" alt="贪婪"></p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161214/QQ20161214-0@2x.png" alt="贪婪"></p>
 <ul>
 <li><code>aab</code>(懒惰模式)(为什么不是<code>ab</code>？)</li>
 </ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161129/image2.svg" alt="懒惰"></p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161214/QQ20161214-1@2x.png" alt="懒惰"></p>
 <a id="more"></a>
 <h2 id="正则表达式的这两种匹配模式的实现"><a href="#正则表达式的这两种匹配模式的实现" class="headerlink" title="正则表达式的这两种匹配模式的实现"></a>正则表达式的这两种匹配模式的实现</h2><ul>
 <li><strong>贪婪</strong> <code>a.*b</code> 一般当一个正则表达式能够匹配出多种结果时，默认将会匹配出尽可能多的字符串。</li>
@@ -85,11 +85,11 @@
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;aabab&lt;/code&gt;(贪婪模式)&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20161129/image.svg&quot; alt=&quot;贪婪&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20161214/QQ20161214-0@2x.png&quot; alt=&quot;贪婪&quot;&gt;&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;aab&lt;/code&gt;(懒惰模式)(为什么不是&lt;code&gt;ab&lt;/code&gt;？)&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20161129/image2.svg&quot; alt=&quot;懒惰&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20161214/QQ20161214-1@2x.png&quot; alt=&quot;懒惰&quot;&gt;&lt;/p&gt;
     
     </summary>
     
@@ -858,152 +858,398 @@
   </entry>
   
   <entry>
-    <title>Xdebug之远程调试</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之远程调试/</id>
+    <title>Xdebug之函数轨迹跟踪</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%87%BD%E6%95%B0%E8%BD%A8%E8%BF%B9%E8%B7%9F%E8%B8%AA/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之函数轨迹跟踪/</id>
     <published>2016-10-22T12:30:00.000Z</published>
     <updated>2016-11-29T02:32:38.000Z</updated>
     
-    <content type="html"><![CDATA[<p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
+    <content type="html"><![CDATA[<p>Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。</p>
+<p>那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。<br>函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。</p>
 <a id="more"></a>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的（远程）调试器允许您检查数据结构，交互式地浏览和调试您的代码。 正在使用的协议是打开的，称为DBGp。 此协议在Xdebug 2中实现，并替换不再支持的旧的GDB类协议。</p>
-<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Xdebug 2捆绑了一个用于DBGp协议的简单命令行客户端。 还有一些其他客户端实现（免费和商业）。 我不是任何这些的作者，所以请参考原作者的支持：</p>
+<h2 id="输出格式"><a href="#输出格式" class="headerlink" title="输出格式"></a>输出格式</h2><p>有三种输出格式。 一个是作为一个人类可读的跟踪，另一个更适合计算机程序，因为它更容易解析，最后一个使用HTML格式化跟踪。 您可以使用xdebug.trace_format设置在两种不同的格式之间切换。 有一些设置控制哪些信息写入跟踪文件。 有一些设置包括变量（xdebug.collect_params）和包括返回值（xdebug.collect_return）例如。 下面的示例显示了不同设置对人类可读功能轨迹的影响。</p>
+<p>脚本<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">$str = <span class="string">"Xdebug"</span>;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">ret_ord</span><span class="params">( $c )</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">return</span> ord( $c );</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">foreach</span> ( str_split( $str ) <span class="keyword">as</span> $char )</div><div class="line">&#123;</div><div class="line">    <span class="keyword">echo</span> $char, <span class="string">": "</span>, ret_ord( $char ), <span class="string">"\n"</span>;</div><div class="line">&#125;</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>结果：</p>
+<p>以下是使用xdebug.collect_params设置的不同设置的结果。 因为这不是一个Web环境,值2没有任何意义，因为工具提示不工作在文本文件。</p>
 <ul>
-<li>Dev-PHP (IDE: Windows)</li>
-<li>Eclipse plugin (IDE).</li>
-<li>Emacs plugin (Editor Plugin).</li>
-<li>KDevelop (IDE: Linux (KDE); Open Source).</li>
-<li>ActiveState’s Komodo (IDE: Windows, Linux, Mac; Commercial).</li>
-<li>MacGDBP (Standalone client for Mac OS X; Free)</li>
-<li>NetBeans (IDE: Windows, Linux, Mac OS X and Solaris).</li>
-<li>Notepad++ plugin (Editor: Windows).</li>
-<li>WaterProof’s PHPEdit (IDE, from version 2.10: Windows; Commercial).</li>
-<li>PHPEclipse (Editor Plugin).</li>
-<li>Devsense’s PHP Tools for Visual Studio (MS Visual Studio Plugin; Commercial).</li>
-<li>JetBrain’s PhpStorm (IDE; Commercial).</li>
-<li>Protoeditor (Editor: Linux).</li>
-<li>pugdebug (Standalone client for Linux, Windows and Mac OS X; Open Source).</li>
-<li>VIM plugin (Editor Plugin).</li>
-<li>jcx software’s VS.Php (MS Visual Studio Plugin; Commercial).</li>
-<li>Xdebug Chrome App (Chrome Application; Open Source)</li>
-<li>XDebugClient (Standalone client for Windows).</li>
-</ul>
-<p>用于调试的简单命令行客户机与debugclient目录中的Xdebug捆绑在一起。</p>
-<h2 id="启动调试器"><a href="#启动调试器" class="headerlink" title="启动调试器"></a>启动调试器</h2><p>为了启用Xdebug的调试器，您需要在php.ini中进行一些配置设置。 这些设置为xdebug.remote_enable以启用调试器xdebug.remote_host和xdebug.remote_port来配置调试器应连接到的IP地址和端口。 还有一个xdebug.remote_connect_back设置，如果您的开发服务器与多个开发人员共享，则可以使用此设置。</p>
-<p>如果希望调试器在发生错误情况（PHP错误或异常）时启动会话，则还需要更改xdebug.remote_mode设置。 此设置的允许值为“req”（默认值），这使得调试器在脚本启动时启动会话，或者“jit”，当会话只应在错误时启动。</p>
-<p>完成所有这些设置后，Xdebug仍然不会在脚本运行时自动启动调试会话。 你需要激活Xdebug的调试器，你可以通过三种方式：</p>
-<p>1、当从命令行运行脚本时，您需要设置一个环境变量，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name&quot;</div><div class="line">php myscript.php</div></pre></td></tr></table></figure></p>
-<p>您还可以在此相同的环境变量中配置xdebug.remote_host，xdebug.remote_port，xdebug.remote_mode和xdebug.remote_handler，只要使用空格分隔值即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name remote_host=localhost profiler_enable=1&quot;</div></pre></td></tr></table></figure></p>
-<p>通过XDEBUG_CONFIG设置可以获得的所有设置也可以使用正常的php.ini设置进行设置。</p>
-<p>2、如果要调试通过Web浏览器启动的脚本，只需将XDEBUG_SESSION_START = session_name作为参数添加到URL。 而不是使用GET参数，您还可以将XDEBUG_SESSION_START设置为POST参数，或通过cookie。 请参阅下一节，了解调试会话如何在浏览器窗口中工作。</p>
-<p>3、通过Web服务器运行PHP时激活调试器的另一种方法是安装以下四个浏览器扩展之一。 它们中的每一个都允许您通过单击一个按钮来启用调试器。 当这些扩展是活动的，他们直接设置XDEBUG_SESSION cookie，而不是通过XDEBUG_SESSION_START进一步的HTTP调试会话中描述。 扩展名为：</p>
-<ul>
-<li><p>The easiest Xdebug</p>
-<blockquote>
-<p>这个扩展的Firefox是为了使IDE的调试更容易。 您可以在<a href="https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。" target="_blank" rel="external">https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。</a></p>
-</blockquote>
+<li><p>default</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:06]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split() ../trace.php:8</div><div class="line">    0.0153     117424     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0165     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0166     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0167     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0168     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0168     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0170     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0170     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0172     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0172     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0173     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0174     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0177      41152</div><div class="line">TRACE END   [2007-05-06 14:37:07]</div></pre></td></tr></table></figure>
 </li>
-<li><p>Xdebug Helper for Chrome</p>
-<blockquote>
-<p>Chrome的此扩展程序将帮助您通过一次点击启用/禁用调试和分析。 您可以在<a href="https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。" target="_blank" rel="external">https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。</a></p>
-</blockquote>
+<li><p>collect_params=1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:11]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(string(6)) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:11]</div></pre></td></tr></table></figure>
 </li>
-<li><p>Xdebug Toggler for Safari</p>
-<blockquote>
-<p>Safari的这个扩展允许你从Safari中自动启动Xdebug调试。 你可以从Github <a href="https://github.com/benmatselby/xdebug-toggler获取它。" target="_blank" rel="external">https://github.com/benmatselby/xdebug-toggler获取它。</a></p>
-</blockquote>
+<li><p>collect_params=3</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:13]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord(&apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord(&apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord(&apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord(&apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord(&apos;u&apos;) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord(&apos;g&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:13]</div></pre></td></tr></table></figure>
 </li>
-<li><p>Xdebug launcher for Opera</p>
-<blockquote>
-<p>这个扩展的Opera允许您从Opera启动Xdebug会话。</p>
-</blockquote>
+<li><p>collect_params=4</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:16]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:16]</div></pre></td></tr></table></figure>
 </li>
 </ul>
-<p>在你开始你的脚本之前，你需要告诉你的客户端它可以接收调试连接，请参考具体客户端的文档如何做到这一点。 要使用捆绑的客户端，只需在编译和安装后启动它。 您可以通过运行“debugclient”启动它。</p>
-<p>当debugclient启动时，它将显示以下信息，然后等待，直到调试服务器启动连接：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Xdebug Simple DBGp client (0.10.0)</div><div class="line">Copyright 2002-2007 by Derick Rethans.</div><div class="line">- libedit support: enabled</div><div class="line"></div><div class="line">Waiting for debug server to connect.</div></pre></td></tr></table></figure></p>
-<p>在建立连接后，将显示调试服务器的输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Connect</div><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;iso-8859-1&quot;?&gt;</div><div class="line">&lt;init xmlns=&quot;urn:debugger_protocol_v1&quot;</div><div class="line">      xmlns:xdebug=&quot;http://xdebug.org/dbgp/xdebug&quot;</div><div class="line">      fileuri=&quot;file:///home/httpd/www.xdebug.org/html/docs/index.php&quot;</div><div class="line">      language=&quot;PHP&quot;</div><div class="line">      protocol_version=&quot;1.0&quot;</div><div class="line">      appid=&quot;13202&quot;</div><div class="line">      idekey=&quot;derick&quot;&gt;</div><div class="line">  &lt;engine version=&quot;2.0.0RC4-dev&quot;&gt;&lt;![CDATA[Xdebug]]&gt;&lt;/engine&gt;</div><div class="line">  &lt;author&gt;&lt;![CDATA[Derick Rethans]]&gt;&lt;/author&gt;</div><div class="line">  &lt;url&gt;&lt;![CDATA[http://xdebug.org]]&gt;&lt;/url&gt;</div><div class="line">  &lt;copyright&gt;&lt;![CDATA[Copyright (c) 2002-2007 by Derick Rethans]]&gt;&lt;/copyright&gt;</div><div class="line">&lt;/init&gt;</div><div class="line">(cmd)</div></pre></td></tr></table></figure></p>
-<p>现在，您可以使用DBGp文档页面中说明的命令集。 当脚本结束时，调试服务器与客户端断开连接，并且调试客户端在等待新连接时恢复。</p>
-<h2 id="通讯建立"><a href="#通讯建立" class="headerlink" title="通讯建立"></a>通讯建立</h2><h3 id="使用静态IP-单个开发者"><a href="#使用静态IP-单个开发者" class="headerlink" title="使用静态IP /单个开发者"></a>使用静态IP /单个开发者</h3><p>通过远程调试，嵌入在PHP中的Xdebug就像客户端，而IDE作为服务器。 以下动画显示了通信通道的设置：</p>
-<p><img src="https://xdebug.org/images/docs/dbgp-setup.gif" alt="img"></p>
+<p>除了xdebug.collect_params设置，还有另一些影响跟踪文件输出的设置。<br>第一个选项卡“默认”显示与上面的默认值相同。<br>第二个选项卡“show_mem_delta = 1”还显示输出文件中两个不同行之间的内存使用差异。</p>
+<p>在“collect return = 1”选项卡上，所有函数调用的返回值也是可见的。 这使用xdebug.collect返回设置打开。</p>
+<p>名为“collect assignments = 1”的选项卡显示可变分配，可以使用xdebug.collect分配设置打开。</p>
+<p>最后一个选项卡显示不同的输出格式，更容易解析，但更难阅读。<br>因此，如果有一个额外的工具来解释跟踪文件，xdebug.trace_format设置是非常有用的。</p>
 <ul>
-<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
-<li>IDE在IP 10.0.1.42上，因此xdebug.remote_host设置为10.0.1.42</li>
-<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
-<li>HTTP请求在运行IDE的计算机上启动</li>
-<li>Xdebug连接到10.0.1.42:9000</li>
-<li>调试运行，提供HTTP响应</li>
-</ul>
-<h3 id="与未知IP-多开发者"><a href="#与未知IP-多开发者" class="headerlink" title="与未知IP /多开发者"></a>与未知IP /多开发者</h3><p>如果使用xdebug.remote_connect_back，设置稍有不同：</p>
-<p><img src="https://xdebug.org/images/docs/dbgp-setup2.gif" alt="img"></p>
-<ul>
-<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
-<li>IDE处于未知IP，因此xdebug.remote_connect_back设置为1</li>
-<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
-<li>发出HTTP请求后，Xdebug将从HTTP头中检测IP地址</li>
-<li>Xdebug连接到端口9000上检测到的IP（10.0.1.42）</li>
-<li>调试运行，提供HTTP响应</li>
-</ul>
-<h2 id="HTTP调试会话"><a href="#HTTP调试会话" class="headerlink" title="HTTP调试会话"></a>HTTP调试会话</h2><p>Xdebug包含通过浏览器启动时跟踪调试会话的功能：Cookie。 这是这样工作：</p>
-<ul>
-<li><p>当URL变量XDEBUG_SESSION_START = name附加到URL或通过具有相同名称的POST变量时，-Xdebug会发出名为“XDEBUG_SESSION”的cookie，并将值设置为XDEBUG_SESSION_START URL参数的值。 cookie的到期时间为1小时。 当连接到“idekey”属性中的debugclient时，DBGp协议也将此相同的值传递给init包。</p>
+<li><p>default</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:06]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split() ../trace.php:8</div><div class="line">    0.0153     117424     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0165     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0166     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0167     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0168     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0168     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0170     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0170     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0172     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0172     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0173     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0174     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0177      41152</div><div class="line">TRACE END   [2007-05-06 14:37:07]</div></pre></td></tr></table></figure>
 </li>
-<li><p>当有一个GET（或POST）变量XDEBUG_SESSION_START或XDEBUG_SESSION cookie被设置时，Xdebug将尝试连接到一个调试客户端。</p>
+<li><p>show_mem_delta=1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:26]</div><div class="line">    0.0003     114112  +114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     +160     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424    +3152     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584     +160       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584       +0     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       +0       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0011     117584       +0     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       +0       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0013     117584       +0     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       +0       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584       +0     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0015     117584       +0       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584       +0     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0017     117584       +0       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:26]</div></pre></td></tr></table></figure>
 </li>
-<li><p>要停止调试会话（并销毁cookie），只需添加URL参数XDEBUG_SESSION_STOP即可。 Xdebug将不再尝试连接到调试客户端。</p>
+<li><p>collect_return=1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:35]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">                          &gt;=&gt; array (0 =&gt; &apos;X&apos;, 1 =&gt; &apos;d&apos;, 2 =&gt; &apos;e&apos;, 3 =&gt; &apos;b&apos;, 4 =&gt; &apos;u&apos;, 5 =&gt; &apos;g&apos;)</div><div class="line">    0.0007     117424     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 88</div><div class="line">                          &gt;=&gt; 88</div><div class="line">    0.0009     117584     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 100</div><div class="line">                          &gt;=&gt; 100</div><div class="line">    0.0011     117584     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 101</div><div class="line">                          &gt;=&gt; 101</div><div class="line">    0.0013     117584     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 98</div><div class="line">                          &gt;=&gt; 98</div><div class="line">    0.0015     117584     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 117</div><div class="line">                          &gt;=&gt; 117</div><div class="line">    0.0017     117584     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0018     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 103</div><div class="line">                          &gt;=&gt; 103</div><div class="line">                        &gt;=&gt; 1</div><div class="line">    0.0021      41152</div><div class="line">TRACE END   [2007-05-06 14:37:35]</div></pre></td></tr></table></figure>
+</li>
+<li><p>trace_format=1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">Version: 2.0.0RC4-dev</div><div class="line">TRACE START [2007-05-06 18:29:01]</div><div class="line">1	0	0	0.010870	114112	&#123;main&#125;	1	../trace.php	0</div><div class="line">2	1	0	0.032009	114272	str_split	0	../trace.php	8</div><div class="line">2	1	1	0.032073	116632</div><div class="line">2	2	0	0.033505	117424	ret_ord	1	../trace.php	10</div><div class="line">3	3	0	0.033531	117584	ord	0	../trace.php	5</div><div class="line">3	3	1	0.033551	117584</div><div class="line">2	2	1	0.033567	117584</div><div class="line">2	4	0	0.033718	117584	ret_ord	1	../trace.php	10</div><div class="line">3	5	0	0.033740	117584	ord	0	../trace.php	5</div><div class="line">3	5	1	0.033758	117584</div><div class="line">2	4	1	0.033770	117584</div><div class="line">2	6	0	0.033914	117584	ret_ord	1	../trace.php	10</div><div class="line">3	7	0	0.033936	117584	ord	0	../trace.php	5</div><div class="line">3	7	1	0.033953	117584</div><div class="line">2	6	1	0.033965	117584</div><div class="line">2	8	0	0.034108	117584	ret_ord	1	../trace.php	10</div><div class="line">3	9	0	0.034130	117584	ord	0	../trace.php	5</div><div class="line">3	9	1	0.034147	117584</div><div class="line">2	8	1	0.034160	117584</div><div class="line">2	10	0	0.034302	117584	ret_ord	1	../trace.php	10</div><div class="line">3	11	0	0.034325	117584	ord	0	../trace.php	5</div><div class="line">3	11	1	0.034342	117584</div><div class="line">2	10	1	0.034354	117584</div><div class="line">2	12	0	0.034497	117584	ret_ord	1	../trace.php	10</div><div class="line">3	13	0	0.034519	117584	ord	0	../trace.php	5</div><div class="line">3	13	1	0.034536	117584</div><div class="line">2	12	1	0.034549	117584</div><div class="line">1	0	1	0.034636	117584</div><div class="line">TRACE END   [2007-05-06 18:29:01]</div></pre></td></tr></table></figure>
 </li>
 </ul>
-<h2 id="多用户调试"><a href="#多用户调试" class="headerlink" title="多用户调试"></a>多用户调试</h2><p>Xdebug仅允许您在执行远程调试时指定一个IP地址与xdebug.remote_host连接。它不会自动连接回浏览器运行的计算机的IP地址，除非您使用xdebug.remote_connect_back。</p>
-<p>如果所有开发人员在同一（开发）服务器上的不同项目上工作，则可以通过Apache的.htaccess功能为每个目录设置xdebug.remote_host设置，方法是使用php_value xdebug.remote_host = 10.0.0.5。但是，对于多个开发人员在同一代码上工作的情况，.htaccess技巧不工作，因为代码所在的目录是相同的。</p>
-<p>有两个解决方案。首先，你可以使用DBGp代理。有关如何使用此代理的概述，请参阅多个用户调试中的文章。您可以在ActiveState的网站上下载代理作为python远程调试包的一部分。 Komodo FAQ中还有一些文档。</p>
-<p>其次，您可以使用Xdebug 2.1中引入的xdebug.remote_connect_back设置。</p>
-<h2 id="实施细则"><a href="#实施细则" class="headerlink" title="实施细则"></a>实施细则</h2><p>Xdebug的DBGp协议的context_names命令的实现不依赖于栈级别。 在每个调试器会话期间返回的值总是相同的，因此，可以安全地缓存。</p>
-<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-extended-info"><a href="#xdebug-extended-info" class="headerlink" title="xdebug.extended_info"></a>xdebug.extended_info</h3><p>类型：整数，默认值：1</p>
-<p>控制Xdebug是否应该为PHP解析器强制执行’extended_info’模式;这允许Xdebug使用远程调试器执行文件/行断点。当跟踪或剖析脚本时，通常希望关闭此选项，因为PHP生成的oparrays将增加大约三分之一的大小减慢脚本。此设置不能在带有ini_set（）的脚本中设置，但只能在php.ini中设置。</p>
-<h3 id="xdebug-idekey"><a href="#xdebug-idekey" class="headerlink" title="xdebug.idekey"></a>xdebug.idekey</h3><p>类型：字符串，默认值：<em> complex </em></p>
-<p>控制哪个IDE密钥Xdebug应该传递到DBGp调试器处理程序。默认值基于环境设置。首先查询环境设置DBGP_IDEKEY，然后查询USER和最后一个USERNAME。默认值设置为找到的第一个环境变量。如果找不到，则设置为默认的“”。如果设置此设置，它始终覆盖环境变量。</p>
-<h3 id="xdebug-remote-addr-header"><a href="#xdebug-remote-addr-header" class="headerlink" title="xdebug.remote_addr_header"></a>xdebug.remote_addr_header</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.4中引入</p>
-<p>如果xdebug.remote_addr_header配置为非空字符串，那么该值将用作$ SERVER超全局数组中的键，以确定用于查找用于“连接回”的IP地址或主机名的头。此设置仅与xdebug.remote_connect_back结合使用，否则将被忽略。</p>
-<h3 id="xdebug-remote-autostart"><a href="#xdebug-remote-autostart" class="headerlink" title="xdebug.remote_autostart"></a>xdebug.remote_autostart</h3><p>类型：布尔值，默认值：0</p>
-<p>通常，您需要使用特定的HTTP GET / POST变量来启动远程调试（请参阅远程调试）。当此设置设置为1时，Xdebug将始终尝试启动远程调试会话并尝试连接到客户端，即使GET / POST / COOKIE变量不存在。</p>
-<h3 id="xdebug-remote-connect-back"><a href="#xdebug-remote-connect-back" class="headerlink" title="xdebug.remote_connect_back"></a>xdebug.remote_connect_back</h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
-<p>如果启用，xdebug.remote_host设置将被忽略，Xdebug将尝试连接到发出HTTP请求的客户端。它检查$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量以找出要使用的IP地址。</p>
-<p>如果配置了xdebug.remote_addr_header，那么将在$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量之前检查具有配置名称的$ SERVER变量。</p>
-<p>此设置不适用于通过CLI进行调试，因为$ SERVER标题变量在那里不可用。</p>
-<p>请注意，没有可用的过滤器，任何可以连接到Web服务器的人都能够启动调试会话，即使他们的地址与xdebug.remote_host不匹配。</p>
-<h3 id="xdebug-remote-cookie-expire-time"><a href="#xdebug-remote-cookie-expire-time" class="headerlink" title="xdebug.remote_cookie_expire_time"></a>xdebug.remote_cookie_expire_time</h3><p>类型：整数，默认值：3600，在Xdebug&gt; 2.1中引入</p>
-<p>此设置可用于增加（或减少）远程调试会话通过会话cookie保持活动的时间。</p>
-<h3 id="xdebug-remote-enable"><a href="#xdebug-remote-enable" class="headerlink" title="xdebug.remote_enable"></a>xdebug.remote_enable</h3><p>类型：布尔值，默认值：0</p>
-<p>此开关控制Xdebug是否应尝试联系正在侦听主机上的调试客户端，并使用设置xdebug.remote_host和xdebug.remote_port设置的端口。如果无法建立连接，脚本将继续，就像此设置为0。</p>
-<h3 id="xdebug-remote-handler"><a href="#xdebug-remote-handler" class="headerlink" title="xdebug.remote_handler"></a>xdebug.remote_handler</h3><p>类型：字符串，默认值：dbgp</p>
-<p>可以是“php3”选择旧的PHP 3式调试器输出，“gdb”启用GDB像调试器接口或’dbgp’ - 调试器协议。 DBGp协议是唯一支持的协议。</p>
-<p>注意：Xdebug 2.1和更高版本只支持’db​​gp’作为协议。</p>
-<h3 id="xdebug-remote-host"><a href="#xdebug-remote-host" class="headerlink" title="xdebug.remote_host"></a>xdebug.remote_host</h3><p>类型：字符串，默认值：localhost<br>选择运行调试客户端的主机，您可以使用主机名或IP地址。如果启用xdebug.remote_connect_back，将忽略此设置。</p>
-<h3 id="xdebug-remote-log"><a href="#xdebug-remote-log" class="headerlink" title="xdebug.remote_log"></a>xdebug.remote_log</h3><p>类型：字符串，默认值：</p>
-<p>如果设置为某个值，则将其用作所有远程调试器通信记录到的文件的文件名。 该文件始终以附加模式打开，因此默认情况下不会被覆盖。 没有可用的并发保护。 该文件的格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Log opened at 2007-05-27 14:28:15</div><div class="line">-&gt; &lt;init xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/dbgp/x ... ight&gt;&lt;/init&gt;</div><div class="line"></div><div class="line">&lt;- step_into -i 1</div><div class="line">-&gt; &lt;response xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/db ... &gt;&lt;/response&gt;</div></pre></td></tr></table></figure></p>
-<h3 id="xdebug-remote-mode"><a href="#xdebug-remote-mode" class="headerlink" title="xdebug.remote_mode"></a>xdebug.remote_mode</h3><p>类型：字符串，默认值：req</p>
-<p>选择启动调试连接的时间。 此设置可以有两个不同的值：</p>
+<p><strong>VIM语法文件</strong></p>
+<p>Xdebug附带了语法高亮显示跟踪文件的VIM语法文件：xt.vim。<br>为了使VIM能够识别这种新格式，您需要执行以下步骤：</p>
+<ol>
+<li>复制 xt.vim 文件到 ~/.vim/syntax</li>
+<li>修改, 或者创建, ~/.vim/filetype.vim 并添加下列内容<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">augroup filetypedetect</div><div class="line">au BufNewFile,BufRead *.xt  setf xt</div><div class="line">augroup END</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>使用这些设置，打开的跟踪文件看起来像：</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-10@2x.png" alt="img"></p>
+<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-auto-trace"><a href="#xdebug-auto-trace" class="headerlink" title="xdebug.auto_trace"></a><strong>xdebug.auto_trace</strong></h3><p>类型：布尔值，默认值：0</p>
+<p>当此设置设置为on时，将在脚本运行之前启用函数调用的跟踪。这使得可以跟踪auto_prepend_file中的代码。</p>
+<h3 id="xdebug-collect-assignments"><a href="#xdebug-collect-assignments" class="headerlink" title="xdebug.collect_assignments"></a><strong>xdebug.collect_assignments</strong></h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
+<p>此设置（默认为0）控制Xdebug是否应向函数轨迹添加变量分配。</p>
+<h3 id="xdebug-collect-includes"><a href="#xdebug-collect-includes" class="headerlink" title="xdebug.collect_includes"></a><strong>xdebug.collect_includes</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>此设置默认为1，控制Xdebug是否应将include（），include_once（），require（）或require_once（）中使用的文件名写入跟踪文件。</p>
+<h3 id="xdebug-collect-params"><a href="#xdebug-collect-params" class="headerlink" title="xdebug.collect_params"></a><strong>xdebug.collect_params</strong></h3><p>类型：整数，默认值：0</p>
+<p>此设置默认为0，控制在函数跟踪或堆栈跟踪中记录函数调用时，Xdebug是否应收集传递给函数的参数。</p>
+<p>该设置默认为0，因为对于非常大的脚本，它可能使用大量的内存，因此使巨量脚本无法运行。您可以最安全地打开此设置，但是您可以预期在具有大量函数调用和/或巨大的数据结构作为参数的脚本中存在一些问题。 Xdebug 2不会有增加的内存使用这个问题，因为它永远不会将此信息存储在内存中。相反，它将只被写入磁盘。这意味着您需要查看磁盘使用情况。</p>
+<p>此设置可以有四个不同的值。对于每个值，示出了不同量的信息。下面你将看到每个值提供什么信息。另请参见功能堆栈跟踪的几个截图的介绍。</p>
+<table>
+<thead>
+<tr>
+<th>显示的值</th>
+<th>参数信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>无。</td>
+</tr>
+<tr>
+<td>1</td>
+<td>元素的类型和数量（f.e. string（6），array（8））。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>元素的类型和数量，带有完整信息的工具提示1。1在CLI版本的PHP中，它不会有工具提示，也不会在输出文件中。</td>
+</tr>
+<tr>
+<td>3</td>
+<td>完全变量内容（具有由xdebug.var_display_max_children，xdebug.var_display_max_data和xdebug.var_display_max_depth设置的限制）。</td>
+</tr>
+<tr>
+<td>4</td>
+<td>完全变量内容和变量名。</td>
+</tr>
+<tr>
+<td>5</td>
+<td>PHP序列化变量内容，没有名称。 （Xdebug 2.3中的新功能）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xdebug-collect-return"><a href="#xdebug-collect-return" class="headerlink" title="xdebug.collect_return"></a><strong>xdebug.collect_return</strong></h3><p>类型：布尔值，默认值：0</p>
+<p>此设置默认为0，控制Xdebug是否应将函数调用的返回值写入跟踪文件。</p>
+<p>对于计算机化的跟踪文件（xdebug.trace_format = 1），这只能从Xdebug 2.3起。</p>
+<h3 id="xdebug-show-mem-delta"><a href="#xdebug-show-mem-delta" class="headerlink" title="xdebug.show_mem_delta"></a><strong>xdebug.show_mem_delta</strong></h3><p>类型：整数，默认值：0</p>
+<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
+<h3 id="xdebug-trace-enable-trigger"><a href="#xdebug-trace-enable-trigger" class="headerlink" title="xdebug.trace_enable_trigger"></a><strong>xdebug.trace_enable_trigger</strong></h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.2中引入</p>
+<p>当此设置设置为1时，可以使用XDEBUG_TRACE GET / POST参数触发跟踪文件的生成，或者设置名为XDEBUG_TRACE的cookie。然后将跟踪数据写入定义的目录。为了防止Xdebug为每个请求生成跟踪文件，您需要将xdebug.auto_trace设置为0.对触发器本身的访问可以通过xdebug.trace_enable_trigger_value配置。</p>
+<h3 id="xdebug-trace-enable-trigger-value"><a href="#xdebug-trace-enable-trigger-value" class="headerlink" title="xdebug.trace_enable_trigger_value"></a><strong>xdebug.trace_enable_trigger_value</strong></h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.3中引入</p>
+<p>此设置可用于限制谁可以使用xdebug.trace_enable_trigger中概述的XDEBUG_TRACE功能。当从空字符串的默认值更改时，cookie，GET或POST参数的值需要使用此设置匹配共享机密集，以便生成跟踪文件。</p>
+<h3 id="xdebug-trace-format"><a href="#xdebug-trace-format" class="headerlink" title="xdebug.trace_format"></a><strong>xdebug.trace_format</strong></h3><p>类型：整数，默认值：0</p>
+<p>跟踪文件的格式。</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>显示一个人工可读的缩进跟踪文件，具有：时间索引，内存使用，内存增量（如果设置xdebug.show_mem_delta启用），级别，函数名称，函数参数（如果设置xdebug.collect_params启用），文件名和行 数。</td>
+</tr>
+<tr>
+<td>1</td>
+<td>写入具有两个不同记录的计算机可读格式。 有不同的记录用于输入堆栈帧，并留下堆栈帧。 下表列出了每种记录类型中的字段。 字段是制表符分隔的。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>写入以（简单）HTML格式化的跟踪。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xdebug-trace-options"><a href="#xdebug-trace-options" class="headerlink" title="xdebug.trace_options"></a><strong>xdebug.trace_options</strong></h3><p>类型：整数，默认值：0</p>
+<p>当设置为’1’时，跟踪文件将被附加到，而不是在后续请求中被覆盖。</p>
+<h3 id="xdebug-trace-output-dir"><a href="#xdebug-trace-output-dir" class="headerlink" title="xdebug.trace_output_dir"></a><strong>xdebug.trace_output_dir</strong></h3><p>类型：字符串，默认值：/ tmp</p>
+<p>将写入跟踪文件的目录，确保PHP将运行的用户具有对该目录的写入权限。</p>
+<h3 id="xdebug-trace-output-name"><a href="#xdebug-trace-output-name" class="headerlink" title="xdebug.trace_output_name"></a><strong>xdebug.trace_output_name</strong></h3><p>类型：字符串，默认值：trace。％c</p>
+<p>此设置确定用于将跟踪转储到的文件的名称。 设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。 有几个格式说明符可以用于格式化文件名。 “.xt”扩展名总是自动添加。</p>
+<p>可能的格式说明符是：</p>
+<table>
+<thead>
+<tr>
+<th>指定符</th>
+<th>含义</th>
+<th>示例格式</th>
+<th>示例文件名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>%c</td>
+<td>crc32 of the current working directory</td>
+<td>trace.%c</td>
+<td>trace.1258863198.xt</td>
+</tr>
+<tr>
+<td>%p</td>
+<td>pid</td>
+<td>trace.%p</td>
+<td>trace.5174.xt</td>
+</tr>
+<tr>
+<td>%r</td>
+<td>random number</td>
+<td>trace.%r</td>
+<td>trace.072db0.xt</td>
+</tr>
+<tr>
+<td>%s</td>
+<td>script name 这一个不可用于跟踪文件名。</td>
+<td>cachegrind.out.%s</td>
+<td>cachegrind.out._home_httpd_html_test_xdebug_test_php</td>
+</tr>
+<tr>
+<td>%t</td>
+<td>timestamp (seconds)</td>
+<td>trace.%t</td>
+<td>trace.1179434742.xt</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>timestamp (microseconds)</td>
+<td>trace.%u</td>
+<td>trace.1179434749_642382.xt</td>
+</tr>
+<tr>
+<td>%H</td>
+<td>$_SERVER[‘HTTP_HOST’]</td>
+<td>trace.%H</td>
+<td>trace.kossu.xt</td>
+</tr>
+<tr>
+<td>%R</td>
+<td>$_SERVER[‘REQUEST_URI’]</td>
+<td>trace.%R</td>
+<td>trace._test_xdebug_test_php_var=1_var2=2.xt</td>
+</tr>
+<tr>
+<td>%U</td>
+<td>$_SERVER[‘UNIQUE_ID’] 版本2.2中的新功能。 这个由Apache mod_unique_id模块设置</td>
+<td>trace.%U</td>
+<td>trace.TRX4n38AAAEAAB9gBFkAAAAB.xt</td>
+</tr>
+<tr>
+<td>%S</td>
+<td>session_id (from $_COOKIE if set)</td>
+<td>trace.%S</td>
+<td>trace.c70c1ec2375af58f74b390bbdd2a679d.xt</td>
+</tr>
+<tr>
+<td>%%</td>
+<td>literal %</td>
+<td>trace.%%</td>
+<td>trace.%%.xt</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
+<p>要禁用任何限制，请使用-1作为值。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
+<p>要禁用任何限制，请使用-1作为值。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
+<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
+<p>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="string-xdebug-get-tracefile-name（）"><a href="#string-xdebug-get-tracefile-name（）" class="headerlink" title="string xdebug_get_tracefile_name（）"></a><strong>string xdebug_get_tracefile_name（）</strong></h3><p>返回函数跟踪文件的名称</p>
+<p>返回用于跟踪此脚本的输出的文件的名称。这在启用xdebug.auto_trace时非常有用。</p>
+<h3 id="string-xdebug-start-trace（-string-trace-file-，integer-options-）"><a href="#string-xdebug-start-trace（-string-trace-file-，integer-options-）" class="headerlink" title="string xdebug_start_trace（[string trace_file [，integer options]]）"></a><strong>string xdebug_start_trace（[string trace_file [，integer options]]）</strong></h3><p>启动新的函数跟踪</p>
+<p>启动跟踪从此点到trace_file参数中的文件的函数调用。如果未指定文件名，则跟踪文件将放置在由xdebug.trace_output_dir设置配置的目录中。</p>
+<p>如果文件名称作为第一个参数，则名称相对于当前工作目录。此当前工作目录可能与您预期的不同，因此，如果指定文件名，请使用绝对路径。使用PHP函数getcwd（）来找出当前工作目录是什么。</p>
+<p>跟踪文件的名称为“{trace_file} .xt”。如果启用了xdebug.auto_trace，则文件名的格式为“{filename} .xt”，其中“{filename}”部分取决于xdebug.trace_output_name设置。 options参数是一个位域;目前有三个选项：</p>
 <ul>
-<li><p>req</p>
+<li><p>XDEBUG_TRACE_APPEND（1）</p>
 <blockquote>
-<p>一旦脚本启动，Xdebug将尝试连接到调试客户端。</p>
+<p>使追踪文件在追加模式而不是覆盖模式下打开</p>
 </blockquote>
 </li>
-<li><p>jit</p>
+<li><p>XDEBUG_TRACE_COMPUTERIZED（2）</p>
 <blockquote>
-<p>Xdebug只会在出现错误情况时尝试连接到调试客户端。</p>
+<p>创建具有1“xdebug.trace_format”下描述的格式的跟踪文件。</p>
+</blockquote>
+</li>
+<li><p>XDEBUG_TRACE_HTML（4）</p>
+<blockquote>
+<p>将跟踪文件创建为HTML表</p>
+</blockquote>
+</li>
+<li><p>XDEBUG_TRACE_NAKED_FILENAME（8）</p>
+<blockquote>
+<p>通常，Xdebug总是将“.xt”添加到文件名的末尾，该文件名作为第一个参数传递给此函数。 如果设置了XDEBUG_TRACE_NAKED_FILENAME标志，则不会添加“.xt”。 （Xdebug 2.3中的新功能）。</p>
 </blockquote>
 </li>
 </ul>
-<h3 id="xdebug-remote-port"><a href="#xdebug-remote-port" class="headerlink" title="xdebug.remote_port"></a>xdebug.remote_port</h3><p>类型：整数，默认值：9000</p>
-<p>Xdebug尝试在远程主机上连接的端口。 端口9000是客户端和捆绑的debugclient的默认值。 由于许多客户端使用此端口号，最好保持此设置不变。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="bool-xdebug-break（）"><a href="#bool-xdebug-break（）" class="headerlink" title="bool xdebug_break（）"></a>bool xdebug_break（）</h3><p>向调试客户端发出断点。</p>
-<p>此函数使调试器在特定行上断开，就好像在此行上设置了正常的文件/行断点。</p>
-<p>over~</p>
+<p>与Xdebug 1不同，Xdebug 2不会在内存中存储函数调用，但始终只写入磁盘以减轻对已用内存的压力。 设置xdebug.collect_includes，xdebug.collect_params和xdebug.collect_return影响什么信息记录到跟踪文件，设置xdebug.trace_format影响跟踪文件的格式。<br>从此函数返回Xdebug跟踪的完整路径和文件名。 这将是您传入的文件名（可能添加了“.xt”），或者如果没有传入文件名，则为自动生成的文件名。</p>
+<h3 id="string-xdebug-start-trace（）"><a href="#string-xdebug-start-trace（）" class="headerlink" title="string xdebug_start_trace（）"></a><strong>string xdebug_start_trace（）</strong></h3><p>停止当前函数轨迹</p>
+<p>停止跟踪函数调用并关闭跟踪文件。</p>
+<p>该函数返回写入跟踪的文件的文件名。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。&lt;/p&gt;
+      &lt;p&gt;Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。&lt;/p&gt;
+&lt;p&gt;那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。&lt;br&gt;函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Xdebug之PHP脚本剖析</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8BPHP%E8%84%9A%E6%9C%AC%E5%89%96%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之PHP脚本剖析/</id>
+    <published>2016-10-22T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。</p>
+<a id="more"></a>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的Profiler是一个强大的工具，使您能够分析您的PHP代码并确定瓶颈，或者通常查看代码的哪些部分很慢，并可以使用速度提升。<br>Xdebug 2中的分析器以高速缓存磨削兼容文件的形式输出分析信息。这允许您使用优秀的KCacheGrind工具（Linux，KDE）来分析概要分析数据。</p>
+<ul>
+<li><p>如果你在Linux上，你可以安装KCacheGrind通过你最喜欢的包管理器。</p>
+</li>
+<li><p>如果你在Windows上，有预编译的QCacheGrind二进制文件可用。 （QCacheGrind是没有KDE绑定的KCacheGrind）。</p>
+</li>
+<li><p>如果你在Mac OSX上，还有如何构建QCacheGrind的说明。</p>
+</li>
+</ul>
+<p>Windows的用户可以选择使用WinCacheGrind。该功能不同于KCacheGrind，因此在此页面上记录使用KCacheGrind的部分不适用于此程序。 WinCacheGrind目前不支持Xdebug 2.3引入的cachegrind文件的文件和函数压缩。</p>
+<p>还有一个替代的配置文件信息呈现工具xdebugtoolkit，一个称为Webgrind的基于Web的前端，以及一个名为XCallGraph的基于Java的工具。</p>
+<p>如果您不能使用KDE（或不想使用KDE），kcachegrind软件包也会附带一个perl脚本“ct_annotate”，该脚本从profiler跟踪文件生成ASCII输出。</p>
+<h2 id="启动Profiler"><a href="#启动Profiler" class="headerlink" title="启动Profiler"></a>启动Profiler</h2><p>通过在php.ini中将xdebug.profiler_enable设置为1来启用分析。<br>这将指示Xdebug开始将分析信息写入使用xdebug.profiler_output_dir指令配置的转储目录。<br>生成的文件的名称始终以“cachegrind.out”开头。并以PHP（或Apache）进程的PID（进程ID）或包含最初调试的脚本的目录的crc32哈希结束。<br>请确保您的xdebug.profiler_output_dir中有足够的空间，因为分析器生成的信息量对于复杂脚本非常大，例如对于像eZ Publish这样的复杂应用程序，最多可以有500MB的空间。</p>
+<p>您还可以选择性地启用分析器，将xdebug.profiler_enable_trigger设置为1.<br>如果设置为1，那么可以使用名为XDEBUG_PROFILE的GET / POST或COOKIE变量启用分析器。<br>可以用于启用调试器（请参阅HTTP调试会话）的FireFox 2扩展也可以与此设置一起使用。为了使触发器正常工作，xdebug.profiler_enable需要设置为0。</p>
+<h2 id="分析Profiler"><a href="#分析Profiler" class="headerlink" title="分析Profiler"></a>分析Profiler</h2><p>生成配置文件信息文件后，可以使用 <a href="https://kcachegrind.github.io/" target="_blank" rel="external">KCacheGrind</a> 打开它：</p>
+<p><img src="https://xdebug.org/images/docs/kc-open.png" alt="img"></p>
+<p>一旦打开文件，您就可以在KCacheGrind的不同窗格中获得大量信息。在左侧，找到“Flat Profile”窗格，其中显示了脚本中按照此函数中的时间花费及其所有子项排序的所​​有函数。第二列“Self”显示此函数（没有其子项）的时间花费，第三列“Called”显示特定函数的调用频率，最后一列“Function”显示函数的名称。 Xdebug通过用“php ::”作为前缀来更改内部PHP函数名称，并且包含文件也以特殊方式处理。调用include（和include_one，require和require_once）后跟“::”和包含文件的文件名。在左边的截图中你可以看到“include :: / home / httpd / ez_34 / v …”，内部PHP函数的例子是“php :: mysql_query”。前两列中的数字可以是脚本的完整运行时间的百分比（如在示例中）或绝对时间（1单位是1 / 1,000,000秒）。您可以使用右侧显示的按钮在两种模式之间切换。</p>
+<p><img src="https://xdebug.org/images/docs/kc-profile.png" alt="img"></p>
+<p>右侧的窗格包含上窗格和下窗格。 上面的图显示了有关称为当前所选函数的函数的信息（“eztemplatedesignresource-&gt; executecompiledtemplate”）。下面的窗格显示当前所选函数调用的函数的信息。</p>
+<p><img src="https://xdebug.org/images/docs/kc-right-call.png" alt="img"></p>
+<p>上方窗格中的“成本”列显示从列表中的函数调用时当前所选函数的时间花费。 添加的“费用”列中的数字将始终为100％。 下方窗格中的“成本”列显示从列表中调用函数所花费的时间。 在添加此列表中的数字时，您很可能永远不会达到100％，因为所选的函数本身也需要时间来执行。</p>
+<p><img src="https://xdebug.org/images/docs/kc-right-callers.png" alt="img"></p>
+<p>“所有呼叫者”和“所有呼叫”选项卡不仅显示从其调用该函数的直接调用，而且还显示所有直接调用的函数调用，还显示函数调用更多级别上下调用。 左侧屏幕截图中的上部窗格显示了所有调用当前所选函数的函数，直接和间接地使用堆栈上它们之间的其他函数。 “距离”列显示列出的和当前选择的函数调用之间有多少个函数调用（-1）。 如果两个函数之间有不同的距离，则显示为一个范围（例如“5-24”）。 括号中的数字是中值距离。 下面的窗格是类似的，除了它显示从当前选择的函数调用的函数的信息，再次是直接或间接。</p>
+<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-profiler-append"><a href="#xdebug-profiler-append" class="headerlink" title="xdebug.profiler_append"></a>xdebug.profiler_append</h3><p>类型：整数，默认值：0</p>
+<p>当此设置设置为1时，当新请求映射到同一文件时（不在xdebug.profiler_output_name设置上），将不会覆盖分析器文件，而是使用新配置文件附加文件。</p>
+<h3 id="xdebug-profiler-enable"><a href="#xdebug-profiler-enable" class="headerlink" title="xdebug.profiler_enable"></a>xdebug.profiler_enable</h3><p>类型：整数，默认值：0</p>
+<p>启用Xdebug的概要分析器，它在概要文件输出目录中创建文件。这些文件可以由KCacheGrind读取以可视化您的数据。<br>无法使用ini_set（）在脚本中设置此设置。如果要选择性地启用分析器，请将xdebug.profiler_enable_trigger设置为1，而不使用此设置。</p>
+<h3 id="xdebug-profiler-enable-trigger"><a href="#xdebug-profiler-enable-trigger" class="headerlink" title="xdebug.profiler_enable_trigger"></a>xdebug.profiler_enable_trigger</h3><p>类型：整数，默认值：0</p>
+<p>当此设置设置为1时，可以使用XDEBUG_PROFILE GET / POST参数触发剖析器文件的生成，或者设置名为XDEBUG_PROFILE的cookie。<br>这将然后将分析器数据写入定义的目录。为了防止profiler为每个请求生成概要文件文件，您需要将xdebug.profiler_enable设置为0.对触发器本身的访问可以通过xdebug.profiler_enable_trigger_value配置。</p>
+<h3 id="xdebug-profiler-enable-trigger-value"><a href="#xdebug-profiler-enable-trigger-value" class="headerlink" title="xdebug.profiler_enable_trigger_value"></a>xdebug.profiler_enable_trigger_value</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.3中引入</p>
+<p>此设置可用于限制谁可以使用xdebug.profiler_enable_trigger中概述的XDEBUG_PROFILE功能。当从空字符串的默认值更改时，cookie，GET或POST参数的值需要使用此设置匹配共享机密集，<br>以便分析器启动。</p>
+<h3 id="xdebug-profiler-output-dir"><a href="#xdebug-profiler-output-dir" class="headerlink" title="xdebug.profiler_output_dir"></a>xdebug.profiler_output_dir</h3><p>类型：字符串，默认值：/ tmp</p>
+<p>将写入分析器输出的目录，确保PHP将运行的用户具有对该目录的写入权限。无法使用ini_set（）在脚本中设置此设置。</p>
+<h3 id="xdebug-profiler-output-name"><a href="#xdebug-profiler-output-name" class="headerlink" title="xdebug.profiler_output_name"></a>xdebug.profiler_output_name</h3><p>类型：字符串，默认值：cachegrind.out。％p</p>
+<p>此设置确定用于将跟踪转储到的文件的名称。设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。有几个格式说明符可以用于格式化文件名。</p>
+<p>有关受支持的说明符，请参见 <a href="https://xdebug.org/docs/all_settings#trace_output_name" target="_blank" rel="external">xdebug.trace_output_name</a> 文档。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="string-xdebug-get-profiler-filename（）"><a href="#string-xdebug-get-profiler-filename（）" class="headerlink" title="string xdebug get profiler filename（）"></a>string xdebug get profiler filename（）</h3><p>返回配置文件信息文件名</p>
+<p>返回用于将配置文件信息保存到的文件的名称。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Xdebug之代码覆盖率分析</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之代码覆盖率分析/</id>
+    <published>2016-10-22T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
+<a id="more"></a>
+<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-coverage-enable"><a href="#xdebug-coverage-enable" class="headerlink" title="xdebug.coverage_enable"></a>xdebug.coverage_enable</h3><p>类型：boolean，默认值：1，在Xdebug&gt; = 2.2中引入</p>
+<p>如果此设置设置为0，则Xdebug不会设置内部结构以允许代码覆盖。 这加快了Xdebug相当有点，但当然，代码覆盖率分析将不工作。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="boolean-xdebug-code-coverage-started（）"><a href="#boolean-xdebug-code-coverage-started（）" class="headerlink" title="boolean xdebug_code_coverage_started（）"></a>boolean xdebug_code_coverage_started（）</h3><p>返回代码覆盖是否处于活动状态。</p>
+<p>返回代码覆盖是否已开始。</p>
+<p>Example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<p>Returns:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">bool(false)</div><div class="line">bool(true)</div></pre></td></tr></table></figure>
+<h3 id="array-xdebug-get-code-coverage（）"><a href="#array-xdebug-get-code-coverage（）" class="headerlink" title="array xdebug_get_code_coverage（）"></a>array xdebug_get_code_coverage（）</h3><p>返回代码覆盖率信息</p>
+<p>返回一个结构，其中包含有关在脚本中执行哪些行（包括include文件）的信息。 以下示例显示了一个特定文件的代码覆盖率：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">a</span><span class="params">($a)</span> </span>&#123;</div><div class="line">        <span class="keyword">echo</span> $a * <span class="number">2.5</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">b</span><span class="params">($count)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $count; $i++) &#123;</div><div class="line">            a($i + <span class="number">0.17</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    b(<span class="number">6</span>);</div><div class="line">    b(<span class="number">10</span>);</div><div class="line"></div><div class="line">    var_dump(xdebug_get_code_coverage());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;/home/httpd/html/test/xdebug/docs/xdebug_get_code_coverage.php&apos; =&gt;</div><div class="line">    array</div><div class="line">      5 =&gt; int 1</div><div class="line">      6 =&gt; int 1</div><div class="line">      7 =&gt; int 1</div><div class="line">      9 =&gt; int 1</div><div class="line">      10 =&gt; int 1</div><div class="line">      11 =&gt; int 1</div><div class="line">      12 =&gt; int 1</div><div class="line">      13 =&gt; int 1</div><div class="line">      15 =&gt; int 1</div><div class="line">      16 =&gt; int 1</div><div class="line">      18 =&gt; int 1</div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-start-code-coverage（-int-options-）"><a href="#void-xdebug-start-code-coverage（-int-options-）" class="headerlink" title="void xdebug_start_code_coverage（[int options]）"></a>void xdebug_start_code_coverage（[int options]）</h3><p>开始代码覆盖</p>
+<p>此函数开始收集代码覆盖的信息。 收集的信息包括一个二维数组，其主要索引为执行的文件名，辅助键为行号。 元素中的值表示行是否已执行或它是否具有不可达行。</p>
+<p>每行的返回值为：</p>
+<ul>
+<li><p>1：这行被执行</p>
+</li>
+<li><p>-1：此行未执行</p>
+</li>
+<li><p>-2：这行没有可执行代码就可以了</p>
+</li>
+</ul>
+<p>值-1仅在启用XDEBUG_CC_UNUSED时返回，并且仅当启用了XDEBUG_CC_UNUSED和XDEBUG_CC_DEAD_CODE时才返回值-2。</p>
+<p>此函数有两个选项，用作位字段：</p>
+<ul>
+<li><p>XDEBUG_CC_UNUSED</p>
+<blockquote>
+<p>启用代码扫描，以确定哪行有可执行代码。 如果没有这个选项，返回的数组将只包含实际执行的行。</p>
+</blockquote>
+</li>
+<li><p>XDEBUG_CC_DEAD_CODE</p>
+<blockquote>
+<p>启用分支分析以确定是否可以执行代码。<br>启用这些选项会使代码覆盖率显着降低。<br>您可以使用以下示例中所示的选项。</p>
+</blockquote>
+</li>
+</ul>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_code_coverage( XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-stop-code-coverage（-int-cleanup-true-）"><a href="#void-xdebug-stop-code-coverage（-int-cleanup-true-）" class="headerlink" title="void xdebug_stop_code_coverage（[int cleanup = true]）"></a>void xdebug_stop_code_coverage（[int cleanup = true]）</h3><p>停止代码覆盖</p>
+<p>此功能停止收集信息，内存中的信息将被销毁。 如果传递“false”作为参数，那么代码覆盖率信息不会被销毁，因此您可以再次使用xdebug_start_code_coverage（）函数恢复信息收集。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。&lt;/p&gt;
     
     </summary>
     
@@ -1434,398 +1680,152 @@
   </entry>
   
   <entry>
-    <title>Xdebug之PHP脚本剖析</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8BPHP%E8%84%9A%E6%9C%AC%E5%89%96%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之PHP脚本剖析/</id>
+    <title>Xdebug之远程调试</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之远程调试/</id>
     <published>2016-10-22T12:30:00.000Z</published>
     <updated>2016-11-29T02:32:38.000Z</updated>
     
-    <content type="html"><![CDATA[<p>Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。</p>
+    <content type="html"><![CDATA[<p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
 <a id="more"></a>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的Profiler是一个强大的工具，使您能够分析您的PHP代码并确定瓶颈，或者通常查看代码的哪些部分很慢，并可以使用速度提升。<br>Xdebug 2中的分析器以高速缓存磨削兼容文件的形式输出分析信息。这允许您使用优秀的KCacheGrind工具（Linux，KDE）来分析概要分析数据。</p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的（远程）调试器允许您检查数据结构，交互式地浏览和调试您的代码。 正在使用的协议是打开的，称为DBGp。 此协议在Xdebug 2中实现，并替换不再支持的旧的GDB类协议。</p>
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Xdebug 2捆绑了一个用于DBGp协议的简单命令行客户端。 还有一些其他客户端实现（免费和商业）。 我不是任何这些的作者，所以请参考原作者的支持：</p>
 <ul>
-<li><p>如果你在Linux上，你可以安装KCacheGrind通过你最喜欢的包管理器。</p>
+<li>Dev-PHP (IDE: Windows)</li>
+<li>Eclipse plugin (IDE).</li>
+<li>Emacs plugin (Editor Plugin).</li>
+<li>KDevelop (IDE: Linux (KDE); Open Source).</li>
+<li>ActiveState’s Komodo (IDE: Windows, Linux, Mac; Commercial).</li>
+<li>MacGDBP (Standalone client for Mac OS X; Free)</li>
+<li>NetBeans (IDE: Windows, Linux, Mac OS X and Solaris).</li>
+<li>Notepad++ plugin (Editor: Windows).</li>
+<li>WaterProof’s PHPEdit (IDE, from version 2.10: Windows; Commercial).</li>
+<li>PHPEclipse (Editor Plugin).</li>
+<li>Devsense’s PHP Tools for Visual Studio (MS Visual Studio Plugin; Commercial).</li>
+<li>JetBrain’s PhpStorm (IDE; Commercial).</li>
+<li>Protoeditor (Editor: Linux).</li>
+<li>pugdebug (Standalone client for Linux, Windows and Mac OS X; Open Source).</li>
+<li>VIM plugin (Editor Plugin).</li>
+<li>jcx software’s VS.Php (MS Visual Studio Plugin; Commercial).</li>
+<li>Xdebug Chrome App (Chrome Application; Open Source)</li>
+<li>XDebugClient (Standalone client for Windows).</li>
+</ul>
+<p>用于调试的简单命令行客户机与debugclient目录中的Xdebug捆绑在一起。</p>
+<h2 id="启动调试器"><a href="#启动调试器" class="headerlink" title="启动调试器"></a>启动调试器</h2><p>为了启用Xdebug的调试器，您需要在php.ini中进行一些配置设置。 这些设置为xdebug.remote_enable以启用调试器xdebug.remote_host和xdebug.remote_port来配置调试器应连接到的IP地址和端口。 还有一个xdebug.remote_connect_back设置，如果您的开发服务器与多个开发人员共享，则可以使用此设置。</p>
+<p>如果希望调试器在发生错误情况（PHP错误或异常）时启动会话，则还需要更改xdebug.remote_mode设置。 此设置的允许值为“req”（默认值），这使得调试器在脚本启动时启动会话，或者“jit”，当会话只应在错误时启动。</p>
+<p>完成所有这些设置后，Xdebug仍然不会在脚本运行时自动启动调试会话。 你需要激活Xdebug的调试器，你可以通过三种方式：</p>
+<p>1、当从命令行运行脚本时，您需要设置一个环境变量，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name&quot;</div><div class="line">php myscript.php</div></pre></td></tr></table></figure></p>
+<p>您还可以在此相同的环境变量中配置xdebug.remote_host，xdebug.remote_port，xdebug.remote_mode和xdebug.remote_handler，只要使用空格分隔值即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name remote_host=localhost profiler_enable=1&quot;</div></pre></td></tr></table></figure></p>
+<p>通过XDEBUG_CONFIG设置可以获得的所有设置也可以使用正常的php.ini设置进行设置。</p>
+<p>2、如果要调试通过Web浏览器启动的脚本，只需将XDEBUG_SESSION_START = session_name作为参数添加到URL。 而不是使用GET参数，您还可以将XDEBUG_SESSION_START设置为POST参数，或通过cookie。 请参阅下一节，了解调试会话如何在浏览器窗口中工作。</p>
+<p>3、通过Web服务器运行PHP时激活调试器的另一种方法是安装以下四个浏览器扩展之一。 它们中的每一个都允许您通过单击一个按钮来启用调试器。 当这些扩展是活动的，他们直接设置XDEBUG_SESSION cookie，而不是通过XDEBUG_SESSION_START进一步的HTTP调试会话中描述。 扩展名为：</p>
+<ul>
+<li><p>The easiest Xdebug</p>
+<blockquote>
+<p>这个扩展的Firefox是为了使IDE的调试更容易。 您可以在<a href="https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。" target="_blank" rel="external">https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。</a></p>
+</blockquote>
 </li>
-<li><p>如果你在Windows上，有预编译的QCacheGrind二进制文件可用。 （QCacheGrind是没有KDE绑定的KCacheGrind）。</p>
+<li><p>Xdebug Helper for Chrome</p>
+<blockquote>
+<p>Chrome的此扩展程序将帮助您通过一次点击启用/禁用调试和分析。 您可以在<a href="https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。" target="_blank" rel="external">https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。</a></p>
+</blockquote>
 </li>
-<li><p>如果你在Mac OSX上，还有如何构建QCacheGrind的说明。</p>
+<li><p>Xdebug Toggler for Safari</p>
+<blockquote>
+<p>Safari的这个扩展允许你从Safari中自动启动Xdebug调试。 你可以从Github <a href="https://github.com/benmatselby/xdebug-toggler获取它。" target="_blank" rel="external">https://github.com/benmatselby/xdebug-toggler获取它。</a></p>
+</blockquote>
+</li>
+<li><p>Xdebug launcher for Opera</p>
+<blockquote>
+<p>这个扩展的Opera允许您从Opera启动Xdebug会话。</p>
+</blockquote>
 </li>
 </ul>
-<p>Windows的用户可以选择使用WinCacheGrind。该功能不同于KCacheGrind，因此在此页面上记录使用KCacheGrind的部分不适用于此程序。 WinCacheGrind目前不支持Xdebug 2.3引入的cachegrind文件的文件和函数压缩。</p>
-<p>还有一个替代的配置文件信息呈现工具xdebugtoolkit，一个称为Webgrind的基于Web的前端，以及一个名为XCallGraph的基于Java的工具。</p>
-<p>如果您不能使用KDE（或不想使用KDE），kcachegrind软件包也会附带一个perl脚本“ct_annotate”，该脚本从profiler跟踪文件生成ASCII输出。</p>
-<h2 id="启动Profiler"><a href="#启动Profiler" class="headerlink" title="启动Profiler"></a>启动Profiler</h2><p>通过在php.ini中将xdebug.profiler_enable设置为1来启用分析。<br>这将指示Xdebug开始将分析信息写入使用xdebug.profiler_output_dir指令配置的转储目录。<br>生成的文件的名称始终以“cachegrind.out”开头。并以PHP（或Apache）进程的PID（进程ID）或包含最初调试的脚本的目录的crc32哈希结束。<br>请确保您的xdebug.profiler_output_dir中有足够的空间，因为分析器生成的信息量对于复杂脚本非常大，例如对于像eZ Publish这样的复杂应用程序，最多可以有500MB的空间。</p>
-<p>您还可以选择性地启用分析器，将xdebug.profiler_enable_trigger设置为1.<br>如果设置为1，那么可以使用名为XDEBUG_PROFILE的GET / POST或COOKIE变量启用分析器。<br>可以用于启用调试器（请参阅HTTP调试会话）的FireFox 2扩展也可以与此设置一起使用。为了使触发器正常工作，xdebug.profiler_enable需要设置为0。</p>
-<h2 id="分析Profiler"><a href="#分析Profiler" class="headerlink" title="分析Profiler"></a>分析Profiler</h2><p>生成配置文件信息文件后，可以使用 <a href="https://kcachegrind.github.io/" target="_blank" rel="external">KCacheGrind</a> 打开它：</p>
-<p><img src="https://xdebug.org/images/docs/kc-open.png" alt="img"></p>
-<p>一旦打开文件，您就可以在KCacheGrind的不同窗格中获得大量信息。在左侧，找到“Flat Profile”窗格，其中显示了脚本中按照此函数中的时间花费及其所有子项排序的所​​有函数。第二列“Self”显示此函数（没有其子项）的时间花费，第三列“Called”显示特定函数的调用频率，最后一列“Function”显示函数的名称。 Xdebug通过用“php ::”作为前缀来更改内部PHP函数名称，并且包含文件也以特殊方式处理。调用include（和include_one，require和require_once）后跟“::”和包含文件的文件名。在左边的截图中你可以看到“include :: / home / httpd / ez_34 / v …”，内部PHP函数的例子是“php :: mysql_query”。前两列中的数字可以是脚本的完整运行时间的百分比（如在示例中）或绝对时间（1单位是1 / 1,000,000秒）。您可以使用右侧显示的按钮在两种模式之间切换。</p>
-<p><img src="https://xdebug.org/images/docs/kc-profile.png" alt="img"></p>
-<p>右侧的窗格包含上窗格和下窗格。 上面的图显示了有关称为当前所选函数的函数的信息（“eztemplatedesignresource-&gt; executecompiledtemplate”）。下面的窗格显示当前所选函数调用的函数的信息。</p>
-<p><img src="https://xdebug.org/images/docs/kc-right-call.png" alt="img"></p>
-<p>上方窗格中的“成本”列显示从列表中的函数调用时当前所选函数的时间花费。 添加的“费用”列中的数字将始终为100％。 下方窗格中的“成本”列显示从列表中调用函数所花费的时间。 在添加此列表中的数字时，您很可能永远不会达到100％，因为所选的函数本身也需要时间来执行。</p>
-<p><img src="https://xdebug.org/images/docs/kc-right-callers.png" alt="img"></p>
-<p>“所有呼叫者”和“所有呼叫”选项卡不仅显示从其调用该函数的直接调用，而且还显示所有直接调用的函数调用，还显示函数调用更多级别上下调用。 左侧屏幕截图中的上部窗格显示了所有调用当前所选函数的函数，直接和间接地使用堆栈上它们之间的其他函数。 “距离”列显示列出的和当前选择的函数调用之间有多少个函数调用（-1）。 如果两个函数之间有不同的距离，则显示为一个范围（例如“5-24”）。 括号中的数字是中值距离。 下面的窗格是类似的，除了它显示从当前选择的函数调用的函数的信息，再次是直接或间接。</p>
-<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-profiler-append"><a href="#xdebug-profiler-append" class="headerlink" title="xdebug.profiler_append"></a>xdebug.profiler_append</h3><p>类型：整数，默认值：0</p>
-<p>当此设置设置为1时，当新请求映射到同一文件时（不在xdebug.profiler_output_name设置上），将不会覆盖分析器文件，而是使用新配置文件附加文件。</p>
-<h3 id="xdebug-profiler-enable"><a href="#xdebug-profiler-enable" class="headerlink" title="xdebug.profiler_enable"></a>xdebug.profiler_enable</h3><p>类型：整数，默认值：0</p>
-<p>启用Xdebug的概要分析器，它在概要文件输出目录中创建文件。这些文件可以由KCacheGrind读取以可视化您的数据。<br>无法使用ini_set（）在脚本中设置此设置。如果要选择性地启用分析器，请将xdebug.profiler_enable_trigger设置为1，而不使用此设置。</p>
-<h3 id="xdebug-profiler-enable-trigger"><a href="#xdebug-profiler-enable-trigger" class="headerlink" title="xdebug.profiler_enable_trigger"></a>xdebug.profiler_enable_trigger</h3><p>类型：整数，默认值：0</p>
-<p>当此设置设置为1时，可以使用XDEBUG_PROFILE GET / POST参数触发剖析器文件的生成，或者设置名为XDEBUG_PROFILE的cookie。<br>这将然后将分析器数据写入定义的目录。为了防止profiler为每个请求生成概要文件文件，您需要将xdebug.profiler_enable设置为0.对触发器本身的访问可以通过xdebug.profiler_enable_trigger_value配置。</p>
-<h3 id="xdebug-profiler-enable-trigger-value"><a href="#xdebug-profiler-enable-trigger-value" class="headerlink" title="xdebug.profiler_enable_trigger_value"></a>xdebug.profiler_enable_trigger_value</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.3中引入</p>
-<p>此设置可用于限制谁可以使用xdebug.profiler_enable_trigger中概述的XDEBUG_PROFILE功能。当从空字符串的默认值更改时，cookie，GET或POST参数的值需要使用此设置匹配共享机密集，<br>以便分析器启动。</p>
-<h3 id="xdebug-profiler-output-dir"><a href="#xdebug-profiler-output-dir" class="headerlink" title="xdebug.profiler_output_dir"></a>xdebug.profiler_output_dir</h3><p>类型：字符串，默认值：/ tmp</p>
-<p>将写入分析器输出的目录，确保PHP将运行的用户具有对该目录的写入权限。无法使用ini_set（）在脚本中设置此设置。</p>
-<h3 id="xdebug-profiler-output-name"><a href="#xdebug-profiler-output-name" class="headerlink" title="xdebug.profiler_output_name"></a>xdebug.profiler_output_name</h3><p>类型：字符串，默认值：cachegrind.out。％p</p>
-<p>此设置确定用于将跟踪转储到的文件的名称。设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。有几个格式说明符可以用于格式化文件名。</p>
-<p>有关受支持的说明符，请参见 <a href="https://xdebug.org/docs/all_settings#trace_output_name" target="_blank" rel="external">xdebug.trace_output_name</a> 文档。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="string-xdebug-get-profiler-filename（）"><a href="#string-xdebug-get-profiler-filename（）" class="headerlink" title="string xdebug get profiler filename（）"></a>string xdebug get profiler filename（）</h3><p>返回配置文件信息文件名</p>
-<p>返回用于将配置文件信息保存到的文件的名称。</p>
+<p>在你开始你的脚本之前，你需要告诉你的客户端它可以接收调试连接，请参考具体客户端的文档如何做到这一点。 要使用捆绑的客户端，只需在编译和安装后启动它。 您可以通过运行“debugclient”启动它。</p>
+<p>当debugclient启动时，它将显示以下信息，然后等待，直到调试服务器启动连接：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Xdebug Simple DBGp client (0.10.0)</div><div class="line">Copyright 2002-2007 by Derick Rethans.</div><div class="line">- libedit support: enabled</div><div class="line"></div><div class="line">Waiting for debug server to connect.</div></pre></td></tr></table></figure></p>
+<p>在建立连接后，将显示调试服务器的输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Connect</div><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;iso-8859-1&quot;?&gt;</div><div class="line">&lt;init xmlns=&quot;urn:debugger_protocol_v1&quot;</div><div class="line">      xmlns:xdebug=&quot;http://xdebug.org/dbgp/xdebug&quot;</div><div class="line">      fileuri=&quot;file:///home/httpd/www.xdebug.org/html/docs/index.php&quot;</div><div class="line">      language=&quot;PHP&quot;</div><div class="line">      protocol_version=&quot;1.0&quot;</div><div class="line">      appid=&quot;13202&quot;</div><div class="line">      idekey=&quot;derick&quot;&gt;</div><div class="line">  &lt;engine version=&quot;2.0.0RC4-dev&quot;&gt;&lt;![CDATA[Xdebug]]&gt;&lt;/engine&gt;</div><div class="line">  &lt;author&gt;&lt;![CDATA[Derick Rethans]]&gt;&lt;/author&gt;</div><div class="line">  &lt;url&gt;&lt;![CDATA[http://xdebug.org]]&gt;&lt;/url&gt;</div><div class="line">  &lt;copyright&gt;&lt;![CDATA[Copyright (c) 2002-2007 by Derick Rethans]]&gt;&lt;/copyright&gt;</div><div class="line">&lt;/init&gt;</div><div class="line">(cmd)</div></pre></td></tr></table></figure></p>
+<p>现在，您可以使用DBGp文档页面中说明的命令集。 当脚本结束时，调试服务器与客户端断开连接，并且调试客户端在等待新连接时恢复。</p>
+<h2 id="通讯建立"><a href="#通讯建立" class="headerlink" title="通讯建立"></a>通讯建立</h2><h3 id="使用静态IP-单个开发者"><a href="#使用静态IP-单个开发者" class="headerlink" title="使用静态IP /单个开发者"></a>使用静态IP /单个开发者</h3><p>通过远程调试，嵌入在PHP中的Xdebug就像客户端，而IDE作为服务器。 以下动画显示了通信通道的设置：</p>
+<p><img src="https://xdebug.org/images/docs/dbgp-setup.gif" alt="img"></p>
+<ul>
+<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
+<li>IDE在IP 10.0.1.42上，因此xdebug.remote_host设置为10.0.1.42</li>
+<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
+<li>HTTP请求在运行IDE的计算机上启动</li>
+<li>Xdebug连接到10.0.1.42:9000</li>
+<li>调试运行，提供HTTP响应</li>
+</ul>
+<h3 id="与未知IP-多开发者"><a href="#与未知IP-多开发者" class="headerlink" title="与未知IP /多开发者"></a>与未知IP /多开发者</h3><p>如果使用xdebug.remote_connect_back，设置稍有不同：</p>
+<p><img src="https://xdebug.org/images/docs/dbgp-setup2.gif" alt="img"></p>
+<ul>
+<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
+<li>IDE处于未知IP，因此xdebug.remote_connect_back设置为1</li>
+<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
+<li>发出HTTP请求后，Xdebug将从HTTP头中检测IP地址</li>
+<li>Xdebug连接到端口9000上检测到的IP（10.0.1.42）</li>
+<li>调试运行，提供HTTP响应</li>
+</ul>
+<h2 id="HTTP调试会话"><a href="#HTTP调试会话" class="headerlink" title="HTTP调试会话"></a>HTTP调试会话</h2><p>Xdebug包含通过浏览器启动时跟踪调试会话的功能：Cookie。 这是这样工作：</p>
+<ul>
+<li><p>当URL变量XDEBUG_SESSION_START = name附加到URL或通过具有相同名称的POST变量时，-Xdebug会发出名为“XDEBUG_SESSION”的cookie，并将值设置为XDEBUG_SESSION_START URL参数的值。 cookie的到期时间为1小时。 当连接到“idekey”属性中的debugclient时，DBGp协议也将此相同的值传递给init包。</p>
+</li>
+<li><p>当有一个GET（或POST）变量XDEBUG_SESSION_START或XDEBUG_SESSION cookie被设置时，Xdebug将尝试连接到一个调试客户端。</p>
+</li>
+<li><p>要停止调试会话（并销毁cookie），只需添加URL参数XDEBUG_SESSION_STOP即可。 Xdebug将不再尝试连接到调试客户端。</p>
+</li>
+</ul>
+<h2 id="多用户调试"><a href="#多用户调试" class="headerlink" title="多用户调试"></a>多用户调试</h2><p>Xdebug仅允许您在执行远程调试时指定一个IP地址与xdebug.remote_host连接。它不会自动连接回浏览器运行的计算机的IP地址，除非您使用xdebug.remote_connect_back。</p>
+<p>如果所有开发人员在同一（开发）服务器上的不同项目上工作，则可以通过Apache的.htaccess功能为每个目录设置xdebug.remote_host设置，方法是使用php_value xdebug.remote_host = 10.0.0.5。但是，对于多个开发人员在同一代码上工作的情况，.htaccess技巧不工作，因为代码所在的目录是相同的。</p>
+<p>有两个解决方案。首先，你可以使用DBGp代理。有关如何使用此代理的概述，请参阅多个用户调试中的文章。您可以在ActiveState的网站上下载代理作为python远程调试包的一部分。 Komodo FAQ中还有一些文档。</p>
+<p>其次，您可以使用Xdebug 2.1中引入的xdebug.remote_connect_back设置。</p>
+<h2 id="实施细则"><a href="#实施细则" class="headerlink" title="实施细则"></a>实施细则</h2><p>Xdebug的DBGp协议的context_names命令的实现不依赖于栈级别。 在每个调试器会话期间返回的值总是相同的，因此，可以安全地缓存。</p>
+<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-extended-info"><a href="#xdebug-extended-info" class="headerlink" title="xdebug.extended_info"></a>xdebug.extended_info</h3><p>类型：整数，默认值：1</p>
+<p>控制Xdebug是否应该为PHP解析器强制执行’extended_info’模式;这允许Xdebug使用远程调试器执行文件/行断点。当跟踪或剖析脚本时，通常希望关闭此选项，因为PHP生成的oparrays将增加大约三分之一的大小减慢脚本。此设置不能在带有ini_set（）的脚本中设置，但只能在php.ini中设置。</p>
+<h3 id="xdebug-idekey"><a href="#xdebug-idekey" class="headerlink" title="xdebug.idekey"></a>xdebug.idekey</h3><p>类型：字符串，默认值：<em> complex </em></p>
+<p>控制哪个IDE密钥Xdebug应该传递到DBGp调试器处理程序。默认值基于环境设置。首先查询环境设置DBGP_IDEKEY，然后查询USER和最后一个USERNAME。默认值设置为找到的第一个环境变量。如果找不到，则设置为默认的“”。如果设置此设置，它始终覆盖环境变量。</p>
+<h3 id="xdebug-remote-addr-header"><a href="#xdebug-remote-addr-header" class="headerlink" title="xdebug.remote_addr_header"></a>xdebug.remote_addr_header</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.4中引入</p>
+<p>如果xdebug.remote_addr_header配置为非空字符串，那么该值将用作$ SERVER超全局数组中的键，以确定用于查找用于“连接回”的IP地址或主机名的头。此设置仅与xdebug.remote_connect_back结合使用，否则将被忽略。</p>
+<h3 id="xdebug-remote-autostart"><a href="#xdebug-remote-autostart" class="headerlink" title="xdebug.remote_autostart"></a>xdebug.remote_autostart</h3><p>类型：布尔值，默认值：0</p>
+<p>通常，您需要使用特定的HTTP GET / POST变量来启动远程调试（请参阅远程调试）。当此设置设置为1时，Xdebug将始终尝试启动远程调试会话并尝试连接到客户端，即使GET / POST / COOKIE变量不存在。</p>
+<h3 id="xdebug-remote-connect-back"><a href="#xdebug-remote-connect-back" class="headerlink" title="xdebug.remote_connect_back"></a>xdebug.remote_connect_back</h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
+<p>如果启用，xdebug.remote_host设置将被忽略，Xdebug将尝试连接到发出HTTP请求的客户端。它检查$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量以找出要使用的IP地址。</p>
+<p>如果配置了xdebug.remote_addr_header，那么将在$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量之前检查具有配置名称的$ SERVER变量。</p>
+<p>此设置不适用于通过CLI进行调试，因为$ SERVER标题变量在那里不可用。</p>
+<p>请注意，没有可用的过滤器，任何可以连接到Web服务器的人都能够启动调试会话，即使他们的地址与xdebug.remote_host不匹配。</p>
+<h3 id="xdebug-remote-cookie-expire-time"><a href="#xdebug-remote-cookie-expire-time" class="headerlink" title="xdebug.remote_cookie_expire_time"></a>xdebug.remote_cookie_expire_time</h3><p>类型：整数，默认值：3600，在Xdebug&gt; 2.1中引入</p>
+<p>此设置可用于增加（或减少）远程调试会话通过会话cookie保持活动的时间。</p>
+<h3 id="xdebug-remote-enable"><a href="#xdebug-remote-enable" class="headerlink" title="xdebug.remote_enable"></a>xdebug.remote_enable</h3><p>类型：布尔值，默认值：0</p>
+<p>此开关控制Xdebug是否应尝试联系正在侦听主机上的调试客户端，并使用设置xdebug.remote_host和xdebug.remote_port设置的端口。如果无法建立连接，脚本将继续，就像此设置为0。</p>
+<h3 id="xdebug-remote-handler"><a href="#xdebug-remote-handler" class="headerlink" title="xdebug.remote_handler"></a>xdebug.remote_handler</h3><p>类型：字符串，默认值：dbgp</p>
+<p>可以是“php3”选择旧的PHP 3式调试器输出，“gdb”启用GDB像调试器接口或’dbgp’ - 调试器协议。 DBGp协议是唯一支持的协议。</p>
+<p>注意：Xdebug 2.1和更高版本只支持’db​​gp’作为协议。</p>
+<h3 id="xdebug-remote-host"><a href="#xdebug-remote-host" class="headerlink" title="xdebug.remote_host"></a>xdebug.remote_host</h3><p>类型：字符串，默认值：localhost<br>选择运行调试客户端的主机，您可以使用主机名或IP地址。如果启用xdebug.remote_connect_back，将忽略此设置。</p>
+<h3 id="xdebug-remote-log"><a href="#xdebug-remote-log" class="headerlink" title="xdebug.remote_log"></a>xdebug.remote_log</h3><p>类型：字符串，默认值：</p>
+<p>如果设置为某个值，则将其用作所有远程调试器通信记录到的文件的文件名。 该文件始终以附加模式打开，因此默认情况下不会被覆盖。 没有可用的并发保护。 该文件的格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Log opened at 2007-05-27 14:28:15</div><div class="line">-&gt; &lt;init xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/dbgp/x ... ight&gt;&lt;/init&gt;</div><div class="line"></div><div class="line">&lt;- step_into -i 1</div><div class="line">-&gt; &lt;response xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/db ... &gt;&lt;/response&gt;</div></pre></td></tr></table></figure></p>
+<h3 id="xdebug-remote-mode"><a href="#xdebug-remote-mode" class="headerlink" title="xdebug.remote_mode"></a>xdebug.remote_mode</h3><p>类型：字符串，默认值：req</p>
+<p>选择启动调试连接的时间。 此设置可以有两个不同的值：</p>
+<ul>
+<li><p>req</p>
+<blockquote>
+<p>一旦脚本启动，Xdebug将尝试连接到调试客户端。</p>
+</blockquote>
+</li>
+<li><p>jit</p>
+<blockquote>
+<p>Xdebug只会在出现错误情况时尝试连接到调试客户端。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="xdebug-remote-port"><a href="#xdebug-remote-port" class="headerlink" title="xdebug.remote_port"></a>xdebug.remote_port</h3><p>类型：整数，默认值：9000</p>
+<p>Xdebug尝试在远程主机上连接的端口。 端口9000是客户端和捆绑的debugclient的默认值。 由于许多客户端使用此端口号，最好保持此设置不变。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="bool-xdebug-break（）"><a href="#bool-xdebug-break（）" class="headerlink" title="bool xdebug_break（）"></a>bool xdebug_break（）</h3><p>向调试客户端发出断点。</p>
+<p>此函数使调试器在特定行上断开，就好像在此行上设置了正常的文件/行断点。</p>
+<p>over~</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之代码覆盖率分析</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之代码覆盖率分析/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:38.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
-<a id="more"></a>
-<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-coverage-enable"><a href="#xdebug-coverage-enable" class="headerlink" title="xdebug.coverage_enable"></a>xdebug.coverage_enable</h3><p>类型：boolean，默认值：1，在Xdebug&gt; = 2.2中引入</p>
-<p>如果此设置设置为0，则Xdebug不会设置内部结构以允许代码覆盖。 这加快了Xdebug相当有点，但当然，代码覆盖率分析将不工作。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="boolean-xdebug-code-coverage-started（）"><a href="#boolean-xdebug-code-coverage-started（）" class="headerlink" title="boolean xdebug_code_coverage_started（）"></a>boolean xdebug_code_coverage_started（）</h3><p>返回代码覆盖是否处于活动状态。</p>
-<p>返回代码覆盖是否已开始。</p>
-<p>Example:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<p>Returns:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">bool(false)</div><div class="line">bool(true)</div></pre></td></tr></table></figure>
-<h3 id="array-xdebug-get-code-coverage（）"><a href="#array-xdebug-get-code-coverage（）" class="headerlink" title="array xdebug_get_code_coverage（）"></a>array xdebug_get_code_coverage（）</h3><p>返回代码覆盖率信息</p>
-<p>返回一个结构，其中包含有关在脚本中执行哪些行（包括include文件）的信息。 以下示例显示了一个特定文件的代码覆盖率：</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">a</span><span class="params">($a)</span> </span>&#123;</div><div class="line">        <span class="keyword">echo</span> $a * <span class="number">2.5</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">b</span><span class="params">($count)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $count; $i++) &#123;</div><div class="line">            a($i + <span class="number">0.17</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    b(<span class="number">6</span>);</div><div class="line">    b(<span class="number">10</span>);</div><div class="line"></div><div class="line">    var_dump(xdebug_get_code_coverage());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;/home/httpd/html/test/xdebug/docs/xdebug_get_code_coverage.php&apos; =&gt;</div><div class="line">    array</div><div class="line">      5 =&gt; int 1</div><div class="line">      6 =&gt; int 1</div><div class="line">      7 =&gt; int 1</div><div class="line">      9 =&gt; int 1</div><div class="line">      10 =&gt; int 1</div><div class="line">      11 =&gt; int 1</div><div class="line">      12 =&gt; int 1</div><div class="line">      13 =&gt; int 1</div><div class="line">      15 =&gt; int 1</div><div class="line">      16 =&gt; int 1</div><div class="line">      18 =&gt; int 1</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-start-code-coverage（-int-options-）"><a href="#void-xdebug-start-code-coverage（-int-options-）" class="headerlink" title="void xdebug_start_code_coverage（[int options]）"></a>void xdebug_start_code_coverage（[int options]）</h3><p>开始代码覆盖</p>
-<p>此函数开始收集代码覆盖的信息。 收集的信息包括一个二维数组，其主要索引为执行的文件名，辅助键为行号。 元素中的值表示行是否已执行或它是否具有不可达行。</p>
-<p>每行的返回值为：</p>
-<ul>
-<li><p>1：这行被执行</p>
-</li>
-<li><p>-1：此行未执行</p>
-</li>
-<li><p>-2：这行没有可执行代码就可以了</p>
-</li>
-</ul>
-<p>值-1仅在启用XDEBUG_CC_UNUSED时返回，并且仅当启用了XDEBUG_CC_UNUSED和XDEBUG_CC_DEAD_CODE时才返回值-2。</p>
-<p>此函数有两个选项，用作位字段：</p>
-<ul>
-<li><p>XDEBUG_CC_UNUSED</p>
-<blockquote>
-<p>启用代码扫描，以确定哪行有可执行代码。 如果没有这个选项，返回的数组将只包含实际执行的行。</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_CC_DEAD_CODE</p>
-<blockquote>
-<p>启用分支分析以确定是否可以执行代码。<br>启用这些选项会使代码覆盖率显着降低。<br>您可以使用以下示例中所示的选项。</p>
-</blockquote>
-</li>
-</ul>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_code_coverage( XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-stop-code-coverage（-int-cleanup-true-）"><a href="#void-xdebug-stop-code-coverage（-int-cleanup-true-）" class="headerlink" title="void xdebug_stop_code_coverage（[int cleanup = true]）"></a>void xdebug_stop_code_coverage（[int cleanup = true]）</h3><p>停止代码覆盖</p>
-<p>此功能停止收集信息，内存中的信息将被销毁。 如果传递“false”作为参数，那么代码覆盖率信息不会被销毁，因此您可以再次使用xdebug_start_code_coverage（）函数恢复信息收集。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之函数轨迹跟踪</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%87%BD%E6%95%B0%E8%BD%A8%E8%BF%B9%E8%B7%9F%E8%B8%AA/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之函数轨迹跟踪/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:38.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。</p>
-<p>那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。<br>函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。</p>
-<a id="more"></a>
-<h2 id="输出格式"><a href="#输出格式" class="headerlink" title="输出格式"></a>输出格式</h2><p>有三种输出格式。 一个是作为一个人类可读的跟踪，另一个更适合计算机程序，因为它更容易解析，最后一个使用HTML格式化跟踪。 您可以使用xdebug.trace_format设置在两种不同的格式之间切换。 有一些设置控制哪些信息写入跟踪文件。 有一些设置包括变量（xdebug.collect_params）和包括返回值（xdebug.collect_return）例如。 下面的示例显示了不同设置对人类可读功能轨迹的影响。</p>
-<p>脚本<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">$str = <span class="string">"Xdebug"</span>;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">ret_ord</span><span class="params">( $c )</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">return</span> ord( $c );</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">foreach</span> ( str_split( $str ) <span class="keyword">as</span> $char )</div><div class="line">&#123;</div><div class="line">    <span class="keyword">echo</span> $char, <span class="string">": "</span>, ret_ord( $char ), <span class="string">"\n"</span>;</div><div class="line">&#125;</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>结果：</p>
-<p>以下是使用xdebug.collect_params设置的不同设置的结果。 因为这不是一个Web环境,值2没有任何意义，因为工具提示不工作在文本文件。</p>
-<ul>
-<li><p>default</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:06]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split() ../trace.php:8</div><div class="line">    0.0153     117424     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0165     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0166     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0167     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0168     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0168     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0170     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0170     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0172     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0172     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0173     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0174     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0177      41152</div><div class="line">TRACE END   [2007-05-06 14:37:07]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_params=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:11]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(string(6)) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:11]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_params=3</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:13]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord(&apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord(&apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord(&apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord(&apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord(&apos;u&apos;) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord(&apos;g&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:13]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_params=4</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:16]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:16]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>除了xdebug.collect_params设置，还有另一些影响跟踪文件输出的设置。<br>第一个选项卡“默认”显示与上面的默认值相同。<br>第二个选项卡“show_mem_delta = 1”还显示输出文件中两个不同行之间的内存使用差异。</p>
-<p>在“collect return = 1”选项卡上，所有函数调用的返回值也是可见的。 这使用xdebug.collect返回设置打开。</p>
-<p>名为“collect assignments = 1”的选项卡显示可变分配，可以使用xdebug.collect分配设置打开。</p>
-<p>最后一个选项卡显示不同的输出格式，更容易解析，但更难阅读。<br>因此，如果有一个额外的工具来解释跟踪文件，xdebug.trace_format设置是非常有用的。</p>
-<ul>
-<li><p>default</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:06]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split() ../trace.php:8</div><div class="line">    0.0153     117424     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0165     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0166     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0167     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0168     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0168     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0170     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0170     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0172     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0172     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0173     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0174     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0177      41152</div><div class="line">TRACE END   [2007-05-06 14:37:07]</div></pre></td></tr></table></figure>
-</li>
-<li><p>show_mem_delta=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:26]</div><div class="line">    0.0003     114112  +114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     +160     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424    +3152     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584     +160       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584       +0     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       +0       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0011     117584       +0     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       +0       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0013     117584       +0     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       +0       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584       +0     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0015     117584       +0       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584       +0     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0017     117584       +0       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:26]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_return=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:35]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">                          &gt;=&gt; array (0 =&gt; &apos;X&apos;, 1 =&gt; &apos;d&apos;, 2 =&gt; &apos;e&apos;, 3 =&gt; &apos;b&apos;, 4 =&gt; &apos;u&apos;, 5 =&gt; &apos;g&apos;)</div><div class="line">    0.0007     117424     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 88</div><div class="line">                          &gt;=&gt; 88</div><div class="line">    0.0009     117584     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 100</div><div class="line">                          &gt;=&gt; 100</div><div class="line">    0.0011     117584     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 101</div><div class="line">                          &gt;=&gt; 101</div><div class="line">    0.0013     117584     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 98</div><div class="line">                          &gt;=&gt; 98</div><div class="line">    0.0015     117584     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 117</div><div class="line">                          &gt;=&gt; 117</div><div class="line">    0.0017     117584     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0018     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 103</div><div class="line">                          &gt;=&gt; 103</div><div class="line">                        &gt;=&gt; 1</div><div class="line">    0.0021      41152</div><div class="line">TRACE END   [2007-05-06 14:37:35]</div></pre></td></tr></table></figure>
-</li>
-<li><p>trace_format=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">Version: 2.0.0RC4-dev</div><div class="line">TRACE START [2007-05-06 18:29:01]</div><div class="line">1	0	0	0.010870	114112	&#123;main&#125;	1	../trace.php	0</div><div class="line">2	1	0	0.032009	114272	str_split	0	../trace.php	8</div><div class="line">2	1	1	0.032073	116632</div><div class="line">2	2	0	0.033505	117424	ret_ord	1	../trace.php	10</div><div class="line">3	3	0	0.033531	117584	ord	0	../trace.php	5</div><div class="line">3	3	1	0.033551	117584</div><div class="line">2	2	1	0.033567	117584</div><div class="line">2	4	0	0.033718	117584	ret_ord	1	../trace.php	10</div><div class="line">3	5	0	0.033740	117584	ord	0	../trace.php	5</div><div class="line">3	5	1	0.033758	117584</div><div class="line">2	4	1	0.033770	117584</div><div class="line">2	6	0	0.033914	117584	ret_ord	1	../trace.php	10</div><div class="line">3	7	0	0.033936	117584	ord	0	../trace.php	5</div><div class="line">3	7	1	0.033953	117584</div><div class="line">2	6	1	0.033965	117584</div><div class="line">2	8	0	0.034108	117584	ret_ord	1	../trace.php	10</div><div class="line">3	9	0	0.034130	117584	ord	0	../trace.php	5</div><div class="line">3	9	1	0.034147	117584</div><div class="line">2	8	1	0.034160	117584</div><div class="line">2	10	0	0.034302	117584	ret_ord	1	../trace.php	10</div><div class="line">3	11	0	0.034325	117584	ord	0	../trace.php	5</div><div class="line">3	11	1	0.034342	117584</div><div class="line">2	10	1	0.034354	117584</div><div class="line">2	12	0	0.034497	117584	ret_ord	1	../trace.php	10</div><div class="line">3	13	0	0.034519	117584	ord	0	../trace.php	5</div><div class="line">3	13	1	0.034536	117584</div><div class="line">2	12	1	0.034549	117584</div><div class="line">1	0	1	0.034636	117584</div><div class="line">TRACE END   [2007-05-06 18:29:01]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><strong>VIM语法文件</strong></p>
-<p>Xdebug附带了语法高亮显示跟踪文件的VIM语法文件：xt.vim。<br>为了使VIM能够识别这种新格式，您需要执行以下步骤：</p>
-<ol>
-<li>复制 xt.vim 文件到 ~/.vim/syntax</li>
-<li>修改, 或者创建, ~/.vim/filetype.vim 并添加下列内容<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">augroup filetypedetect</div><div class="line">au BufNewFile,BufRead *.xt  setf xt</div><div class="line">augroup END</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>使用这些设置，打开的跟踪文件看起来像：</p>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-10@2x.png" alt="img"></p>
-<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-auto-trace"><a href="#xdebug-auto-trace" class="headerlink" title="xdebug.auto_trace"></a><strong>xdebug.auto_trace</strong></h3><p>类型：布尔值，默认值：0</p>
-<p>当此设置设置为on时，将在脚本运行之前启用函数调用的跟踪。这使得可以跟踪auto_prepend_file中的代码。</p>
-<h3 id="xdebug-collect-assignments"><a href="#xdebug-collect-assignments" class="headerlink" title="xdebug.collect_assignments"></a><strong>xdebug.collect_assignments</strong></h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
-<p>此设置（默认为0）控制Xdebug是否应向函数轨迹添加变量分配。</p>
-<h3 id="xdebug-collect-includes"><a href="#xdebug-collect-includes" class="headerlink" title="xdebug.collect_includes"></a><strong>xdebug.collect_includes</strong></h3><p>类型：布尔值，默认值：1</p>
-<p>此设置默认为1，控制Xdebug是否应将include（），include_once（），require（）或require_once（）中使用的文件名写入跟踪文件。</p>
-<h3 id="xdebug-collect-params"><a href="#xdebug-collect-params" class="headerlink" title="xdebug.collect_params"></a><strong>xdebug.collect_params</strong></h3><p>类型：整数，默认值：0</p>
-<p>此设置默认为0，控制在函数跟踪或堆栈跟踪中记录函数调用时，Xdebug是否应收集传递给函数的参数。</p>
-<p>该设置默认为0，因为对于非常大的脚本，它可能使用大量的内存，因此使巨量脚本无法运行。您可以最安全地打开此设置，但是您可以预期在具有大量函数调用和/或巨大的数据结构作为参数的脚本中存在一些问题。 Xdebug 2不会有增加的内存使用这个问题，因为它永远不会将此信息存储在内存中。相反，它将只被写入磁盘。这意味着您需要查看磁盘使用情况。</p>
-<p>此设置可以有四个不同的值。对于每个值，示出了不同量的信息。下面你将看到每个值提供什么信息。另请参见功能堆栈跟踪的几个截图的介绍。</p>
-<table>
-<thead>
-<tr>
-<th>显示的值</th>
-<th>参数信息</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>无。</td>
-</tr>
-<tr>
-<td>1</td>
-<td>元素的类型和数量（f.e. string（6），array（8））。</td>
-</tr>
-<tr>
-<td>2</td>
-<td>元素的类型和数量，带有完整信息的工具提示1。1在CLI版本的PHP中，它不会有工具提示，也不会在输出文件中。</td>
-</tr>
-<tr>
-<td>3</td>
-<td>完全变量内容（具有由xdebug.var_display_max_children，xdebug.var_display_max_data和xdebug.var_display_max_depth设置的限制）。</td>
-</tr>
-<tr>
-<td>4</td>
-<td>完全变量内容和变量名。</td>
-</tr>
-<tr>
-<td>5</td>
-<td>PHP序列化变量内容，没有名称。 （Xdebug 2.3中的新功能）</td>
-</tr>
-</tbody>
-</table>
-<h3 id="xdebug-collect-return"><a href="#xdebug-collect-return" class="headerlink" title="xdebug.collect_return"></a><strong>xdebug.collect_return</strong></h3><p>类型：布尔值，默认值：0</p>
-<p>此设置默认为0，控制Xdebug是否应将函数调用的返回值写入跟踪文件。</p>
-<p>对于计算机化的跟踪文件（xdebug.trace_format = 1），这只能从Xdebug 2.3起。</p>
-<h3 id="xdebug-show-mem-delta"><a href="#xdebug-show-mem-delta" class="headerlink" title="xdebug.show_mem_delta"></a><strong>xdebug.show_mem_delta</strong></h3><p>类型：整数，默认值：0</p>
-<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
-<h3 id="xdebug-trace-enable-trigger"><a href="#xdebug-trace-enable-trigger" class="headerlink" title="xdebug.trace_enable_trigger"></a><strong>xdebug.trace_enable_trigger</strong></h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.2中引入</p>
-<p>当此设置设置为1时，可以使用XDEBUG_TRACE GET / POST参数触发跟踪文件的生成，或者设置名为XDEBUG_TRACE的cookie。然后将跟踪数据写入定义的目录。为了防止Xdebug为每个请求生成跟踪文件，您需要将xdebug.auto_trace设置为0.对触发器本身的访问可以通过xdebug.trace_enable_trigger_value配置。</p>
-<h3 id="xdebug-trace-enable-trigger-value"><a href="#xdebug-trace-enable-trigger-value" class="headerlink" title="xdebug.trace_enable_trigger_value"></a><strong>xdebug.trace_enable_trigger_value</strong></h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.3中引入</p>
-<p>此设置可用于限制谁可以使用xdebug.trace_enable_trigger中概述的XDEBUG_TRACE功能。当从空字符串的默认值更改时，cookie，GET或POST参数的值需要使用此设置匹配共享机密集，以便生成跟踪文件。</p>
-<h3 id="xdebug-trace-format"><a href="#xdebug-trace-format" class="headerlink" title="xdebug.trace_format"></a><strong>xdebug.trace_format</strong></h3><p>类型：整数，默认值：0</p>
-<p>跟踪文件的格式。</p>
-<table>
-<thead>
-<tr>
-<th>值</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>显示一个人工可读的缩进跟踪文件，具有：时间索引，内存使用，内存增量（如果设置xdebug.show_mem_delta启用），级别，函数名称，函数参数（如果设置xdebug.collect_params启用），文件名和行 数。</td>
-</tr>
-<tr>
-<td>1</td>
-<td>写入具有两个不同记录的计算机可读格式。 有不同的记录用于输入堆栈帧，并留下堆栈帧。 下表列出了每种记录类型中的字段。 字段是制表符分隔的。</td>
-</tr>
-<tr>
-<td>2</td>
-<td>写入以（简单）HTML格式化的跟踪。</td>
-</tr>
-</tbody>
-</table>
-<h3 id="xdebug-trace-options"><a href="#xdebug-trace-options" class="headerlink" title="xdebug.trace_options"></a><strong>xdebug.trace_options</strong></h3><p>类型：整数，默认值：0</p>
-<p>当设置为’1’时，跟踪文件将被附加到，而不是在后续请求中被覆盖。</p>
-<h3 id="xdebug-trace-output-dir"><a href="#xdebug-trace-output-dir" class="headerlink" title="xdebug.trace_output_dir"></a><strong>xdebug.trace_output_dir</strong></h3><p>类型：字符串，默认值：/ tmp</p>
-<p>将写入跟踪文件的目录，确保PHP将运行的用户具有对该目录的写入权限。</p>
-<h3 id="xdebug-trace-output-name"><a href="#xdebug-trace-output-name" class="headerlink" title="xdebug.trace_output_name"></a><strong>xdebug.trace_output_name</strong></h3><p>类型：字符串，默认值：trace。％c</p>
-<p>此设置确定用于将跟踪转储到的文件的名称。 设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。 有几个格式说明符可以用于格式化文件名。 “.xt”扩展名总是自动添加。</p>
-<p>可能的格式说明符是：</p>
-<table>
-<thead>
-<tr>
-<th>指定符</th>
-<th>含义</th>
-<th>示例格式</th>
-<th>示例文件名</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>%c</td>
-<td>crc32 of the current working directory</td>
-<td>trace.%c</td>
-<td>trace.1258863198.xt</td>
-</tr>
-<tr>
-<td>%p</td>
-<td>pid</td>
-<td>trace.%p</td>
-<td>trace.5174.xt</td>
-</tr>
-<tr>
-<td>%r</td>
-<td>random number</td>
-<td>trace.%r</td>
-<td>trace.072db0.xt</td>
-</tr>
-<tr>
-<td>%s</td>
-<td>script name 这一个不可用于跟踪文件名。</td>
-<td>cachegrind.out.%s</td>
-<td>cachegrind.out._home_httpd_html_test_xdebug_test_php</td>
-</tr>
-<tr>
-<td>%t</td>
-<td>timestamp (seconds)</td>
-<td>trace.%t</td>
-<td>trace.1179434742.xt</td>
-</tr>
-<tr>
-<td>%u</td>
-<td>timestamp (microseconds)</td>
-<td>trace.%u</td>
-<td>trace.1179434749_642382.xt</td>
-</tr>
-<tr>
-<td>%H</td>
-<td>$_SERVER[‘HTTP_HOST’]</td>
-<td>trace.%H</td>
-<td>trace.kossu.xt</td>
-</tr>
-<tr>
-<td>%R</td>
-<td>$_SERVER[‘REQUEST_URI’]</td>
-<td>trace.%R</td>
-<td>trace._test_xdebug_test_php_var=1_var2=2.xt</td>
-</tr>
-<tr>
-<td>%U</td>
-<td>$_SERVER[‘UNIQUE_ID’] 版本2.2中的新功能。 这个由Apache mod_unique_id模块设置</td>
-<td>trace.%U</td>
-<td>trace.TRX4n38AAAEAAB9gBFkAAAAB.xt</td>
-</tr>
-<tr>
-<td>%S</td>
-<td>session_id (from $_COOKIE if set)</td>
-<td>trace.%S</td>
-<td>trace.c70c1ec2375af58f74b390bbdd2a679d.xt</td>
-</tr>
-<tr>
-<td>%%</td>
-<td>literal %</td>
-<td>trace.%%</td>
-<td>trace.%%.xt</td>
-</tr>
-</tbody>
-</table>
-<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
-<p>要禁用任何限制，请使用-1作为值。</p>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
-<p>要禁用任何限制，请使用-1作为值。</p>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
-<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
-<p>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</p>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="string-xdebug-get-tracefile-name（）"><a href="#string-xdebug-get-tracefile-name（）" class="headerlink" title="string xdebug_get_tracefile_name（）"></a><strong>string xdebug_get_tracefile_name（）</strong></h3><p>返回函数跟踪文件的名称</p>
-<p>返回用于跟踪此脚本的输出的文件的名称。这在启用xdebug.auto_trace时非常有用。</p>
-<h3 id="string-xdebug-start-trace（-string-trace-file-，integer-options-）"><a href="#string-xdebug-start-trace（-string-trace-file-，integer-options-）" class="headerlink" title="string xdebug_start_trace（[string trace_file [，integer options]]）"></a><strong>string xdebug_start_trace（[string trace_file [，integer options]]）</strong></h3><p>启动新的函数跟踪</p>
-<p>启动跟踪从此点到trace_file参数中的文件的函数调用。如果未指定文件名，则跟踪文件将放置在由xdebug.trace_output_dir设置配置的目录中。</p>
-<p>如果文件名称作为第一个参数，则名称相对于当前工作目录。此当前工作目录可能与您预期的不同，因此，如果指定文件名，请使用绝对路径。使用PHP函数getcwd（）来找出当前工作目录是什么。</p>
-<p>跟踪文件的名称为“{trace_file} .xt”。如果启用了xdebug.auto_trace，则文件名的格式为“{filename} .xt”，其中“{filename}”部分取决于xdebug.trace_output_name设置。 options参数是一个位域;目前有三个选项：</p>
-<ul>
-<li><p>XDEBUG_TRACE_APPEND（1）</p>
-<blockquote>
-<p>使追踪文件在追加模式而不是覆盖模式下打开</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_TRACE_COMPUTERIZED（2）</p>
-<blockquote>
-<p>创建具有1“xdebug.trace_format”下描述的格式的跟踪文件。</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_TRACE_HTML（4）</p>
-<blockquote>
-<p>将跟踪文件创建为HTML表</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_TRACE_NAKED_FILENAME（8）</p>
-<blockquote>
-<p>通常，Xdebug总是将“.xt”添加到文件名的末尾，该文件名作为第一个参数传递给此函数。 如果设置了XDEBUG_TRACE_NAKED_FILENAME标志，则不会添加“.xt”。 （Xdebug 2.3中的新功能）。</p>
-</blockquote>
-</li>
-</ul>
-<p>与Xdebug 1不同，Xdebug 2不会在内存中存储函数调用，但始终只写入磁盘以减轻对已用内存的压力。 设置xdebug.collect_includes，xdebug.collect_params和xdebug.collect_return影响什么信息记录到跟踪文件，设置xdebug.trace_format影响跟踪文件的格式。<br>从此函数返回Xdebug跟踪的完整路径和文件名。 这将是您传入的文件名（可能添加了“.xt”），或者如果没有传入文件名，则为自动生成的文件名。</p>
-<h3 id="string-xdebug-start-trace（）"><a href="#string-xdebug-start-trace（）" class="headerlink" title="string xdebug_start_trace（）"></a><strong>string xdebug_start_trace（）</strong></h3><p>停止当前函数轨迹</p>
-<p>停止跟踪函数调用并关闭跟踪文件。</p>
-<p>该函数返回写入跟踪的文件的文件名。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。&lt;/p&gt;
-&lt;p&gt;那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。&lt;br&gt;函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。&lt;/p&gt;
+      &lt;p&gt;Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。&lt;/p&gt;
     
     </summary>
     
