@@ -1,0 +1,796 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="APM,应用性能跟踪," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="使用变量来对应用程序性能进行管理
+变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约150个变量可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 应用程序跟踪 和 应用程序性能管理（APM） ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Pl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务架构下使用Nginx变量对应用程序进行性能追踪[转]">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="使用变量来对应用程序性能进行管理
+变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约150个变量可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 应用程序跟踪 和 应用程序性能管理（APM） ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Pl">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161229/nginx-proxies-app-with-frontend-and-microservices.png">
+<meta property="og:updated_time" content="2016-12-29T13:02:31.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="微服务架构下使用Nginx变量对应用程序进行性能追踪[转]">
+<meta name="twitter:description" content="使用变量来对应用程序性能进行管理
+变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约150个变量可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 应用程序跟踪 和 应用程序性能管理（APM） ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Pl">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161229/nginx-proxies-app-with-frontend-and-microservices.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/"/>
+
+  <title> 微服务架构下使用Nginx变量对应用程序进行性能追踪[转] | 行云流水 </title>
+</head>
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e4b7d6d381ddeae9bb9afe7349625074";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">行云流水</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">却也碎碎念念</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-atom">
+          <a href="/atom.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-rss"></i> <br />
+            
+            订阅
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '5esyb9coehH1NCtAqKqX','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                微服务架构下使用Nginx变量对应用程序进行性能追踪[转]
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-29T21:30:00+08:00" content="2016-12-29">
+              2016-12-29
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+              &nbsp; | &nbsp;
+              <span class="page-pv">本文总阅读量
+              <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+              </span>
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong><em>使用变量来对应用程序性能进行管理</em></strong></p>
+<p>变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约<a href="http://nginx.org/en/docs/varindex.html" target="_blank" rel="external">150个变量</a>可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 <strong>应用程序跟踪</strong> 和 <strong>应用程序性能管理（APM）</strong> ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Plus，除非两个产品之间有差异。</p>
+<a id="more"></a>
+<h2 id="应用程序交付环境"><a href="#应用程序交付环境" class="headerlink" title="应用程序交付环境"></a>应用程序交付环境</h2><p>在我们的示例应用程序交付环境中，NGINX Plus作为我们应用程序的反向代理。 应用程序本身包括一个Web前端，后面是多个微服务。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161229/nginx-proxies-app-with-frontend-and-microservices.png" alt="示例应用程序交付环境"></p>
+<h2 id="跟踪端到端-End‑to‑End-请求"><a href="#跟踪端到端-End‑to‑End-请求" class="headerlink" title="跟踪端到端(End‑to‑End)请求"></a>跟踪端到端(End‑to‑End)请求</h2><p><code>NGINX Plus R10</code>（和<code>NGINX 1.11.0</code>）引入 <code>$request_id</code> 变量，它是随机生成的32个十六进制字符串，在每个HTTP请求到达时自动分配给它们（例如<code>444535f9378a3dfa1b8604bc9e05a303</code>）。 这个看似简单的机制解锁了一个强大的工具，可用于跟踪和故障排除。 通过配置<code>NGINX Plus</code>和所有后端服务传递<code>$request_id</code>值，您可以跟踪每个请求端到端。 这个示例配置是为我们的前端<code>NGINX Plus</code>服务器。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">upstream app_server &#123;</div><div class="line">    server 10.0.0.1:80;</div><div class="line">&#125;</div><div class="line"></div><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    add_header X-Request-ID $request_id; # Return to client</div><div class="line">    location / &#123;</div><div class="line">        proxy_pass http://app_server;</div><div class="line">        proxy_set_header X-Request-ID $request_id; # Pass to app server</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>要配置NGINX Plus进行请求跟踪，我们首先定义 <code>upstream</code> 块中应用程序服务器的网络位置。 为了简单起见，我们在这里只显示一个应用程序服务器，但通常使用几个应用程序服务器来实现高可用性和负载平衡。</p>
+<p><code>server</code>块定义了<code>NGINX Plus</code>如何处理传入的HTTP请求。 <code>listen</code>指令告诉<code>NGINX Plus</code>侦听端口80，但生产环境配置通常使用<code>SSL/TLS</code>来保护传输中的数据。</p>
+<p><code>add_header</code>指令将<code>$request_id</code>值作为响应中的自定义<code>header</code>头发送回客户端。 这对于测试以及生成自己的日志（如移动应用程序）的客户端应用程序非常有用，以便客户端可以精确匹配服务器的错误日志。</p>
+<p>最后，<code>location</code> 块应用于整个应用程序空间（<code>/</code>），<code>proxy_pass</code>指令简单地代理所有请求到应用程序服务器。 <code>proxy_set_header</code>指令通过添加传递给应用程序的HTTP头来修改代理请求。 在这种情况下，我们创建一个名为<code>X-Request-ID</code>的头，并为其分配<code>$request_id</code>变量的值。 因此，我们的应用程序接收由<code>NGINX Plus</code>生成的request ID。</p>
+<h2 id="记录端到端的-request-id"><a href="#记录端到端的-request-id" class="headerlink" title="记录端到端的$request_id"></a>记录端到端的<code>$request_id</code></h2><p>我们的应用程序跟踪的目标是确定请求处理生命周期中的性能瓶颈，作为应用程序性能管理的一部分。 我们可以通过在处理过程中记录重要的事件来做到这一点，方便我们以后分析它们的异常或不合理的延迟。</p>
+<h3 id="配置NGINX-Plus"><a href="#配置NGINX-Plus" class="headerlink" title="配置NGINX Plus"></a>配置NGINX Plus</h3><p>我们从配置前端<code>NGINX Plus</code>服务器开始，将<code>$request_id</code>包含在用于<code>access_trace.log</code>文件的自定义日志记录格式<code>trace</code>中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">log_format trace &apos;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &apos;</div><div class="line">                 &apos;$status $body_bytes_sent &quot;$http_referer&quot; &quot;$http_user_agent&quot; &apos;</div><div class="line">                 &apos;&quot;$http_x_forwarded_for&quot; $request_id&apos;;</div><div class="line"></div><div class="line">upstream app_server &#123;</div><div class="line">    server 10.0.0.1;</div><div class="line">&#125;</div><div class="line"></div><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    add_header X-Request-ID $request_id; # Return to client</div><div class="line">    location / &#123;</div><div class="line">        proxy_pass http://app_server;</div><div class="line">        proxy_set_header X-Request-ID $request_id;        # Pass to app server</div><div class="line">        access_log /var/log/nginx/access_trace.log trace; # Log $request_id</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="配置后端应用程序"><a href="#配置后端应用程序" class="headerlink" title="配置后端应用程序"></a>配置后端应用程序</h3><p>将<code>Request ID</code> 传递到我们的应用程序有时也会用到。 在这个例子中，我们有一个由<code>uWSGI</code>管理的<code>Python应用程序</code>。 让我们修改应用程序入口点，以获取<code>Request ID</code>作为日志变量。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> uwsgi <span class="keyword">import</span> set_logvar</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(environ, start_response)</span>:</span></div><div class="line">    set_logvar(<span class="string">'requestid'</span>, environ[<span class="string">'X_REQUEST_ID'</span>])</div></pre></td></tr></table></figure>
+<p>然后我们可以修改<code>uWSGI</code>配置，将<code>Request ID</code>包含在标准日志文件中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">log-format = %(addr) - %(user) [%(ltime)] &quot;%(method) %(uri) %(proto)&quot; %(status)</div><div class="line">%(size) &quot;%(referer)&quot; &quot;%(uagent)&quot; %(requestid)</div></pre></td></tr></table></figure>
+<p>通过这种配置，我们现在可以生成日志文件，这些文件可以跨多个系统，我们可以通过<code>requestid</code>来查看我们单次<code>request</code>的调用链。</p>
+<p>来自<code>NGINX</code>的日志示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">172.17.0.1 - - [02/Aug/2016:14:26:50 +0000] &quot;GET / HTTP/1.1&quot; 200 90 &quot;-&quot; &quot;-&quot; &quot;-&quot; 5f222ae5938482c32a822dbf15e19f0f</div></pre></td></tr></table></figure></p>
+<p>来自应用程序的日志示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">192.168.91.1 - - [02/Aug/2016:14:26:50 +0000] &quot;GET / HTTP/1.0&quot; 200 123 &quot;-&quot; &quot;-&quot; 5f222ae5938482c32a822dbf15e19f0f</div></pre></td></tr></table></figure></p>
+<p>通过将 <code>Request ID</code> 字段与事务匹配，<code>Splunk</code> 和 <code>Kibana</code> 之类的工具允许我们识别性能瓶颈。 例如，我们可以搜索花费两秒钟以上时间完成的请求。 然而，在常规时间戳中的默认时间精度为一秒不足以用于大多数真实环境的分析。</p>
+<h2 id="高精度时序"><a href="#高精度时序" class="headerlink" title="高精度时序"></a>高精度时序</h2><p>为了准确地测量端到端请求，我们需要具有毫秒级精度的时间戳。 通过在日志条目中包括<code>$msec</code>变量，我们在每个条目的时间戳上获得毫秒的精度。 向应用程序日志添加毫秒时间戳允许我们查找花费 本该不超过200毫秒完成，但却花了2秒的请求。</p>
+<p>但是即使这样，我们也没有得到全部的图片，因为<code>NGINX Plus</code>只在处理每个请求结束时写入<code>$msec</code>时间戳。 幸运的是，有几个其他<code>NGINX Plus</code>定时变量，毫秒精度，让我们更深入地了解处理本身：</p>
+<ul>
+<li><p><code>$request_time</code> – 完全请求时间，从NGINX Plus从客户端读取第一个字节，并在NGINX Plus发送响应主体的最后一个字节时结束</p>
+</li>
+<li><p><code>$upstream_connect_time</code> – 花费在与<code>upstream</code>服务器建立连接的时间</p>
+</li>
+<li><p><code>$upstream_header_time</code> – 建立到<code>upstream</code>服务器的连接和接收响应头的第一个字节之间的时间</p>
+</li>
+<li><p><code>$upstream_response_time</code> – 建立到<code>upstream</code>服务器的连接和接收响应主体的最后一个字节之间的时间</p>
+</li>
+</ul>
+<p>有关这些时序变量的详细信息，请参阅<a href="Using NGINX Logging for Application Performance Monitoring">使用NGINX日志记录应用程序性能监视</a>。</p>
+<p>我们可以扩展我们的<code>log_format</code>指令，将所有这些高精度定时变量包含在我们的跟踪日志格式中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">log_format trace &apos;$remote_addr - $remote_user [$time_local] &quot;$request&quot; $status &apos;</div><div class="line">                 &apos;$body_bytes_sent &quot;$http_referer&quot; &quot;$http_user_agent&quot; &apos;</div><div class="line">                 &apos;&quot;$http_x_forwarded_for&quot; $request_id $msec $request_time &apos;</div><div class="line">                 &apos;$upstream_connect_time $upstream_header_time $upstream_response_time&apos;;</div></pre></td></tr></table></figure></p>
+<p>使用我们首选的日志分析工具，我们可以提取变量值并执行以下计算，以了解<code>NGINX Plus</code>在连接到应用程序服务器之前处理请求的时间：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">NGINX Plus processing time = $request_time - $upstream_connect_time - $upstream_response_time</div></pre></td></tr></table></figure></p>
+<p>我们还可以搜索<code>$upstream_response_time</code>的最高值，查看它们是否与特定URI或上游服务器相关联。 然后可以进一步检查具有相同请求ID的应用程序日志条目。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>利用新的<code>$request_id</code>变量和一些毫秒精度的时间变量可以提供对应用程序性能瓶颈的深入了解，提高应用程序性能管理，而无需使用什么重量级代理和插件。</p>
+<p><a href="https://www.nginx.com/blog/application-tracing-nginx-plus/" target="_blank" rel="external">【原文】:https://www.nginx.com/blog/application-tracing-nginx-plus/</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/APM/" rel="tag">#APM</a>
+          
+            <a href="/tags/应用性能跟踪/" rel="tag">#应用性能跟踪</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/29/贪婪和懒惰匹配模式使用小结/" rel="next" title="贪婪和懒惰匹配模式使用小结">
+                <i class="fa fa-chevron-left"></i> 贪婪和懒惰匹配模式使用小结
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/"
+           data-title="微服务架构下使用Nginx变量对应用程序进行性能追踪[转]" data-url="https://weizhimiao.github.io/2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars3.githubusercontent.com/u/11239812?v=3&u=aede3c90c7e5cbc2d029e3f0988d9e1503b59943&s=140"
+               alt="zhimiao" />
+          <p class="site-author-name" itemprop="name">zhimiao</p>
+          <p class="site-description motion-element" itemprop="description">像“草根”一样，紧贴着地面，低调的存在，冬去春来枯荣无恙。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">82</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/weizhimiao" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#应用程序交付环境"><span class="nav-number">1.</span> <span class="nav-text">应用程序交付环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#跟踪端到端-End‑to‑End-请求"><span class="nav-number">2.</span> <span class="nav-text">跟踪端到端(End‑to‑End)请求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#记录端到端的-request-id"><span class="nav-number">3.</span> <span class="nav-text">记录端到端的$request_id</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置NGINX-Plus"><span class="nav-number">3.1.</span> <span class="nav-text">配置NGINX Plus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置后端应用程序"><span class="nav-number">3.2.</span> <span class="nav-text">配置后端应用程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高精度时序"><span class="nav-number">4.</span> <span class="nav-text">高精度时序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">5.</span> <span class="nav-text">结论</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+<!--
+<div class="theme-info">
+    | 京ICP备 
+    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+          16031041号
+    </a>
+</div>
+-->
+
+
+        
+
+<div class="busuanzi-count">
+
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">本站访客数<span class="busuanzi-value" id="busuanzi_value_site_uv"></span>人次</span>
+  
+
+  
+    <span class="site-pv">本站总访问量<span class="busuanzi-value" id="busuanzi_value_site_pv"></span>次</span>
+  
+  
+</div>
+
+
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"weizhimiao"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+  <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+
+  
+
+
+</body>
+</html>
