@@ -273,6 +273,133 @@
             
               
                 
+                <a class="post-title-link" href="/2016/10/29/Linux中通过inotify-tools实现监控文件变化/" itemprop="url">
+                  Linux中通过inotify-tools实现监控文件变化
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-29T20:30:00+08:00" content="2016-10-29">
+              2016-10-29
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/29/Linux中通过inotify-tools实现监控文件变化/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/29/Linux中通过inotify-tools实现监控文件变化/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>inotify-tools 是一个用C语言库，一个为Linux提供简单inotify接口的命令行程序。这些程序可以用于监视文件系统事件并执行相应操作。这些程序是用C语言来写的，除了需要Linux内核的inotify支持外，没有其他的依赖。inotify-tools 3.14是目前最新版本，其于2010年3月7日发布。</p>
+<p>那么什么inotify又是什么？</p>
+<p>inotify，它是Linux在内核 2.6.13 (June 18, 2005)版本中引入的一个新功能，它为用户态监视文件系统的变化提供了强大的支持，允许监控程序打开一个独立文件描述符，并针对事件集监控一个或者多个文件，例如打开、关闭、移动/重命名、删除、创建或者改变属性。</p>
+<p>官方站点地址：<a href="http://inotify-tools.sourceforge.net/">http://inotify-tools.sourceforge.net/</a><br>Github地址：<a href="https://github.com/rvoicilas/inotify-tools">https://github.com/rvoicilas/inotify-tools</a></p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/29/Linux中通过inotify-tools实现监控文件变化/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/10/27/Javascript中用instanceof运算符实现对象的安全创建/" itemprop="url">
                   Javascript中用instanceof运算符实现对象的安全创建
                 </a>
@@ -521,8 +648,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/Xdebug之堆栈跟踪/" itemprop="url">
-                  Xdebug之变量显示功能
+                <a class="post-title-link" href="/2016/10/22/Xdebug之远程调试/" itemprop="url">
+                  Xdebug之远程调试
                 </a>
               
             
@@ -565,8 +692,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之堆栈跟踪/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之堆栈跟踪/" itemprop="commentsCount"></span>
+                <a href="/2016/10/22/Xdebug之远程调试/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之远程调试/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -592,10 +719,9 @@
 
       
         
-          <p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
-<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
+          <p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之堆栈跟踪/#more" rel="contents">
+            <a class="btn" href="/2016/10/22/Xdebug之远程调试/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -646,8 +772,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/Xdebug之常见问题/" itemprop="url">
-                  Xdebug之常见问题
+                <a class="post-title-link" href="/2016/10/22/Xdebug之代码覆盖率分析/" itemprop="url">
+                  Xdebug之代码覆盖率分析
                 </a>
               
             
@@ -690,8 +816,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之常见问题/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之常见问题/" itemprop="commentsCount"></span>
+                <a href="/2016/10/22/Xdebug之代码覆盖率分析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之代码覆盖率分析/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -717,14 +843,9 @@
 
       
         
-          <ul>
-<li><p>xdebug的使用</p>
-</li>
-<li><p>xdebug的编译安装</p>
-</li>
-</ul>
+          <p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之常见问题/#more" rel="contents">
+            <a class="btn" href="/2016/10/22/Xdebug之代码覆盖率分析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1024,8 +1145,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/Xdebug之代码覆盖率分析/" itemprop="url">
-                  Xdebug之代码覆盖率分析
+                <a class="post-title-link" href="/2016/10/22/Xdebug之常见问题/" itemprop="url">
+                  Xdebug之常见问题
                 </a>
               
             
@@ -1068,8 +1189,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之代码覆盖率分析/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之代码覆盖率分析/" itemprop="commentsCount"></span>
+                <a href="/2016/10/22/Xdebug之常见问题/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之常见问题/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -1095,133 +1216,14 @@
 
       
         
-          <p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
+          <ul>
+<li><p>xdebug的使用</p>
+</li>
+<li><p>xdebug的编译安装</p>
+</li>
+</ul>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之代码覆盖率分析/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/22/Xdebug之远程调试/" itemprop="url">
-                  Xdebug之远程调试
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
-              2016-10-22
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之远程调试/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之远程调试/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之远程调试/#more" rel="contents">
+            <a class="btn" href="/2016/10/22/Xdebug之常见问题/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1396,8 +1398,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/PHP程序调试之Xdebug/" itemprop="url">
-                  PHP程序调试之Xdebug
+                <a class="post-title-link" href="/2016/10/22/Xdebug之堆栈跟踪/" itemprop="url">
+                  Xdebug之变量显示功能
                 </a>
               
             
@@ -1410,7 +1412,7 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-22T18:30:00+08:00" content="2016-10-22">
+            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
               2016-10-22
             </time>
           </span>
@@ -1440,8 +1442,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/22/PHP程序调试之Xdebug/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/PHP程序调试之Xdebug/" itemprop="commentsCount"></span>
+                <a href="/2016/10/22/Xdebug之堆栈跟踪/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之堆栈跟踪/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -1467,9 +1469,10 @@
 
       
         
-          <p>Xdebug是一个开放源代码的PHP程序调试器(即一个Debug工具)，可以用来跟踪，调试和分析PHP程序的运行状况。</p>
+          <p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
+<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/PHP程序调试之Xdebug/#more" rel="contents">
+            <a class="btn" href="/2016/10/22/Xdebug之堆栈跟踪/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1544,7 +1547,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">82</span>
+              <span class="site-state-item-count">83</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1561,7 +1564,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-count">68</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -1624,8 +1627,8 @@
       <div class="footer-inner">
         <div class="copyright" >
   
-  &copy; 
-  <span itemprop="copyrightYear">2016</span>
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

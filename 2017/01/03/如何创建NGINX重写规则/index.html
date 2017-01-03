@@ -1,0 +1,824 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="rewrite," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="在这篇博文中，我们讨论如何创建NGINX重写规则（同样的方法适用于NGINX Plus和开源NGINX软件）。重写规则会更改客户请求中的部分或全部网址，通常用于以下两个目的之一：
+
+通知客户端他们请求的资源现在位于不同的位置。示例用例是我们的网站的域名发生更改时，我们希望客户端使用规范网址格式（带或不带www前缀），以及当我们想要捕获和更正我们的域名的常见拼写错误时。返回和重写指令适合于这些目的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何创建NGINX重写规则">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/01/03/如何创建NGINX重写规则/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="在这篇博文中，我们讨论如何创建NGINX重写规则（同样的方法适用于NGINX Plus和开源NGINX软件）。重写规则会更改客户请求中的部分或全部网址，通常用于以下两个目的之一：
+
+通知客户端他们请求的资源现在位于不同的位置。示例用例是我们的网站的域名发生更改时，我们希望客户端使用规范网址格式（带或不带www前缀），以及当我们想要捕获和更正我们的域名的常见拼写错误时。返回和重写指令适合于这些目的。">
+<meta property="og:updated_time" content="2017-01-03T13:50:48.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何创建NGINX重写规则">
+<meta name="twitter:description" content="在这篇博文中，我们讨论如何创建NGINX重写规则（同样的方法适用于NGINX Plus和开源NGINX软件）。重写规则会更改客户请求中的部分或全部网址，通常用于以下两个目的之一：
+
+通知客户端他们请求的资源现在位于不同的位置。示例用例是我们的网站的域名发生更改时，我们希望客户端使用规范网址格式（带或不带www前缀），以及当我们想要捕获和更正我们的域名的常见拼写错误时。返回和重写指令适合于这些目的。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/01/03/如何创建NGINX重写规则/"/>
+
+  <title> 如何创建NGINX重写规则 | 行云流水 </title>
+</head>
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e4b7d6d381ddeae9bb9afe7349625074";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">行云流水</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">却也碎碎念念</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-atom">
+          <a href="/atom.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-rss"></i> <br />
+            
+            订阅
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '5esyb9coehH1NCtAqKqX','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                如何创建NGINX重写规则
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-03T22:30:00+08:00" content="2017-01-03">
+              2017-01-03
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Nginx/" itemprop="url" rel="index">
+                    <span itemprop="name">Nginx</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/01/03/如何创建NGINX重写规则/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/03/如何创建NGINX重写规则/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+              &nbsp; | &nbsp;
+              <span class="page-pv">本文总阅读量
+              <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+              </span>
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在这篇博文中，我们讨论如何创建NGINX重写规则（同样的方法适用于NGINX Plus和开源NGINX软件）。重写规则会更改客户请求中的部分或全部网址，通常用于以下两个目的之一：</p>
+<ul>
+<li><p>通知客户端他们请求的资源现在位于不同的位置。示例用例是我们的网站的域名发生更改时，我们希望客户端使用规范网址格式（带或不带www前缀），以及当我们想要捕获和更正我们的域名的常见拼写错误时。返回和重写指令适合于这些目的。</p>
+</li>
+<li><p>控制NGINX和NGINX Plus中的处理流程，例如，在需要动态生成内容时，将请求转发到应用程序服务器。 try_files指令通常用于此目的。</p>
+</li>
+</ul>
+<p><strong>注意：</strong> 要了解如何将Apache HTTP服务器重写规则转换为NGINX重写规则，请参阅我们的随附博客文章“<a href="https://www.nginx.com/blog/converting-apache-to-nginx-rewrite-rules/?utm_source=creating-nginx-rewrite-rules&amp;utm_medium=blog&amp;utm_campaign=Core+Product" target="_blank" rel="external">将Apache重写规则转换为NGINX重写规则</a>”。</p>
+<p>我们假设你熟悉<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html" target="_blank" rel="external">HTTP响应代码</a>和正则表达式（NGINX和NGINX Plus使用Perl语法）。</p>
+<a id="more"></a>
+<h2 id="比较return，rewrite-和try-files指令"><a href="#比较return，rewrite-和try-files指令" class="headerlink" title="比较return，rewrite 和try_files指令"></a>比较return，rewrite 和try_files指令</h2><p>通用NGINX重写的两个指令是返回和重写，而try_files指令是将请求定向到应用程序服务器的一种方便的方法。 让我们回顾一下指令的作用以及它们之间的区别。</p>
+<h3 id="return-指令"><a href="#return-指令" class="headerlink" title="return 指令"></a>return 指令</h3><p>返回指令是两个通用指令中的最简单的，因此我们建议在可能的情况下使用它而不是重写（更多的是为什么和什么时候）。 将返回值放在指定要重写的URL的服务器或位置上下文中，并定义客户端在将来对资源的请求中使用的已更正（重写）的URL。</p>
+<p>这里有一个非常简单的例子，将客户端重定向到一个新的域名：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.old-name.com;</div><div class="line">    return 301 $scheme://www.new-name.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>listen指令意味着服务器块应用于HTTP和HTTPS流量。 server_name指令匹配具有域名<code>www.old-name.com</code>的请求URL。 return指令告诉NGINX停止处理请求，并立即向客户端发送代码<code>301（Moved Permanently）</code>和指定的重写URL。 重写的URL使用两个NGINX变量来捕获和复制原始请求URL中的值：<code>$scheme</code>是协议（<code>http</code>或<code>https</code>），<code>$request_uri</code>是包含参数的完整URI。</p>
+<p>对于3xx系列中的代码，url参数定义新的（重写的）URL。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return (301 | 302 | 303 | 307) url;</div></pre></td></tr></table></figure></p>
+<p>对于其他代码，我们可以选择定义一个显示在响应正文中的文本字符串（HTTP 状态码的标准文本，例如 404 的 Not Found，仍包含在header中）。 文本可以包含NGINX变量。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return (1xx | 2xx | 4xx | 5xx) [&quot;text&quot;];</div></pre></td></tr></table></figure></p>
+<p>例如，当我们需要拒绝没有有效身份验证令牌的请求时，此指令可能适用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return 401 &quot;Access denied because token is expired or invalid&quot;;</div></pre></td></tr></table></figure></p>
+<p>还有一些可以使用的快捷语法方式，例如省略302的代码; 请参阅返回指令的参考文档。</p>
+<p>（在某些情况下，我们可能希望返回一个比在文本字符串中可以实现的更复杂或更细微的响应。使用<code>error_page</code>指令，我们可以为每个<code>HTTP 状态码</code>返回完整的自定义HTML页面，以及更改 响应代码或执行重定向。）</p>
+<p>所以 <code>return</code> 指令使用简单，适合当重定向满足两个条件：重写的URL适合于每个匹配服务器或位置块的请求，我们可以使用标准的NGINX变量构建重写的URL。</p>
+<h3 id="rewrite-指令"><a href="#rewrite-指令" class="headerlink" title="rewrite 指令"></a>rewrite 指令</h3><p>但是，如果我们需要测试更复杂的URL之间的区别，捕获原始URL中没有相对应的NGINX变量的元素，或者更改、添加路径中的元素，该怎么办？ 我们可以在这种情况下使用<code>rewrite</code>指令。</p>
+<p>像<code>return</code>指令，我们将<code>rewrite</code>指令包含在<code>server</code>或<code>location</code>上下文中，定义要重写的URL。<br>除此以外，这两个指令还大有不同，<code>rewrite</code>指令使用更复杂。 它的语法很简单：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rewrite regex URL [flag];</div></pre></td></tr></table></figure></p>
+<p>第一个参数“regex”意味着NGINX Plus和NGINX只有在匹配指定的正则表达式（除了匹配“server”或“location”指令之外）才重写URL。 附加测试意味着NGINX必须做更多的处理。</p>
+<p>第二个区别是rewrite指令只能返回代码<code>301</code>或<code>302</code>。 要返回其他代码，你需要在<code>rewrite</code>指令之后包含一个<code>return</code>指令（见下面的例子）。</p>
+<p>最后，<code>rewrite</code>指令不一定会阻止NGINX对请求的处理，但<code>return</code>会，而且不一定会向客户端发送重定向。 除非我们明确指出（使用标志或URL的语法）希望NGINX停止处理或发送重定向，它会运行在整个配置寻找到的在Rewrite模块中定义的指令（<code>break，if</code>， <code>return</code>，<code>rewrite</code>和<code>set</code>），并按顺序处理它们。 如果重写的URL与重写模块中的后续指令匹配，NGINX对重写的URL执行指示的操作（通常再次重写）。</p>
+<p>这种事情可能会变得比较复杂，我们需要仔细计划如何配置指令以获得所需的结果。 例如，如果原始的“location”块和利用NGINX重写规则重写的URL相匹配，NGINX就会进入循环，应用重写一遍又一遍直到内置的限制10次。 要了解所有详细信息，请参阅Rewrite模块的文档。 如前所述，所以我们建议尽可能使用<code>return</code>指令。</p>
+<p>下面是一个使用<code>rewrite</code>指令的NGINX重写规则示例。 它匹配以字符串 <code>/download</code>开头的URL，，然后在稍后的路径中的某处包含<code>/media/</code>或<code>/audio/</code>目录。 它用<code>/ mp3 /</code>替换这些元素，并添加适当的文件扩展名<code>.mp3</code>或<code>.ra</code>。 <code>$1</code>和<code>$2</code>变量捕获不变的路径元素。 例如，<code>/download/cdn-west/media/file1</code>变成<code>/download/cdn-west/mp3/file1.mp3</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    ...</div><div class="line">    rewrite ^(/download/.*)/media/(.*)\..*$ $1/mp3/$2.mp3 last;</div><div class="line">    rewrite ^(/download/.*)/audio/(.*)\..*$ $1/mp3/$2.ra  last;</div><div class="line">    return  403;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们上面提到，我们可以添加标志到<code>rewrite</code>指令来控制处理的流程。 示例中的<code>last</code>标志是其中之一：它告诉NGINX跳过当前<code>server</code>或<code>location</code>块中的任何后续<code>Rewrite-module</code>指令，并开始搜索与重写的URL匹配的新<code>location</code> 。</p>
+<p>在这个例子中的最终的返回指令意味着如果URL不匹配rewrite指令，则返回 403 状态码 到客户端。</p>
+<h3 id="try-files-指令"><a href="#try-files-指令" class="headerlink" title="try_files 指令"></a>try_files 指令</h3><p>像<code>return</code>和<code>rewrite</code>指令，<code>try_files</code>指令放在<code>server</code>或<code>location</code>块中。 作为参数，它需要一个或多个文件和目录以及最终URI的列表：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">try_files file … uri;</div></pre></td></tr></table></figure></p>
+<p>NGINX按顺序检查文件和目录的存在（从<code>root</code>和<code>alias</code>指令的设置构造每个文件的完整路径）。如果要指定目录，则需要在元素名称的末尾添加一个斜杠。 如果没有文件或目录存在，NGINX将执行内部重定向到由最后一个元素（uri）定义的URI。</p>
+<p>对于<code>try_files</code>指令的工作，还需要定义一个<code>location</code>块来捕获内部的重定向，如下面的例子所示。 最终元素可以是已经被命名的location，并由at符号（<code>@</code>）表示。</p>
+<p><code>try_files</code>指令通常使用<code>$uri</code>变量，它表示域名后的URL部分。</p>
+<p>在以下示例中，如果客户端请求的文件不存在，则NGINX提供默认的GIF文件。 当客户端请求（例如）<code>http//www.domain.com/images/image1.gif</code>时，NGINX首先在<code>root</code>或<code>alias</code>指令指定的本地目录中查找<code>image1.gif</code> 适用于位置（未在代码段中显示）。 如果<code>image1.gif</code>不存在，NGINX寻找<code>image1.gif/</code>，如果不存在，它会重定向到<code>/images/default.gif</code>。 该值与第二个位置指令完全匹配，因此处理停止，NGINX提供该文件并将其标记为缓存30秒。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">location /images/ &#123;</div><div class="line">    try_files $uri $uri/ /images/default.gif;</div><div class="line">&#125;</div><div class="line"></div><div class="line">location = /images/default.gif &#123;</div><div class="line">    expires 30s;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="示例-标准化域名"><a href="#示例-标准化域名" class="headerlink" title="示例 - 标准化域名"></a>示例 - 标准化域名</h2><p>NGINX重写规则最常见的用途之一是捕获网站域名的弃用或非标准版本，并将其重定向到当前名称。 有几个相关的用例。</p>
+<h3 id="从前名称重定向到当前名称"><a href="#从前名称重定向到当前名称" class="headerlink" title="从前名称重定向到当前名称"></a>从前名称重定向到当前名称</h3><p>该示例NGINX重写规则将来自<code>www.old-name.com</code>和<code>old-name.com</code>的请求永久地重定向到<code>www.new-name.com</code>，来从原始请求URL中使用两个NGINX变量</p>
+<ul>
+<li><code>$scheme</code>是原始协议（<code>http</code>或<code>https</code>），</li>
+<li><code>$request_uri</code>是完整的URI（域名后面），包括参数：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.old-name.com old-name.com;</div><div class="line">    return 301 $scheme://www.new-name.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>因为<code>$request_uri</code>捕获域名后面的URL部分，所以如果新旧站点之间存在一对一的页面对应，这种重写是合适的（例如<code>www.new-name.com/about</code>与<code>www.old-name.com/about</code>具有相同的基本内容。 如果在更改域名之外重新整理了网站，则可以通过省略<code>$request_uri</code>将所有请求重定向到主页，这样更安全：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.old-name.com old-name.com;</div><div class="line">    return 301 $scheme://www.new-name.com;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>例如，一些其他关于在NGINX中重写URL的博客对这些用例使用rewrite指令，像这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># NOT RECOMMENDED</div><div class="line">rewrite ^ $scheme://www.new-name.com$request_uri permanent;</div></pre></td></tr></table></figure></p>
+<p>这比等效的<code>return</code>指令效率低，因为它需要NGINX处理一个正则表达式，虽然是一个简单的（符号[<code>^</code>]，它匹配完整的原始URL）。 相应的<code>return</code>指令对于我们来说也更容易解释：<code>return 301</code>更清楚地表示NGINX返回代码<code>301</code>而不是<code>rewrite ... permanent</code>符号。</p>
+<h3 id="添加和删除www前缀"><a href="#添加和删除www前缀" class="headerlink" title="添加和删除www前缀"></a>添加和删除www前缀</h3><p>这些示例添加和删除www前缀：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"># add &apos;www&apos;</div><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name domain.com;</div><div class="line">    return 301 $scheme://www.domain.com$request_uri;</div><div class="line">&#125;</div><div class="line"></div><div class="line"># remove &apos;www&apos;</div><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.domain.com;</div><div class="line">    return 301 $scheme://domain.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>再次说明，<code>return</code>比等效的<code>rewrite</code>更好。 <code>rewrite</code>需要解释一个正则表达式 - <code>^(.*)$</code> - 并创建一个自定义变量（<code>$1</code>），事实上它相当于内置的<code>$request_uri</code>变量。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># NOT RECOMMENDED</div><div class="line">rewrite ^(.*)$ $scheme://www.domain.com$1 permanent;</div></pre></td></tr></table></figure>
+<h3 id="将所有流量重定向到正确的域名"><a href="#将所有流量重定向到正确的域名" class="headerlink" title="将所有流量重定向到正确的域名"></a>将所有流量重定向到正确的域名</h3><p>这是一个特殊情况，当请求URL不匹配任何<code>server</code>和<code>location</code>块时，可能因为域名拼写错误，将入站流量重定向到网站的主页。 它的工作原理是将<code>default_server</code>参数与<code>listen</code>指令组合，并将下划线作为<code>server_name</code>指令的参数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80 default_server;</div><div class="line">    listen 443 ssl default_server;</div><div class="line">    server_name _;</div><div class="line">    return 301 $scheme://www.domain.com;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们使用下划线作为<code>server_name</code>的参数，以避免无意中匹配到真实的域名 - 可以安全地假设任何站点都不会有下划线作为其域名。 不匹配任何其他<code>server</code>块的配置中的请求在这里结束，而<code>default_server</code>参数<code>listen</code>告诉NGINX为它们使用这个块。 通过从重写的URL中省略<code>$request_uri</code>变量，我们将所有请求重定向到主页，这是一个好主意，因为具有错误域名的请求尤其可能使用网站上不存在的URI。</p>
+<h2 id="示例-强制所有请求使用-SSL-TLS"><a href="#示例-强制所有请求使用-SSL-TLS" class="headerlink" title="示例 - 强制所有请求使用 SSL/TLS"></a>示例 - 强制所有请求使用 SSL/TLS</h2><p>此<code>server</code>块强制所有访问者对我们的网站使用安全（<code>SSL/TLS</code>）连接。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    server_name www.domain.com;</div><div class="line">    return 301 https://www.domain.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>一些关于NGINX重写规则的其他博客使用<code>if</code>测试和<code>rewrite</code>指令来处理这个用例，像这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># NOT RECOMMENDED</div><div class="line">if ($scheme != &quot;https&quot;) &#123;</div><div class="line">    rewrite ^ https://www.mydomain.com$uri permanent;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>但是此方法需要额外的处理，因为NGINX必须同时评估<code>if</code>条件并处理<code>rewrite</code>指令中的正则表达式。</p>
+<h2 id="示例-为WordPress网站启用漂亮的固定链接"><a href="#示例-为WordPress网站启用漂亮的固定链接" class="headerlink" title="示例 - 为WordPress网站启用漂亮的固定链接"></a>示例 - 为WordPress网站启用漂亮的固定链接</h2><p>NGINX和NGINX Plus是使用WordPress的网站的非常受欢迎的应用交付平台。 下面的<code>try_files</code>指令告诉NGINX检查文件<code>$uri</code>和目录<code>$uri/</code>的存在。 如果文件或目录不存在，NGINX将返回一个重定向到<code>/index.php</code>，并传递query-string参数，这些参数由<code>$args</code>参数捕获。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">location / &#123;</div><div class="line">    try_files $uri $uri/ /index.php?$args;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="示例-删除不受支持的文件扩展名的请求"><a href="#示例-删除不受支持的文件扩展名的请求" class="headerlink" title="示例 - 删除不受支持的文件扩展名的请求"></a>示例 - 删除不受支持的文件扩展名的请求</h2><p>由于种种原因，我们的网站可能会收到以与我们未运行的应用程序服务器相对应的文件扩展名结尾的请求网址。 在本示例中，像Engine Yard博客，应用程序服务器是<code>Ruby on Rails</code>，因此无法处理由其他应用程序服务器（如ASP，PHP，CGI等）处理的文件类型的请求，并且需要拒绝它们。 在一个<code>server</code>块中，将对动态生成的资源的任何请求传递给应用程序，这个<code>location</code>指令会在非<code>Rails</code>文件类型的请求到达<code>Rails</code>队列之前丢弃这些请求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">location ~ \.(aspx|php|jsp|cgi)$ &#123;</div><div class="line">    return 410;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>严格地说，响应代码410（Gone）意在用于 该URL所请求的资源不再是可用的情况，并且服务器不知道其当前位置（如果有的话）。 它相对于响应代码404的优点是它明确地指示资源永久不可用，因此客户端不会再次发送请求。</p>
+<p>我们可能希望通过返回响应代码“403（Forbidden）<code>Server handles only Ruby requests</code> ，为客户端提供更准确的失败原因。 作为一个替代，<code>deny all</code>指令直接返回403：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">location ~ \.(aspx|php|jsp|cgi)$ &#123;</div><div class="line">    deny all;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>状态码403隐式地确认所请求的资源存在，因此如果想要通过向客户端提供尽可能少的信息来实现“security through obscurity”，则状态码404可能是更好的选择。 缺点是客户端可能会反复重试请求，因为404不会明确指出资源是失败是临时的还是永久的。</p>
+<h2 id="示例-配置自定义重新路由"><a href="#示例-配置自定义重新路由" class="headerlink" title="示例 - 配置自定义重新路由"></a>示例 - 配置自定义重新路由</h2><p>在本示例中，从<a href="https://modxcloud.com/userguide/using-modx-cloud/tools-and-configuration/web-rules-rewrites-redirects-tweaks.html" target="_blank" rel="external">MODXCloud</a>，我们有一个资源，作为一组URL的控制器。 我们的用户可以为资源使用更易读的名称，并重写（不重定向）它由控制器在<code>listing.html</code>处理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rewrite ^/listings/(.*)$ /listing.html?listing=$1 last;</div></pre></td></tr></table></figure>
+<p>作为示例，用户友好的URL <code>http://mysite.com/listings/123</code>被重写为由<code>listing.html</code>控制器处理的URL，<code>http://mysite.com/listing.html?listing=123</code>。</p>
+<p><a href="https://www.nginx.com/blog/creating-nginx-rewrite-rules/" target="_blank" rel="external">【原文：https://www.nginx.com/blog/creating-nginx-rewrite-rules/】</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/rewrite/" rel="tag">#rewrite</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/" rel="next" title="微服务架构下使用Nginx变量对应用程序进行性能追踪[转]">
+                <i class="fa fa-chevron-left"></i> 微服务架构下使用Nginx变量对应用程序进行性能追踪[转]
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/01/03/如何创建NGINX重写规则/"
+           data-title="如何创建NGINX重写规则" data-url="https://weizhimiao.github.io/2017/01/03/如何创建NGINX重写规则/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars3.githubusercontent.com/u/11239812?v=3&u=aede3c90c7e5cbc2d029e3f0988d9e1503b59943&s=140"
+               alt="zhimiao" />
+          <p class="site-author-name" itemprop="name">zhimiao</p>
+          <p class="site-description motion-element" itemprop="description">像“草根”一样，紧贴着地面，低调的存在，冬去春来枯荣无恙。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">83</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">68</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/weizhimiao" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#比较return，rewrite-和try-files指令"><span class="nav-number">1.</span> <span class="nav-text">比较return，rewrite 和try_files指令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#return-指令"><span class="nav-number">1.1.</span> <span class="nav-text">return 指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rewrite-指令"><span class="nav-number">1.2.</span> <span class="nav-text">rewrite 指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#try-files-指令"><span class="nav-number">1.3.</span> <span class="nav-text">try_files 指令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-标准化域名"><span class="nav-number">2.</span> <span class="nav-text">示例 - 标准化域名</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#从前名称重定向到当前名称"><span class="nav-number">2.1.</span> <span class="nav-text">从前名称重定向到当前名称</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加和删除www前缀"><span class="nav-number">2.2.</span> <span class="nav-text">添加和删除www前缀</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将所有流量重定向到正确的域名"><span class="nav-number">2.3.</span> <span class="nav-text">将所有流量重定向到正确的域名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-强制所有请求使用-SSL-TLS"><span class="nav-number">3.</span> <span class="nav-text">示例 - 强制所有请求使用 SSL/TLS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-为WordPress网站启用漂亮的固定链接"><span class="nav-number">4.</span> <span class="nav-text">示例 - 为WordPress网站启用漂亮的固定链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-删除不受支持的文件扩展名的请求"><span class="nav-number">5.</span> <span class="nav-text">示例 - 删除不受支持的文件扩展名的请求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-配置自定义重新路由"><span class="nav-number">6.</span> <span class="nav-text">示例 - 配置自定义重新路由</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+<!--
+<div class="theme-info">
+    | 京ICP备 
+    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+          16031041号
+    </a>
+</div>
+-->
+
+
+        
+
+<div class="busuanzi-count">
+
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">本站访客数<span class="busuanzi-value" id="busuanzi_value_site_uv"></span>人次</span>
+  
+
+  
+    <span class="site-pv">本站总访问量<span class="busuanzi-value" id="busuanzi_value_site_pv"></span>次</span>
+  
+  
+</div>
+
+
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"weizhimiao"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+  <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+
+  
+
+
+</body>
+</html>
