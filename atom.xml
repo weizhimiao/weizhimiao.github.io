@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2017-01-03T13:50:48.000Z</updated>
+  <updated>2017-01-12T07:51:29.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -16,100 +16,218 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>如何创建NGINX重写规则</title>
-    <link href="https://weizhimiao.github.io/2017/01/03/%E5%A6%82%E4%BD%95%E5%88%9B%E5%BB%BANGINX%E9%87%8D%E5%86%99%E8%A7%84%E5%88%99/"/>
-    <id>https://weizhimiao.github.io/2017/01/03/如何创建NGINX重写规则/</id>
-    <published>2017-01-03T14:30:00.000Z</published>
-    <updated>2017-01-03T13:50:48.000Z</updated>
+    <title>深入了解Redis之Redis的持久化方式</title>
+    <link href="https://weizhimiao.github.io/2017/01/12/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8BRedis%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96%E6%96%B9%E5%BC%8F/"/>
+    <id>https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis的持久化方式/</id>
+    <published>2017-01-12T13:30:00.000Z</published>
+    <updated>2017-01-12T07:51:29.000Z</updated>
     
-    <content type="html"><![CDATA[<p>在这篇博文中，我们讨论如何创建NGINX重写规则（同样的方法适用于NGINX Plus和开源NGINX软件）。重写规则会更改客户请求中的部分或全部网址，通常用于以下两个目的之一：</p>
+    <content type="html"><![CDATA[<p>我们知道Redis是一个内存数据库，它所有的数据库状态都存储在内存中，所以如果想要在服务器故障、重启之后数据还在，就需要一个将这些数据持久化的一个功能。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/redisChiJiuHuaYuanLi.png" alt="redis持久化原理"></p>
+<p>Redis提供了两种持久化的方式，</p>
 <ul>
-<li><p>通知客户端他们请求的资源现在位于不同的位置。示例用例是我们的网站的域名发生更改时，我们希望客户端使用规范网址格式（带或不带www前缀），以及当我们想要捕获和更正我们的域名的常见拼写错误时。返回和重写指令适合于这些目的。</p>
+<li><p>RDB 持久化方式</p>
+<blockquote>
+<p>将数据库中的键值对及状态保存在持久化文件中</p>
+</blockquote>
 </li>
-<li><p>控制NGINX和NGINX Plus中的处理流程，例如，在需要动态生成内容时，将请求转发到应用程序服务器。 try_files指令通常用于此目的。</p>
+<li><p>AOF 持久化方式</p>
+<blockquote>
+<p>而AOF保存的是服务器所执行过的所有写命令</p>
+</blockquote>
 </li>
 </ul>
-<p><strong>注意：</strong> 要了解如何将Apache HTTP服务器重写规则转换为NGINX重写规则，请参阅我们的随附博客文章“<a href="https://www.nginx.com/blog/converting-apache-to-nginx-rewrite-rules/?utm_source=creating-nginx-rewrite-rules&amp;utm_medium=blog&amp;utm_campaign=Core+Product" target="_blank" rel="external">将Apache重写规则转换为NGINX重写规则</a>”。</p>
-<p>我们假设你熟悉<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html" target="_blank" rel="external">HTTP响应代码</a>和正则表达式（NGINX和NGINX Plus使用Perl语法）。</p>
 <a id="more"></a>
-<h2 id="比较return，rewrite-和try-files指令"><a href="#比较return，rewrite-和try-files指令" class="headerlink" title="比较return，rewrite 和try_files指令"></a>比较return，rewrite 和try_files指令</h2><p>通用NGINX重写的两个指令是返回和重写，而try_files指令是将请求定向到应用程序服务器的一种方便的方法。 让我们回顾一下指令的作用以及它们之间的区别。</p>
-<h3 id="return-指令"><a href="#return-指令" class="headerlink" title="return 指令"></a>return 指令</h3><p>返回指令是两个通用指令中的最简单的，因此我们建议在可能的情况下使用它而不是重写（更多的是为什么和什么时候）。 将返回值放在指定要重写的URL的服务器或位置上下文中，并定义客户端在将来对资源的请求中使用的已更正（重写）的URL。</p>
-<p>这里有一个非常简单的例子，将客户端重定向到一个新的域名：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.old-name.com;</div><div class="line">    return 301 $scheme://www.new-name.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>listen指令意味着服务器块应用于HTTP和HTTPS流量。 server_name指令匹配具有域名<code>www.old-name.com</code>的请求URL。 return指令告诉NGINX停止处理请求，并立即向客户端发送代码<code>301（Moved Permanently）</code>和指定的重写URL。 重写的URL使用两个NGINX变量来捕获和复制原始请求URL中的值：<code>$scheme</code>是协议（<code>http</code>或<code>https</code>），<code>$request_uri</code>是包含参数的完整URI。</p>
-<p>对于3xx系列中的代码，url参数定义新的（重写的）URL。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return (301 | 302 | 303 | 307) url;</div></pre></td></tr></table></figure></p>
-<p>对于其他代码，我们可以选择定义一个显示在响应正文中的文本字符串（HTTP 状态码的标准文本，例如 404 的 Not Found，仍包含在header中）。 文本可以包含NGINX变量。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return (1xx | 2xx | 4xx | 5xx) [&quot;text&quot;];</div></pre></td></tr></table></figure></p>
-<p>例如，当我们需要拒绝没有有效身份验证令牌的请求时，此指令可能适用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">return 401 &quot;Access denied because token is expired or invalid&quot;;</div></pre></td></tr></table></figure></p>
-<p>还有一些可以使用的快捷语法方式，例如省略302的代码; 请参阅返回指令的参考文档。</p>
-<p>（在某些情况下，我们可能希望返回一个比在文本字符串中可以实现的更复杂或更细微的响应。使用<code>error_page</code>指令，我们可以为每个<code>HTTP 状态码</code>返回完整的自定义HTML页面，以及更改 响应代码或执行重定向。）</p>
-<p>所以 <code>return</code> 指令使用简单，适合当重定向满足两个条件：重写的URL适合于每个匹配服务器或位置块的请求，我们可以使用标准的NGINX变量构建重写的URL。</p>
-<h3 id="rewrite-指令"><a href="#rewrite-指令" class="headerlink" title="rewrite 指令"></a>rewrite 指令</h3><p>但是，如果我们需要测试更复杂的URL之间的区别，捕获原始URL中没有相对应的NGINX变量的元素，或者更改、添加路径中的元素，该怎么办？ 我们可以在这种情况下使用<code>rewrite</code>指令。</p>
-<p>像<code>return</code>指令，我们将<code>rewrite</code>指令包含在<code>server</code>或<code>location</code>上下文中，定义要重写的URL。<br>除此以外，这两个指令还大有不同，<code>rewrite</code>指令使用更复杂。 它的语法很简单：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rewrite regex URL [flag];</div></pre></td></tr></table></figure></p>
-<p>第一个参数“regex”意味着NGINX Plus和NGINX只有在匹配指定的正则表达式（除了匹配“server”或“location”指令之外）才重写URL。 附加测试意味着NGINX必须做更多的处理。</p>
-<p>第二个区别是rewrite指令只能返回代码<code>301</code>或<code>302</code>。 要返回其他代码，你需要在<code>rewrite</code>指令之后包含一个<code>return</code>指令（见下面的例子）。</p>
-<p>最后，<code>rewrite</code>指令不一定会阻止NGINX对请求的处理，但<code>return</code>会，而且不一定会向客户端发送重定向。 除非我们明确指出（使用标志或URL的语法）希望NGINX停止处理或发送重定向，它会运行在整个配置寻找到的在Rewrite模块中定义的指令（<code>break，if</code>， <code>return</code>，<code>rewrite</code>和<code>set</code>），并按顺序处理它们。 如果重写的URL与重写模块中的后续指令匹配，NGINX对重写的URL执行指示的操作（通常再次重写）。</p>
-<p>这种事情可能会变得比较复杂，我们需要仔细计划如何配置指令以获得所需的结果。 例如，如果原始的“location”块和利用NGINX重写规则重写的URL相匹配，NGINX就会进入循环，应用重写一遍又一遍直到内置的限制10次。 要了解所有详细信息，请参阅Rewrite模块的文档。 如前所述，所以我们建议尽可能使用<code>return</code>指令。</p>
-<p>下面是一个使用<code>rewrite</code>指令的NGINX重写规则示例。 它匹配以字符串 <code>/download</code>开头的URL，，然后在稍后的路径中的某处包含<code>/media/</code>或<code>/audio/</code>目录。 它用<code>/ mp3 /</code>替换这些元素，并添加适当的文件扩展名<code>.mp3</code>或<code>.ra</code>。 <code>$1</code>和<code>$2</code>变量捕获不变的路径元素。 例如，<code>/download/cdn-west/media/file1</code>变成<code>/download/cdn-west/mp3/file1.mp3</code>。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    ...</div><div class="line">    rewrite ^(/download/.*)/media/(.*)\..*$ $1/mp3/$2.mp3 last;</div><div class="line">    rewrite ^(/download/.*)/audio/(.*)\..*$ $1/mp3/$2.ra  last;</div><div class="line">    return  403;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我们上面提到，我们可以添加标志到<code>rewrite</code>指令来控制处理的流程。 示例中的<code>last</code>标志是其中之一：它告诉NGINX跳过当前<code>server</code>或<code>location</code>块中的任何后续<code>Rewrite-module</code>指令，并开始搜索与重写的URL匹配的新<code>location</code> 。</p>
-<p>在这个例子中的最终的返回指令意味着如果URL不匹配rewrite指令，则返回 403 状态码 到客户端。</p>
-<h3 id="try-files-指令"><a href="#try-files-指令" class="headerlink" title="try_files 指令"></a>try_files 指令</h3><p>像<code>return</code>和<code>rewrite</code>指令，<code>try_files</code>指令放在<code>server</code>或<code>location</code>块中。 作为参数，它需要一个或多个文件和目录以及最终URI的列表：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">try_files file … uri;</div></pre></td></tr></table></figure></p>
-<p>NGINX按顺序检查文件和目录的存在（从<code>root</code>和<code>alias</code>指令的设置构造每个文件的完整路径）。如果要指定目录，则需要在元素名称的末尾添加一个斜杠。 如果没有文件或目录存在，NGINX将执行内部重定向到由最后一个元素（uri）定义的URI。</p>
-<p>对于<code>try_files</code>指令的工作，还需要定义一个<code>location</code>块来捕获内部的重定向，如下面的例子所示。 最终元素可以是已经被命名的location，并由at符号（<code>@</code>）表示。</p>
-<p><code>try_files</code>指令通常使用<code>$uri</code>变量，它表示域名后的URL部分。</p>
-<p>在以下示例中，如果客户端请求的文件不存在，则NGINX提供默认的GIF文件。 当客户端请求（例如）<code>http//www.domain.com/images/image1.gif</code>时，NGINX首先在<code>root</code>或<code>alias</code>指令指定的本地目录中查找<code>image1.gif</code> 适用于位置（未在代码段中显示）。 如果<code>image1.gif</code>不存在，NGINX寻找<code>image1.gif/</code>，如果不存在，它会重定向到<code>/images/default.gif</code>。 该值与第二个位置指令完全匹配，因此处理停止，NGINX提供该文件并将其标记为缓存30秒。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">location /images/ &#123;</div><div class="line">    try_files $uri $uri/ /images/default.gif;</div><div class="line">&#125;</div><div class="line"></div><div class="line">location = /images/default.gif &#123;</div><div class="line">    expires 30s;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="示例-标准化域名"><a href="#示例-标准化域名" class="headerlink" title="示例 - 标准化域名"></a>示例 - 标准化域名</h2><p>NGINX重写规则最常见的用途之一是捕获网站域名的弃用或非标准版本，并将其重定向到当前名称。 有几个相关的用例。</p>
-<h3 id="从前名称重定向到当前名称"><a href="#从前名称重定向到当前名称" class="headerlink" title="从前名称重定向到当前名称"></a>从前名称重定向到当前名称</h3><p>该示例NGINX重写规则将来自<code>www.old-name.com</code>和<code>old-name.com</code>的请求永久地重定向到<code>www.new-name.com</code>，来从原始请求URL中使用两个NGINX变量</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiZaiRuWenJianShiDePanDuanLiuCheng.png" alt="服务器载入文件时的判断流程"></p>
+<p>值得提一下的是，因为AOF文件的更新频率通常比RDB文件的更新频率更高，所以如果服务器有开启AOF持久化功能时，服务器就会优先使用AOF文件来还原数据库，其次才是RDB文件。</p>
+<h2 id="RDB-持久化方式"><a href="#RDB-持久化方式" class="headerlink" title="RDB 持久化方式"></a>RDB 持久化方式</h2><h3 id="RDB文件结构简析"><a href="#RDB文件结构简析" class="headerlink" title="RDB文件结构简析"></a>RDB文件结构简析</h3><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/RDBWenJianJieGou.png" alt="RDB文件结构"></p>
+<h3 id="redis服务器保存和载入RDB文件的方法"><a href="#redis服务器保存和载入RDB文件的方法" class="headerlink" title="redis服务器保存和载入RDB文件的方法"></a>redis服务器保存和载入RDB文件的方法</h3><p>redis中创建RDB文件的两个命令</p>
 <ul>
-<li><code>$scheme</code>是原始协议（<code>http</code>或<code>https</code>），</li>
-<li><code>$request_uri</code>是完整的URI（域名后面），包括参数：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.old-name.com old-name.com;</div><div class="line">    return 301 $scheme://www.new-name.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<li><p>SAVE<br>SAVE命令会由Redis服务器主进程来执行RDB文件的创建，所以在执行SAVE时，Redis服务器会有阻塞，知道RDB文件创建完毕为止，且在阻塞期间服务器不能处理任何命令请求。</p>
+</li>
+<li><p>BGSAVE<br>BGSAVE命令则会派生出一个子进程，然后由子进程负责创建RDB文件，而Redis服务器主进程（父进程）可以继续处理各种命令请求。</p>
 </li>
 </ul>
-<p>因为<code>$request_uri</code>捕获域名后面的URL部分，所以如果新旧站点之间存在一对一的页面对应，这种重写是合适的（例如<code>www.new-name.com/about</code>与<code>www.old-name.com/about</code>具有相同的基本内容。 如果在更改域名之外重新整理了网站，则可以通过省略<code>$request_uri</code>将所有请求重定向到主页，这样更安全：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.old-name.com old-name.com;</div><div class="line">    return 301 $scheme://www.new-name.com;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>例如，一些其他关于在NGINX中重写URL的博客对这些用例使用rewrite指令，像这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># NOT RECOMMENDED</div><div class="line">rewrite ^ $scheme://www.new-name.com$request_uri permanent;</div></pre></td></tr></table></figure></p>
-<p>这比等效的<code>return</code>指令效率低，因为它需要NGINX处理一个正则表达式，虽然是一个简单的（符号[<code>^</code>]，它匹配完整的原始URL）。 相应的<code>return</code>指令对于我们来说也更容易解释：<code>return 301</code>更清楚地表示NGINX返回代码<code>301</code>而不是<code>rewrite ... permanent</code>符号。</p>
-<h3 id="添加和删除www前缀"><a href="#添加和删除www前缀" class="headerlink" title="添加和删除www前缀"></a>添加和删除www前缀</h3><p>这些示例添加和删除www前缀：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"># add &apos;www&apos;</div><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name domain.com;</div><div class="line">    return 301 $scheme://www.domain.com$request_uri;</div><div class="line">&#125;</div><div class="line"></div><div class="line"># remove &apos;www&apos;</div><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    listen 443 ssl;</div><div class="line">    server_name www.domain.com;</div><div class="line">    return 301 $scheme://domain.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>再次说明，<code>return</code>比等效的<code>rewrite</code>更好。 <code>rewrite</code>需要解释一个正则表达式 - <code>^(.*)$</code> - 并创建一个自定义变量（<code>$1</code>），事实上它相当于内置的<code>$request_uri</code>变量。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># NOT RECOMMENDED</div><div class="line">rewrite ^(.*)$ $scheme://www.domain.com$1 permanent;</div></pre></td></tr></table></figure>
-<h3 id="将所有流量重定向到正确的域名"><a href="#将所有流量重定向到正确的域名" class="headerlink" title="将所有流量重定向到正确的域名"></a>将所有流量重定向到正确的域名</h3><p>这是一个特殊情况，当请求URL不匹配任何<code>server</code>和<code>location</code>块时，可能因为域名拼写错误，将入站流量重定向到网站的主页。 它的工作原理是将<code>default_server</code>参数与<code>listen</code>指令组合，并将下划线作为<code>server_name</code>指令的参数。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80 default_server;</div><div class="line">    listen 443 ssl default_server;</div><div class="line">    server_name _;</div><div class="line">    return 301 $scheme://www.domain.com;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我们使用下划线作为<code>server_name</code>的参数，以避免无意中匹配到真实的域名 - 可以安全地假设任何站点都不会有下划线作为其域名。 不匹配任何其他<code>server</code>块的配置中的请求在这里结束，而<code>default_server</code>参数<code>listen</code>告诉NGINX为它们使用这个块。 通过从重写的URL中省略<code>$request_uri</code>变量，我们将所有请求重定向到主页，这是一个好主意，因为具有错误域名的请求尤其可能使用网站上不存在的URI。</p>
-<h2 id="示例-强制所有请求使用-SSL-TLS"><a href="#示例-强制所有请求使用-SSL-TLS" class="headerlink" title="示例 - 强制所有请求使用 SSL/TLS"></a>示例 - 强制所有请求使用 SSL/TLS</h2><p>此<code>server</code>块强制所有访问者对我们的网站使用安全（<code>SSL/TLS</code>）连接。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    server_name www.domain.com;</div><div class="line">    return 301 https://www.domain.com$request_uri;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>一些关于NGINX重写规则的其他博客使用<code>if</code>测试和<code>rewrite</code>指令来处理这个用例，像这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># NOT RECOMMENDED</div><div class="line">if ($scheme != &quot;https&quot;) &#123;</div><div class="line">    rewrite ^ https://www.mydomain.com$uri permanent;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>但是此方法需要额外的处理，因为NGINX必须同时评估<code>if</code>条件并处理<code>rewrite</code>指令中的正则表达式。</p>
-<h2 id="示例-为WordPress网站启用漂亮的固定链接"><a href="#示例-为WordPress网站启用漂亮的固定链接" class="headerlink" title="示例 - 为WordPress网站启用漂亮的固定链接"></a>示例 - 为WordPress网站启用漂亮的固定链接</h2><p>NGINX和NGINX Plus是使用WordPress的网站的非常受欢迎的应用交付平台。 下面的<code>try_files</code>指令告诉NGINX检查文件<code>$uri</code>和目录<code>$uri/</code>的存在。 如果文件或目录不存在，NGINX将返回一个重定向到<code>/index.php</code>，并传递query-string参数，这些参数由<code>$args</code>参数捕获。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">location / &#123;</div><div class="line">    try_files $uri $uri/ /index.php?$args;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="示例-删除不受支持的文件扩展名的请求"><a href="#示例-删除不受支持的文件扩展名的请求" class="headerlink" title="示例 - 删除不受支持的文件扩展名的请求"></a>示例 - 删除不受支持的文件扩展名的请求</h2><p>由于种种原因，我们的网站可能会收到以与我们未运行的应用程序服务器相对应的文件扩展名结尾的请求网址。 在本示例中，像Engine Yard博客，应用程序服务器是<code>Ruby on Rails</code>，因此无法处理由其他应用程序服务器（如ASP，PHP，CGI等）处理的文件类型的请求，并且需要拒绝它们。 在一个<code>server</code>块中，将对动态生成的资源的任何请求传递给应用程序，这个<code>location</code>指令会在非<code>Rails</code>文件类型的请求到达<code>Rails</code>队列之前丢弃这些请求。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">location ~ \.(aspx|php|jsp|cgi)$ &#123;</div><div class="line">    return 410;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>严格地说，响应代码410（Gone）意在用于 该URL所请求的资源不再是可用的情况，并且服务器不知道其当前位置（如果有的话）。 它相对于响应代码404的优点是它明确地指示资源永久不可用，因此客户端不会再次发送请求。</p>
-<p>我们可能希望通过返回响应代码“403（Forbidden）<code>Server handles only Ruby requests</code> ，为客户端提供更准确的失败原因。 作为一个替代，<code>deny all</code>指令直接返回403：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">location ~ \.(aspx|php|jsp|cgi)$ &#123;</div><div class="line">    deny all;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>状态码403隐式地确认所请求的资源存在，因此如果想要通过向客户端提供尽可能少的信息来实现“security through obscurity”，则状态码404可能是更好的选择。 缺点是客户端可能会反复重试请求，因为404不会明确指出资源是失败是临时的还是永久的。</p>
-<h2 id="示例-配置自定义重新路由"><a href="#示例-配置自定义重新路由" class="headerlink" title="示例 - 配置自定义重新路由"></a>示例 - 配置自定义重新路由</h2><p>在本示例中，从<a href="https://modxcloud.com/userguide/using-modx-cloud/tools-and-configuration/web-rules-rewrites-redirects-tweaks.html" target="_blank" rel="external">MODXCloud</a>，我们有一个资源，作为一组URL的控制器。 我们的用户可以为资源使用更易读的名称，并重写（不重定向）它由控制器在<code>listing.html</code>处理。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rewrite ^/listings/(.*)$ /listing.html?listing=$1 last;</div></pre></td></tr></table></figure>
-<p>作为示例，用户友好的URL <code>http://mysite.com/listings/123</code>被重写为由<code>listing.html</code>控制器处理的URL，<code>http://mysite.com/listing.html?listing=123</code>。</p>
-<p><a href="https://www.nginx.com/blog/creating-nginx-rewrite-rules/" target="_blank" rel="external">【原文：https://www.nginx.com/blog/creating-nginx-rewrite-rules/】</a></p>
+<p>创建RDB文件的实际工作由rdb.c/rdbSave函数来完成，SAVE和BGSAVE命令都会以不同的形式调用这个函数。</p>
+<p>RDB文件载入时的服务器状态</p>
+<blockquote>
+<p>RDB文件的载入只有在服务器启动时才会被执行，所以Redis中没有专门载入RDB文件的命令，只要Redis启动时没有开启AOF功能，且检测到RDB文件的存在，就会自动载入RDB文件。且服务器在载入RDB文件期间，会一直处于阻塞状态，直到载入工作完成。</p>
+</blockquote>
+<h3 id="redis服务器自动保存功能的实现原理"><a href="#redis服务器自动保存功能的实现原理" class="headerlink" title="redis服务器自动保存功能的实现原理"></a>redis服务器自动保存功能的实现原理</h3><p>通过上面我们知道，Redis服务器有两个命令，SAVE和BGSAVE，来执行保存数据库状态的操作。<br>SAVE是阻塞的，BGSAVE是非阻塞的。Redis中借助BGSAVE命令，每隔一段时间自动执行一次BGSAVE命令来实现数据库状态的自动保存功能。</p>
+<p>具体实现是通过设置服务器配置的save选项，按照一定的周期去执行BGSAVE命令。如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">save 900 1</div><div class="line">save 300 10</div><div class="line">save 60 10000</div></pre></td></tr></table></figure></p>
+<p>那么只要满足上面这三个条件的任何一条，BGSAVE就会被执行。</p>
+<ul>
+<li>服务器在900s之内，对数据库进行了至少1次修改</li>
+<li>服务器在300s之内，对数据库进行了至少10次修改</li>
+<li>数据库在60s之内，对数据库进行了10000次修改</li>
+</ul>
+<h2 id="AOF-持久化方式"><a href="#AOF-持久化方式" class="headerlink" title="AOF 持久化方式"></a>AOF 持久化方式</h2><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/AOFChiJiuHua.png" alt="AOF持久化方式"></p>
+<h3 id="AOF持久化的实现"><a href="#AOF持久化的实现" class="headerlink" title="AOF持久化的实现"></a>AOF持久化的实现</h3><p>当AOF持久化功能处于打开的状态时，服务器在执行完一个写命令，先将被执行的写命令追加到服务器状态的 aof_buf 的缓冲区。Redis服务器会在每次事件循环结束之前，都会调用“flushAppendOnlyFile”函数来判断是否需要将 aof_buf 缓冲区中内容保存到AOF文件里面。</p>
+<p>flushAppendOnlyFile 函数判断是否保存的依据和配置（appendfsync）</p>
+<ul>
+<li>always,将aof_buf 将缓冲区中所有内容写入并同步到AOF文件</li>
+<li>everysec,将缓冲区中所有内容写入AOF文件，但至少间隔一秒同步一次(默认值)</li>
+<li>no,将缓冲区中所有内容写入AOF文件，但不对AOF文件进行同步，何时同步则由系统决定</li>
+</ul>
+<h3 id="AOF文件的载入与数据还原"><a href="#AOF文件的载入与数据还原" class="headerlink" title="AOF文件的载入与数据还原"></a>AOF文件的载入与数据还原</h3><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/AOFWenJianZaiRuGuoCheng.png" alt="AOF文件载入过程"></p>
+<h3 id="AOF重写的原理和实现"><a href="#AOF重写的原理和实现" class="headerlink" title="AOF重写的原理和实现"></a>AOF重写的原理和实现</h3><p>随着服务器运行时间的增加，AOF文件中的内容会越来越多，相应的文件体积就会越来越大，但其实文件中很大一部分信息是冗余信息。</p>
+<p>例如，我们对一个键进行了n次的写操作，AOF文件中相对应就会产生n次的写操作命令。但其实AOF文件中的对于该键的前n-1次的写操作命令都可认为是冗余操作命令，只需保留最后一条的写操作命令即可。</p>
+<p>所以，Redis提供了AOF文件重写（rewrite）功能，来清除这些冗余命令，以控制AOF文件的大小。具体实现思路为，Redis服务器先创建一个新的AOF文件来替代现有的AOF文件，新旧两个AOF文件所保存的数据库状态是相同的，但新的AOF文件不会包含任何浪费空间的冗余命令。</p>
+<h4 id="Redis服务器AOF重写的实现"><a href="#Redis服务器AOF重写的实现" class="headerlink" title="Redis服务器AOF重写的实现"></a>Redis服务器AOF重写的实现</h4><ul>
+<li><p>虽然该功能名称叫 AOF文件重写 ，但是具体的实现却并没有对现有AOF文件进行任何读取、分析、或者写入操作，而是通过读取当前服务器的数据库状态来实现的。</p>
+</li>
+<li><p>通过读取当前数据库中键值的状态，尽量生成最少的能与之对应redis命令，然后将该redis命令写入新的AOF文件中，直至将当前数据库状态全部生成完毕。</p>
+</li>
+<li><p>另外，在执行AOF重写的期间，Redis会维护一个AOF重写缓冲区，该缓冲区会在子进程创建AOF文件期间，记录服务器执行的所有写命令。当子进程完成创建新AOF文件之后，服务器会将重写缓冲区中的所有内容追加到新AOF文件的末尾，使得新旧两个AOF文件所保存的数据库状态完全一致。</p>
+</li>
+<li><p>最后，服务器用新的AOF替换旧的AOF文件，以此来完成AOF文件的重写操作。</p>
+</li>
+</ul>
+<h4 id="AOF后台重写"><a href="#AOF后台重写" class="headerlink" title="AOF后台重写"></a>AOF后台重写</h4><p>由于生成新的AOF文件时会进行大量的写入操作，所以在进行AOF重写的时候，会造成长时间的阻塞，所以redis将AOF重写程序放在子进程里执行，这样就可避免主进程长时间的阻塞。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;在这篇博文中，我们讨论如何创建NGINX重写规则（同样的方法适用于NGINX Plus和开源NGINX软件）。重写规则会更改客户请求中的部分或全部网址，通常用于以下两个目的之一：&lt;/p&gt;
+      &lt;p&gt;我们知道Redis是一个内存数据库，它所有的数据库状态都存储在内存中，所以如果想要在服务器故障、重启之后数据还在，就需要一个将这些数据持久化的一个功能。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20170112/redisChiJiuHuaYuanLi.png&quot; alt=&quot;redis持久化原理&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Redis提供了两种持久化的方式，&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;通知客户端他们请求的资源现在位于不同的位置。示例用例是我们的网站的域名发生更改时，我们希望客户端使用规范网址格式（带或不带www前缀），以及当我们想要捕获和更正我们的域名的常见拼写错误时。返回和重写指令适合于这些目的。&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;RDB 持久化方式&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;将数据库中的键值对及状态保存在持久化文件中&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p&gt;控制NGINX和NGINX Plus中的处理流程，例如，在需要动态生成内容时，将请求转发到应用程序服务器。 try_files指令通常用于此目的。&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;AOF 持久化方式&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;而AOF保存的是服务器所执行过的所有写命令&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;注意：&lt;/strong&gt; 要了解如何将Apache HTTP服务器重写规则转换为NGINX重写规则，请参阅我们的随附博客文章“&lt;a href=&quot;https://www.nginx.com/blog/converting-apache-to-nginx-rewrite-rules/?utm_source=creating-nginx-rewrite-rules&amp;amp;utm_medium=blog&amp;amp;utm_campaign=Core+Product&quot;&gt;将Apache重写规则转换为NGINX重写规则&lt;/a&gt;”。&lt;/p&gt;
-&lt;p&gt;我们假设你熟悉&lt;a href=&quot;http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html&quot;&gt;HTTP响应代码&lt;/a&gt;和正则表达式（NGINX和NGINX Plus使用Perl语法）。&lt;/p&gt;
     
     </summary>
     
-      <category term="Nginx" scheme="https://weizhimiao.github.io/categories/Nginx/"/>
+      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
     
     
-      <category term="rewrite" scheme="https://weizhimiao.github.io/tags/rewrite/"/>
+      <category term="Redis" scheme="https://weizhimiao.github.io/tags/Redis/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>深入了解Redis之Redis数据库的实现</title>
+    <link href="https://weizhimiao.github.io/2017/01/12/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8BRedis%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"/>
+    <id>https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis数据库的实现/</id>
+    <published>2017-01-12T12:30:00.000Z</published>
+    <updated>2017-01-12T07:46:51.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Redis这个<code>key-value</code>的存储系统，由于其高性能，支持主从复制和丰富的数据结构等特性，目前已经广泛应用于我们的各个场景之中。所以了解整理其相关的一些内容，用以加深我们对其的了解，方便之后更好的使用它实现我们的各种功能。</p>
+<a id="more"></a>
+<h2 id="数据结构与对象"><a href="#数据结构与对象" class="headerlink" title="数据结构与对象"></a>数据结构与对象</h2><p>Redis底层的实现，主要用到的数据结构有简单动态字符串（SDS）、双端链表、字典、压缩列表、整数集合等。但REdis没有直接用这些数据结构来实现数据库的设计。而是基于这些数据结构创建了一个对象系统。</p>
+<p>使用这种对象系统的好处</p>
+<ul>
+<li>对不同的使用场景，可以为对象设置多种不同的数据结构实现，从而可以优化对象在不同场景下的使用效率</li>
+<li>基于对象方便实现基于引用计数技术的内存回收机制</li>
+</ul>
+<p>键值对的具体组成：</p>
+<ul>
+<li>键 =&gt; 自字符串对象</li>
+<li>值<ul>
+<li>字符串对象</li>
+<li>列表对象</li>
+<li>哈希对象</li>
+<li>集合对象</li>
+<li>有序集合对象</li>
+</ul>
+</li>
+</ul>
+<h2 id="数据库的实现"><a href="#数据库的实现" class="headerlink" title="数据库的实现"></a>数据库的实现</h2><p>Redis服务器的所有数据库都保存在”redisSeriver”结构中的“db” 的数组中。而db的结构则主要由“dict”和“expires”另个字典构成，dict字典负责保存键值对，而expires字典负责保存键的过期时间。</p>
+<p>redisSeriver结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">struct redisSeriver&#123;</div><div class="line">  //...</div><div class="line"></div><div class="line">  redisDb *db;</div><div class="line"></div><div class="line">  //...</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>redisDb结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">typeed struct redisDb&#123;</div><div class="line">  //...</div><div class="line"></div><div class="line">  //数据库键值字典，保存数据库中所有键值对（又称之为，键空间）</div><div class="line">  dict *dict;</div><div class="line"></div><div class="line">  //过期字典，保存键的过期时间</div><div class="line">  dict *expires;</div><div class="line"></div><div class="line">&#125; redisDb;</div></pre></td></tr></table></figure></p>
+<h3 id="服务器保存键值对的方法"><a href="#服务器保存键值对的方法" class="headerlink" title="服务器保存键值对的方法"></a>服务器保存键值对的方法</h3><p>键值字典和用户所见的数据库是直接对应的</p>
+<ul>
+<li>该字典里的键就是我们数据库的键（每个键都是一个字符串对象）</li>
+<li>字典的值就是数据库的值，每个值可以是字符串对象、列表对象、哈希表对象、集合对象和有序集合对象中的任一种对象。</li>
+</ul>
+<p>相应的操作</p>
+<ul>
+<li><p>当添加新键值对时</p>
+<blockquote>
+<p>实际就是将一个新键值对添加到该“dict”键值字典中，其键为字符串对象，值为任意的一个Redis对象</p>
+</blockquote>
+</li>
+<li><p>删除键</p>
+<blockquote>
+<p>实际上就是在该“dict”键值字典中删除键对应的键值对对象</p>
+</blockquote>
+</li>
+<li><p>更新键</p>
+</li>
+<li>对该键取值</li>
+</ul>
+<p>当我们对这些键值进行这些读写操作的时候，redis还会执行一些额外的（维护）操作。这些操作有</p>
+<ul>
+<li>当读取一个键后，会更新服务器键空间命中次数（hit）或不命中次数（miss）</li>
+<li>读取一个键后，还会更新该键的LRU（最后一次使用时间）</li>
+<li>当读取一个键时，发现该键已经过期，那么出返回结果还需要删除这个键</li>
+<li>如果有客户端watch这个键，那么操作过这个键之后还需要将这个键标记为“dirty”，让watch这个键的客户端知道该键已经被修改过</li>
+<li>当每次修改过一个键之后，都会对“dirty”计数器的值增1，以便触发服务器的持久化以及复制操作。</li>
+<li>如果服务器开启了数据库通知的功能，那么修改了键之后，还需要按配置发送相应的通知。</li>
+</ul>
+<h3 id="服务器保存键值对过期时间的方法"><a href="#服务器保存键值对过期时间的方法" class="headerlink" title="服务器保存键值对过期时间的方法"></a>服务器保存键值对过期时间的方法</h3><p>过期时间是一个UNIX时间戳，当键的过期时间来临时，服务器就会自动从数据库中删除这个键。</p>
+<p>redis有四个不同的命令来设置键的过期时间</p>
+<ul>
+<li>EXPIRE <key> <ttl> (秒级)</ttl></key></li>
+<li>PEXPIRE <key> <ttl> (毫秒级)</ttl></key></li>
+<li>EXPIREAT <key> <timestamp> (秒级)</timestamp></key></li>
+<li>PEXPIREAT <key> <timestamp> (毫秒级)</timestamp></key></li>
+</ul>
+<p>实际上，EXPIRE、PEXPIRE、EXPIREAT三个命令最终都是使用PEXPIREAT命令来实现的。</p>
+<p>redisDb结构中，expires字典保存了数据库中所有键的过期时间。</p>
+<ul>
+<li>过期字典的键是一个指针，这个指针指向键空间中的某个键对象</li>
+<li>过期字典的值是一个long类型的整数，这个整数保存着过期时间（一个毫秒精度的UNIX时间戳）</li>
+</ul>
+<h3 id="服务器删除过期键值对的方法"><a href="#服务器删除过期键值对的方法" class="headerlink" title="服务器删除过期键值对的方法"></a>服务器删除过期键值对的方法</h3><h4 id="过期键的判定"><a href="#过期键的判定" class="headerlink" title="过期键的判定"></a>过期键的判定</h4><ul>
+<li>1、检查给定的键是否存在于过期字典，如果存在，那么取得键的过期时间</li>
+<li>2、检查当前UNIX时间戳是否大于取得的键的过期时间，如果大于的，那么该键已过期；否则该键未过期。</li>
+</ul>
+<h4 id="一般的常见的过期键删除机制"><a href="#一般的常见的过期键删除机制" class="headerlink" title="一般的常见的过期键删除机制"></a>一般的常见的过期键删除机制</h4><ul>
+<li>定时删除，在设置键的时候设定一个定时器，让其在定时器结束时执行对键的删除操作</li>
+<li>惰性删除，设置后不管，当需要再次获取该键时，先检查该键是否已经过期，如果过期的话，执行删除操作，没有过期的话，返回键值</li>
+<li>定期删除，每隔一段时间，对所有键检查一次，有过期的则主动删除</li>
+</ul>
+<h4 id="Redis采用的过期键删除机制（惰性-定期）"><a href="#Redis采用的过期键删除机制（惰性-定期）" class="headerlink" title="Redis采用的过期键删除机制（惰性+定期）"></a>Redis采用的过期键删除机制（惰性+定期）</h4><ul>
+<li><p>惰性删除策略的实现</p>
+<blockquote>
+<p>redis在所有读写数据库的Redis命令之前都会执行一个叫”expireIfNeeded”的函数对要操作的键进行检查</p>
+</blockquote>
+<ul>
+<li>如果要操作的键已经过期，那么”expireIfNeeded”函数将该键从数据库中删除</li>
+<li>如果未过期，那么”expireIfNeeded”函数不做操作</li>
+</ul>
+</li>
+</ul>
+<p>注：对所操作键存在与否的判断先与是否过期的判断</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170111/redisGuoQiJianShanChuLiuCheng.png" alt="img"></p>
+<ul>
+<li>定期删除策略的实现<blockquote>
+<p>redis中会有一个周期性运行的操作函数“serverCron”。过期键的定期删除是由一个叫“activeExpireCycle”的函数实现。当serverCron函数运行时，activeExpireCycle 函数就会被调用。它会在规定的时间内分多次遍历服务器中各个数据库，从数据库的expires字典中随机检查一部分键的过期时间，并删除其中的过期键。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="redis集群中过期键的删除"><a href="#redis集群中过期键的删除" class="headerlink" title="redis集群中过期键的删除"></a>redis集群中过期键的删除</h4><p>在Redis集群中 当主服务器删除一个过期键之后，它会向所有从服务器发送一条DEL命令，而从服务器即使发现过期键也不会自作主张的将其删除，而是等待主节点发来DEL命令，显式的进行删除。这种统一的、中心化的过期键策略可以保证主从服务器数据一致。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Redis这个&lt;code&gt;key-value&lt;/code&gt;的存储系统，由于其高性能，支持主从复制和丰富的数据结构等特性，目前已经广泛应用于我们的各个场景之中。所以了解整理其相关的一些内容，用以加深我们对其的了解，方便之后更好的使用它实现我们的各种功能。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
+    
+    
+      <category term="Redis" scheme="https://weizhimiao.github.io/tags/Redis/"/>
     
   </entry>
   
@@ -359,97 +477,6 @@
   </entry>
   
   <entry>
-    <title>sudo使用场景分析[转]</title>
-    <link href="https://weizhimiao.github.io/2016/11/16/sudo%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/11/16/sudo使用场景分析/</id>
-    <published>2016-11-16T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:39.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。</p>
-<ul>
-<li><p>情景一：用户无权限执行 root 命令</p>
-</li>
-<li><p>情景二：vim 编辑后发现忘记使用 sudo</p>
-</li>
-<li><p>情景三：执行 root 命令忘记加 sudo</p>
-</li>
-<li><p>情景四：shell 内置命令如何使用 sudo</p>
-</li>
-<li><p>情景五：sudo 操作记录日志</p>
-</li>
-</ul>
-<a id="more"></a>
-<h2 id="情景一：用户无权限执行-root-命令"><a href="#情景一：用户无权限执行-root-命令" class="headerlink" title="情景一：用户无权限执行 root 命令"></a>情景一：用户无权限执行 root 命令</h2><p>普通用户登录 shell 之后，如果自身没有权限访问某个文件或执行某个命令时，若该用户获得root授权，那么就可以在需要执行的命令之前加上 sudo，临时切换到root用户的权限，完成相关的操作。在sudo于1980年前后被写出之前，一般用户管理系统的方式是利用su切换为超级用户。但是使用su的缺点之一在于必须要先告知超级用户的密码，而sudo使一般用户不需要知道超级用户的密码即可获得权限。</p>
-<p>那么哪些用户可以临时获得 root 权限呢？这就需要在 <code>/etc/sudoers</code> 文件中进行配置：</p>
-<p>授权给单个用户：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">guohl   ALL=(ALL) ALL</div></pre></td></tr></table></figure></p>
-<p>上面这个例子中：</p>
-<ul>
-<li><p>guohl：允许使用 sudo 的用户名</p>
-</li>
-<li><p>ALL：允许从任何终端（任何机器）使用 sudo</p>
-</li>
-<li><p>(ALL)：允许以任何用户执行 sudo 命令</p>
-</li>
-<li><p>ALL：允许 sudo 权限执行任何命令</p>
-</li>
-</ul>
-<p>如果我们想让用户 test 只能在本主机（主机名为guohl-pc）以 root 账户执行/bin/chown、/bin/chmod 两条命令，那么就应该这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">test   guohl-pc=(root) /bin/chown,/bin/chmod</div></pre></td></tr></table></figure></p>
-<p>如果test 登录之后运行 sudo 命令，不满足上面三个条件命令均失败。</p>
-<p>授权给用户组:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># Allow members of group sudo to execute any command</div><div class="line"># (Note that later entries override this, so you might need to move it further down)</div><div class="line">%sudo ALL=(ALL) ALL</div><div class="line">和授权给单个用户类似，只不过将用户名在这里换成%组名，所有在该组中的用户都按照此规则进行授权。对于该例，所有在 sudo 组内的用户都有在任何终端（第一个ALL）、以任何用户（第二个ALL）、执行任何命令（第三个ALL）的权限，查看 /etc/group 文件可以知道哪些用户属于 sudo 组。</div></pre></td></tr></table></figure></p>
-<p>举例:</p>
-<p>如果当前帐号在 /etc/sudoers 文件中被授予 sudo 的权限，那么你就可以将任何 root 命令作为 sudo 命令的参数，使用 root 权限来执行该命令。举例来说，挂载一个文件系统只能由 root 来执行，但是一个普通用户也可以使用 sudo 来挂载：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$sudo mount /dev/sda7 /mnt</div><div class="line">[sudo] password for guohailin:</div></pre></td></tr></table></figure>
-<p>首次使用会要求你输入当前用户的密码，系统确实输入正确即以 root 权限来执行 mount 命令，接下来一段时间（默认为5分钟）再次使用 sudo 命令就不需要输密码了。</p>
-<h2 id="情景二：vim-编辑后发现忘记使用-sudo"><a href="#情景二：vim-编辑后发现忘记使用-sudo" class="headerlink" title="情景二：vim 编辑后发现忘记使用 sudo"></a>情景二：vim 编辑后发现忘记使用 sudo</h2><p>我们经常会遇到这样的一个囧境：使用 <code>vim</code> 对某个文件进行编辑，编辑完之后，按 ESC 之后回到普通模式，再按 <code>:wq</code> 准备保存退出时，发现没有权限对该文件进行修改，我们在使用 <code>vim</code> 命令时忘记在前面加 <code>sudo</code> 了。我就经常出现这种问题，之前的做法是只能不保存强退，再加上 <code>sudo</code> 重新编辑。</p>
-<p>但是今后我们再也不需要用这么愚蠢的做法了，我们可以在 vim 的普通模式下，按 <code>:w !sudo tee %</code>，这样就可以 root 权限来保存文件了，你也无需因为自己一时忘记加个 sudo 而沮丧懊恼了！</p>
-<h2 id="情景三：执行-root-命令忘记加-sudo"><a href="#情景三：执行-root-命令忘记加-sudo" class="headerlink" title="情景三：执行 root 命令忘记加 sudo"></a>情景三：执行 root 命令忘记加 sudo</h2><p>我们还会遇到这样稍微好一点的情形：输入一个长长的命令，按 Enter 之后出现无权限操作，因为我们忘记加 sudo 了。大多人的做法是按 ↑ 回到上一条命令，在该命令之前加上 sudo，再执行该命令。</p>
-<p>以后，我们无需这样了，只要输入 <code>sudo !!</code> 即可，这里的 <code>!!</code> 代表上一条命令。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ head -n 4 /etc/sudoers</div><div class="line">head: cannot open `/etc/sudoers&apos; for reading: Permission denied</div><div class="line"></div><div class="line">$ sudo !!</div><div class="line">sudo head -n 4 /etc/sudoers</div><div class="line"># /etc/sudoers</div><div class="line">#</div><div class="line"># This file MUST be edited with the &apos;visudo&apos; command as root.</div><div class="line">#</div></pre></td></tr></table></figure></p>
-<h2 id="情景四：shell-内置命令如何使用-sudo"><a href="#情景四：shell-内置命令如何使用-sudo" class="headerlink" title="情景四：shell 内置命令如何使用 sudo"></a>情景四：shell 内置命令如何使用 sudo</h2><p>shell 是一个交互式的应用程序，在执行外部命令时通过 fork 来创建一个子进程，再通过 exec 来加载外部命令的程序来执行，但是如果一个命令是 shell 内置命令，那么只能直接由 shell 来运行。sudo 的意思是，以别的用户（如root）的权限来 fork 一个进程，加载程序并运行，因此 sudo 后面不能跟 shell 的内置命令，如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /sys/kernel/debugfs</div><div class="line">sudo: cd: command not found</div></pre></td></tr></table></figure>
-<p>在这种情况，我们又没有 root 账户的密码，我们怎样执行该命令呢？有种办法就是使用 sudo 获得root shell 的权限，然后在root shell 中执行该命令。进入root shell 很简单，输入sudo bash 确认本用户的密码即可，此时你会发现命令提示符显示当前是 root。一旦获得root shell，你可以执行任何命令而不需要在每条命令前输入sudo了。</p>
-<p>另外，常用的shell 内置命令在<a href="http://www.thegeekstuff.com/2010/08/bash-shell-builtin-commands/" target="_blank" rel="external">这里</a> 有简单介绍，我们可以使用 type 命令来查看命令的类型，如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ type ls</div><div class="line">ls is /bin/ls</div><div class="line">$ type umask</div><div class="line">umask is a shell builtin</div></pre></td></tr></table></figure>
-<h2 id="情景五：sudo-操作记录日志"><a href="#情景五：sudo-操作记录日志" class="headerlink" title="情景五：sudo 操作记录日志"></a>情景五：sudo 操作记录日志</h2><p>作为一个 Linux 系统的管理员，不仅可以让指定的用户或用户组作为root用户或其它用户来运行某些命令，还能将指定的用户所输入的命令和参数作详细的记录。而sudo的日志功能就可以用户跟踪用户输入的命令，这不仅能增进系统的安全性，还能用来进行故障检修。但是要记录sudo的日志还要一些简单的配置：</p>
-<p>1、创建sudo日志文件</p>
-<p>我们将sudo日志文件放置在 <code>/var/log/sudo.log</code> 文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo touch /var/log/sudo.log</div></pre></td></tr></table></figure></p>
-<p>2、修改 <code>/etc/rsyslog.conf</code> 配置文件</p>
-<p>我使用系统为<code>Ubuntu13.04</code>为改名字，但有些系统名为<code>/etc/syslog.conf</code>，注意不同发行版之间的差别，在该文件加入下面一行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">local2.debug    /var/log/sudo.log    #空白不能用空格，必须用tab</div></pre></td></tr></table></figure>
-<p>3、修改 /etc/sudoers 配置文件</p>
-<p>注意网上很多关于sudo日志文件配置都缺少这一步！在该文件中加入下面一行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Defaults    logfile=/var/log/sudo.log</div></pre></td></tr></table></figure></p>
-<p>4、重启 syslog 服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service rsyslog restart</div></pre></td></tr></table></figure></p>
-<p>5、查看 sudo 日志记录：</p>
-<p>经过上面的配置，sudo 的所有成功和不成功的sudo</p>
-<p>命令都记录到文件/var/log/sudo.log 中，例如我运行几条sudo 命令之后，查看该文件的记录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ cat sudo.log</div><div class="line">Sep 20 22:10:51 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/cat /etc/sudoers</div><div class="line">Sep 20 22:11:36 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/usr/sbin/service rsyslog restart</div><div class="line">Sep 20 22:11:45 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls</div><div class="line">Sep 20 22:12:08 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls /root/</div></pre></td></tr></table></figure></p>
-<p>[原文：<a href="http://www.cnblogs.com/hazir/p/sudo_command.html" target="_blank" rel="external">http://www.cnblogs.com/hazir/p/sudo_command.html</a>]</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;情景一：用户无权限执行 root 命令&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景二：vim 编辑后发现忘记使用 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景三：执行 root 命令忘记加 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景四：shell 内置命令如何使用 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景五：sudo 操作记录日志&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
-    
-    
-      <category term="sudo" scheme="https://weizhimiao.github.io/tags/sudo/"/>
-    
-  </entry>
-  
-  <entry>
     <title>Bash脚本15分钟进阶教程[转]</title>
     <link href="https://weizhimiao.github.io/2016/11/16/Bash%E8%84%9A%E6%9C%AC15%E5%88%86%E9%92%9F%E8%BF%9B%E9%98%B6%E6%95%99%E7%A8%8B/"/>
     <id>https://weizhimiao.github.io/2016/11/16/Bash脚本15分钟进阶教程/</id>
@@ -643,6 +670,97 @@
     
     
       <category term="shell" scheme="https://weizhimiao.github.io/tags/shell/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>sudo使用场景分析[转]</title>
+    <link href="https://weizhimiao.github.io/2016/11/16/sudo%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/11/16/sudo使用场景分析/</id>
+    <published>2016-11-16T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:39.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。</p>
+<ul>
+<li><p>情景一：用户无权限执行 root 命令</p>
+</li>
+<li><p>情景二：vim 编辑后发现忘记使用 sudo</p>
+</li>
+<li><p>情景三：执行 root 命令忘记加 sudo</p>
+</li>
+<li><p>情景四：shell 内置命令如何使用 sudo</p>
+</li>
+<li><p>情景五：sudo 操作记录日志</p>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="情景一：用户无权限执行-root-命令"><a href="#情景一：用户无权限执行-root-命令" class="headerlink" title="情景一：用户无权限执行 root 命令"></a>情景一：用户无权限执行 root 命令</h2><p>普通用户登录 shell 之后，如果自身没有权限访问某个文件或执行某个命令时，若该用户获得root授权，那么就可以在需要执行的命令之前加上 sudo，临时切换到root用户的权限，完成相关的操作。在sudo于1980年前后被写出之前，一般用户管理系统的方式是利用su切换为超级用户。但是使用su的缺点之一在于必须要先告知超级用户的密码，而sudo使一般用户不需要知道超级用户的密码即可获得权限。</p>
+<p>那么哪些用户可以临时获得 root 权限呢？这就需要在 <code>/etc/sudoers</code> 文件中进行配置：</p>
+<p>授权给单个用户：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">guohl   ALL=(ALL) ALL</div></pre></td></tr></table></figure></p>
+<p>上面这个例子中：</p>
+<ul>
+<li><p>guohl：允许使用 sudo 的用户名</p>
+</li>
+<li><p>ALL：允许从任何终端（任何机器）使用 sudo</p>
+</li>
+<li><p>(ALL)：允许以任何用户执行 sudo 命令</p>
+</li>
+<li><p>ALL：允许 sudo 权限执行任何命令</p>
+</li>
+</ul>
+<p>如果我们想让用户 test 只能在本主机（主机名为guohl-pc）以 root 账户执行/bin/chown、/bin/chmod 两条命令，那么就应该这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">test   guohl-pc=(root) /bin/chown,/bin/chmod</div></pre></td></tr></table></figure></p>
+<p>如果test 登录之后运行 sudo 命令，不满足上面三个条件命令均失败。</p>
+<p>授权给用户组:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># Allow members of group sudo to execute any command</div><div class="line"># (Note that later entries override this, so you might need to move it further down)</div><div class="line">%sudo ALL=(ALL) ALL</div><div class="line">和授权给单个用户类似，只不过将用户名在这里换成%组名，所有在该组中的用户都按照此规则进行授权。对于该例，所有在 sudo 组内的用户都有在任何终端（第一个ALL）、以任何用户（第二个ALL）、执行任何命令（第三个ALL）的权限，查看 /etc/group 文件可以知道哪些用户属于 sudo 组。</div></pre></td></tr></table></figure></p>
+<p>举例:</p>
+<p>如果当前帐号在 /etc/sudoers 文件中被授予 sudo 的权限，那么你就可以将任何 root 命令作为 sudo 命令的参数，使用 root 权限来执行该命令。举例来说，挂载一个文件系统只能由 root 来执行，但是一个普通用户也可以使用 sudo 来挂载：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$sudo mount /dev/sda7 /mnt</div><div class="line">[sudo] password for guohailin:</div></pre></td></tr></table></figure>
+<p>首次使用会要求你输入当前用户的密码，系统确实输入正确即以 root 权限来执行 mount 命令，接下来一段时间（默认为5分钟）再次使用 sudo 命令就不需要输密码了。</p>
+<h2 id="情景二：vim-编辑后发现忘记使用-sudo"><a href="#情景二：vim-编辑后发现忘记使用-sudo" class="headerlink" title="情景二：vim 编辑后发现忘记使用 sudo"></a>情景二：vim 编辑后发现忘记使用 sudo</h2><p>我们经常会遇到这样的一个囧境：使用 <code>vim</code> 对某个文件进行编辑，编辑完之后，按 ESC 之后回到普通模式，再按 <code>:wq</code> 准备保存退出时，发现没有权限对该文件进行修改，我们在使用 <code>vim</code> 命令时忘记在前面加 <code>sudo</code> 了。我就经常出现这种问题，之前的做法是只能不保存强退，再加上 <code>sudo</code> 重新编辑。</p>
+<p>但是今后我们再也不需要用这么愚蠢的做法了，我们可以在 vim 的普通模式下，按 <code>:w !sudo tee %</code>，这样就可以 root 权限来保存文件了，你也无需因为自己一时忘记加个 sudo 而沮丧懊恼了！</p>
+<h2 id="情景三：执行-root-命令忘记加-sudo"><a href="#情景三：执行-root-命令忘记加-sudo" class="headerlink" title="情景三：执行 root 命令忘记加 sudo"></a>情景三：执行 root 命令忘记加 sudo</h2><p>我们还会遇到这样稍微好一点的情形：输入一个长长的命令，按 Enter 之后出现无权限操作，因为我们忘记加 sudo 了。大多人的做法是按 ↑ 回到上一条命令，在该命令之前加上 sudo，再执行该命令。</p>
+<p>以后，我们无需这样了，只要输入 <code>sudo !!</code> 即可，这里的 <code>!!</code> 代表上一条命令。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ head -n 4 /etc/sudoers</div><div class="line">head: cannot open `/etc/sudoers&apos; for reading: Permission denied</div><div class="line"></div><div class="line">$ sudo !!</div><div class="line">sudo head -n 4 /etc/sudoers</div><div class="line"># /etc/sudoers</div><div class="line">#</div><div class="line"># This file MUST be edited with the &apos;visudo&apos; command as root.</div><div class="line">#</div></pre></td></tr></table></figure></p>
+<h2 id="情景四：shell-内置命令如何使用-sudo"><a href="#情景四：shell-内置命令如何使用-sudo" class="headerlink" title="情景四：shell 内置命令如何使用 sudo"></a>情景四：shell 内置命令如何使用 sudo</h2><p>shell 是一个交互式的应用程序，在执行外部命令时通过 fork 来创建一个子进程，再通过 exec 来加载外部命令的程序来执行，但是如果一个命令是 shell 内置命令，那么只能直接由 shell 来运行。sudo 的意思是，以别的用户（如root）的权限来 fork 一个进程，加载程序并运行，因此 sudo 后面不能跟 shell 的内置命令，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /sys/kernel/debugfs</div><div class="line">sudo: cd: command not found</div></pre></td></tr></table></figure>
+<p>在这种情况，我们又没有 root 账户的密码，我们怎样执行该命令呢？有种办法就是使用 sudo 获得root shell 的权限，然后在root shell 中执行该命令。进入root shell 很简单，输入sudo bash 确认本用户的密码即可，此时你会发现命令提示符显示当前是 root。一旦获得root shell，你可以执行任何命令而不需要在每条命令前输入sudo了。</p>
+<p>另外，常用的shell 内置命令在<a href="http://www.thegeekstuff.com/2010/08/bash-shell-builtin-commands/" target="_blank" rel="external">这里</a> 有简单介绍，我们可以使用 type 命令来查看命令的类型，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ type ls</div><div class="line">ls is /bin/ls</div><div class="line">$ type umask</div><div class="line">umask is a shell builtin</div></pre></td></tr></table></figure>
+<h2 id="情景五：sudo-操作记录日志"><a href="#情景五：sudo-操作记录日志" class="headerlink" title="情景五：sudo 操作记录日志"></a>情景五：sudo 操作记录日志</h2><p>作为一个 Linux 系统的管理员，不仅可以让指定的用户或用户组作为root用户或其它用户来运行某些命令，还能将指定的用户所输入的命令和参数作详细的记录。而sudo的日志功能就可以用户跟踪用户输入的命令，这不仅能增进系统的安全性，还能用来进行故障检修。但是要记录sudo的日志还要一些简单的配置：</p>
+<p>1、创建sudo日志文件</p>
+<p>我们将sudo日志文件放置在 <code>/var/log/sudo.log</code> 文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo touch /var/log/sudo.log</div></pre></td></tr></table></figure></p>
+<p>2、修改 <code>/etc/rsyslog.conf</code> 配置文件</p>
+<p>我使用系统为<code>Ubuntu13.04</code>为改名字，但有些系统名为<code>/etc/syslog.conf</code>，注意不同发行版之间的差别，在该文件加入下面一行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">local2.debug    /var/log/sudo.log    #空白不能用空格，必须用tab</div></pre></td></tr></table></figure>
+<p>3、修改 /etc/sudoers 配置文件</p>
+<p>注意网上很多关于sudo日志文件配置都缺少这一步！在该文件中加入下面一行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Defaults    logfile=/var/log/sudo.log</div></pre></td></tr></table></figure></p>
+<p>4、重启 syslog 服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service rsyslog restart</div></pre></td></tr></table></figure></p>
+<p>5、查看 sudo 日志记录：</p>
+<p>经过上面的配置，sudo 的所有成功和不成功的sudo</p>
+<p>命令都记录到文件/var/log/sudo.log 中，例如我运行几条sudo 命令之后，查看该文件的记录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ cat sudo.log</div><div class="line">Sep 20 22:10:51 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/cat /etc/sudoers</div><div class="line">Sep 20 22:11:36 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/usr/sbin/service rsyslog restart</div><div class="line">Sep 20 22:11:45 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls</div><div class="line">Sep 20 22:12:08 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls /root/</div></pre></td></tr></table></figure></p>
+<p>[原文：<a href="http://www.cnblogs.com/hazir/p/sudo_command.html" target="_blank" rel="external">http://www.cnblogs.com/hazir/p/sudo_command.html</a>]</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;情景一：用户无权限执行 root 命令&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景二：vim 编辑后发现忘记使用 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景三：执行 root 命令忘记加 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景四：shell 内置命令如何使用 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景五：sudo 操作记录日志&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
+    
+    
+      <category term="sudo" scheme="https://weizhimiao.github.io/tags/sudo/"/>
     
   </entry>
   
@@ -1020,152 +1138,66 @@
   </entry>
   
   <entry>
-    <title>Xdebug之远程调试</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之远程调试/</id>
+    <title>Xdebug之常见问题</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之常见问题/</id>
     <published>2016-10-22T12:30:00.000Z</published>
     <updated>2016-11-29T02:32:38.000Z</updated>
     
-    <content type="html"><![CDATA[<p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
+    <content type="html"><![CDATA[<ul>
+<li><p>xdebug的使用</p>
+</li>
+<li><p>xdebug的编译安装</p>
+</li>
+</ul>
 <a id="more"></a>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的（远程）调试器允许您检查数据结构，交互式地浏览和调试您的代码。 正在使用的协议是打开的，称为DBGp。 此协议在Xdebug 2中实现，并替换不再支持的旧的GDB类协议。</p>
-<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Xdebug 2捆绑了一个用于DBGp协议的简单命令行客户端。 还有一些其他客户端实现（免费和商业）。 我不是任何这些的作者，所以请参考原作者的支持：</p>
+<h2 id="xdebug的使用"><a href="#xdebug的使用" class="headerlink" title="xdebug的使用"></a>xdebug的使用</h2><p>问：phpinfo（）报告Xdebug已安装和启用，但我仍然不会得到任何堆栈跟踪时发生错误。</p>
+<p>A1：你必须搜索所有的PHP库，并包含任何“set_error<em>handler”调用的文件。如果有任何，你必须将其注释掉，或者更改handler函数的主体以调用xdebug</em> * api函数。</p>
+<p>A2：您没有在php.ini中将display_errors设置为1</p>
+<hr>
+<p>问：Xdebug不格式化输出。</p>
+<p>A：确保php.ini中的PHP的html_errors设置为1</p>
+<hr>
+<p>问：调试客户端没有收到任何连接，我怎么办？</p>
+<p>A：您可能忘记设置环境变量或向URL中添加必要的信息。有关详细信息，请参阅文档。</p>
+<p>A：您检查过防火墙设置了吗？确保Xdebug正在侦听的端口（默认为9000）未被阻止。</p>
+<p>A：你使用FastCGI，可能是通过FPM（FastCGI过程管理器）？它默认使用相同的端口作为Xdebug（9000），因此您需要将其中一个更改为不同的数字。在Xdebug，你可以使用xdebug.remote_port。</p>
+<p>A：如果你使用SELinux运行，你应该确保它不会阻止连接;查找关于name_connect或与Xdebug端口相关的任何警告。您可能必须明确允许访问。访问此网站或搜索“selinux name_connect apache”有关如何执行此操作的详细信息</p>
+<h2 id="xdebug的编译安装"><a href="#xdebug的编译安装" class="headerlink" title="xdebug的编译安装"></a>xdebug的编译安装</h2><p>问：我没有phpize工具。</p>
+<p>答：Debian和Ubuntu用户需要用apt安装php5-dev软件包。</p>
+<hr>
+<p>问：如何处理：Xdebug需要Zend Engine API版本xxxxxxxx。安装的Zend Engine API版本2xxxxxxxx较新。</p>
+<p>A：此消息意味着您正在尝试加载Xdebug的PHP版本，它不是为它构建的。如果你自己编译PHP，很可能是因为你编译Xdebug对PHP头，属于你运行的不同的PHP版本。例如，你使用PHP 5.3，你使用的头仍然是PHP 5.2。如果你使用一个预编译的二进制文件，那么你使用的是错误的。</p>
+<p>要诊断这是否是您的问题，请执行以下步骤：</p>
 <ul>
-<li>Dev-PHP (IDE: Windows)</li>
-<li>Eclipse plugin (IDE).</li>
-<li>Emacs plugin (Editor Plugin).</li>
-<li>KDevelop (IDE: Linux (KDE); Open Source).</li>
-<li>ActiveState’s Komodo (IDE: Windows, Linux, Mac; Commercial).</li>
-<li>MacGDBP (Standalone client for Mac OS X; Free)</li>
-<li>NetBeans (IDE: Windows, Linux, Mac OS X and Solaris).</li>
-<li>Notepad++ plugin (Editor: Windows).</li>
-<li>WaterProof’s PHPEdit (IDE, from version 2.10: Windows; Commercial).</li>
-<li>PHPEclipse (Editor Plugin).</li>
-<li>Devsense’s PHP Tools for Visual Studio (MS Visual Studio Plugin; Commercial).</li>
-<li>JetBrain’s PhpStorm (IDE; Commercial).</li>
-<li>Protoeditor (Editor: Linux).</li>
-<li>pugdebug (Standalone client for Linux, Windows and Mac OS X; Open Source).</li>
-<li>VIM plugin (Editor Plugin).</li>
-<li>jcx software’s VS.Php (MS Visual Studio Plugin; Commercial).</li>
-<li>Xdebug Chrome App (Chrome Application; Open Source)</li>
-<li>XDebugClient (Standalone client for Windows).</li>
-</ul>
-<p>用于调试的简单命令行客户机与debugclient目录中的Xdebug捆绑在一起。</p>
-<h2 id="启动调试器"><a href="#启动调试器" class="headerlink" title="启动调试器"></a>启动调试器</h2><p>为了启用Xdebug的调试器，您需要在php.ini中进行一些配置设置。 这些设置为xdebug.remote_enable以启用调试器xdebug.remote_host和xdebug.remote_port来配置调试器应连接到的IP地址和端口。 还有一个xdebug.remote_connect_back设置，如果您的开发服务器与多个开发人员共享，则可以使用此设置。</p>
-<p>如果希望调试器在发生错误情况（PHP错误或异常）时启动会话，则还需要更改xdebug.remote_mode设置。 此设置的允许值为“req”（默认值），这使得调试器在脚本启动时启动会话，或者“jit”，当会话只应在错误时启动。</p>
-<p>完成所有这些设置后，Xdebug仍然不会在脚本运行时自动启动调试会话。 你需要激活Xdebug的调试器，你可以通过三种方式：</p>
-<p>1、当从命令行运行脚本时，您需要设置一个环境变量，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name&quot;</div><div class="line">php myscript.php</div></pre></td></tr></table></figure></p>
-<p>您还可以在此相同的环境变量中配置xdebug.remote_host，xdebug.remote_port，xdebug.remote_mode和xdebug.remote_handler，只要使用空格分隔值即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name remote_host=localhost profiler_enable=1&quot;</div></pre></td></tr></table></figure></p>
-<p>通过XDEBUG_CONFIG设置可以获得的所有设置也可以使用正常的php.ini设置进行设置。</p>
-<p>2、如果要调试通过Web浏览器启动的脚本，只需将XDEBUG_SESSION_START = session_name作为参数添加到URL。 而不是使用GET参数，您还可以将XDEBUG_SESSION_START设置为POST参数，或通过cookie。 请参阅下一节，了解调试会话如何在浏览器窗口中工作。</p>
-<p>3、通过Web服务器运行PHP时激活调试器的另一种方法是安装以下四个浏览器扩展之一。 它们中的每一个都允许您通过单击一个按钮来启用调试器。 当这些扩展是活动的，他们直接设置XDEBUG_SESSION cookie，而不是通过XDEBUG_SESSION_START进一步的HTTP调试会话中描述。 扩展名为：</p>
-<ul>
-<li><p>The easiest Xdebug</p>
-<blockquote>
-<p>这个扩展的Firefox是为了使IDE的调试更容易。 您可以在<a href="https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。" target="_blank" rel="external">https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。</a></p>
-</blockquote>
+<li><p>通过查看phpinfo（）（或“php -i”）输出，检查您正在运行的PHP版本的“Zend Extension”API号。您可以在输出的顶部找到它，与PHP徽标和PHP版本在同一个块中。例如，对于PHP 5.2，数字是“220060519”，对于PHP 5.3，它是“220090626”。</p>
 </li>
-<li><p>Xdebug Helper for Chrome</p>
-<blockquote>
-<p>Chrome的此扩展程序将帮助您通过一次点击启用/禁用调试和分析。 您可以在<a href="https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。" target="_blank" rel="external">https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。</a></p>
-</blockquote>
-</li>
-<li><p>Xdebug Toggler for Safari</p>
-<blockquote>
-<p>Safari的这个扩展允许你从Safari中自动启动Xdebug调试。 你可以从Github <a href="https://github.com/benmatselby/xdebug-toggler获取它。" target="_blank" rel="external">https://github.com/benmatselby/xdebug-toggler获取它。</a></p>
-</blockquote>
-</li>
-<li><p>Xdebug launcher for Opera</p>
-<blockquote>
-<p>这个扩展的Opera允许您从Opera启动Xdebug会话。</p>
-</blockquote>
+<li><p>当您完成编译步骤时，检查“phpize”的输出。您要查找的数字是在“Zend Extension Api No”的行上。</p>
 </li>
 </ul>
-<p>在你开始你的脚本之前，你需要告诉你的客户端它可以接收调试连接，请参考具体客户端的文档如何做到这一点。 要使用捆绑的客户端，只需在编译和安装后启动它。 您可以通过运行“debugclient”启动它。</p>
-<p>当debugclient启动时，它将显示以下信息，然后等待，直到调试服务器启动连接：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Xdebug Simple DBGp client (0.10.0)</div><div class="line">Copyright 2002-2007 by Derick Rethans.</div><div class="line">- libedit support: enabled</div><div class="line"></div><div class="line">Waiting for debug server to connect.</div></pre></td></tr></table></figure></p>
-<p>在建立连接后，将显示调试服务器的输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Connect</div><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;iso-8859-1&quot;?&gt;</div><div class="line">&lt;init xmlns=&quot;urn:debugger_protocol_v1&quot;</div><div class="line">      xmlns:xdebug=&quot;http://xdebug.org/dbgp/xdebug&quot;</div><div class="line">      fileuri=&quot;file:///home/httpd/www.xdebug.org/html/docs/index.php&quot;</div><div class="line">      language=&quot;PHP&quot;</div><div class="line">      protocol_version=&quot;1.0&quot;</div><div class="line">      appid=&quot;13202&quot;</div><div class="line">      idekey=&quot;derick&quot;&gt;</div><div class="line">  &lt;engine version=&quot;2.0.0RC4-dev&quot;&gt;&lt;![CDATA[Xdebug]]&gt;&lt;/engine&gt;</div><div class="line">  &lt;author&gt;&lt;![CDATA[Derick Rethans]]&gt;&lt;/author&gt;</div><div class="line">  &lt;url&gt;&lt;![CDATA[http://xdebug.org]]&gt;&lt;/url&gt;</div><div class="line">  &lt;copyright&gt;&lt;![CDATA[Copyright (c) 2002-2007 by Derick Rethans]]&gt;&lt;/copyright&gt;</div><div class="line">&lt;/init&gt;</div><div class="line">(cmd)</div></pre></td></tr></table></figure></p>
-<p>现在，您可以使用DBGp文档页面中说明的命令集。 当脚本结束时，调试服务器与客户端断开连接，并且调试客户端在等待新连接时恢复。</p>
-<h2 id="通讯建立"><a href="#通讯建立" class="headerlink" title="通讯建立"></a>通讯建立</h2><h3 id="使用静态IP-单个开发者"><a href="#使用静态IP-单个开发者" class="headerlink" title="使用静态IP /单个开发者"></a>使用静态IP /单个开发者</h3><p>通过远程调试，嵌入在PHP中的Xdebug就像客户端，而IDE作为服务器。 以下动画显示了通信通道的设置：</p>
-<p><img src="https://xdebug.org/images/docs/dbgp-setup.gif" alt="img"></p>
-<ul>
-<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
-<li>IDE在IP 10.0.1.42上，因此xdebug.remote_host设置为10.0.1.42</li>
-<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
-<li>HTTP请求在运行IDE的计算机上启动</li>
-<li>Xdebug连接到10.0.1.42:9000</li>
-<li>调试运行，提供HTTP响应</li>
-</ul>
-<h3 id="与未知IP-多开发者"><a href="#与未知IP-多开发者" class="headerlink" title="与未知IP /多开发者"></a>与未知IP /多开发者</h3><p>如果使用xdebug.remote_connect_back，设置稍有不同：</p>
-<p><img src="https://xdebug.org/images/docs/dbgp-setup2.gif" alt="img"></p>
-<ul>
-<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
-<li>IDE处于未知IP，因此xdebug.remote_connect_back设置为1</li>
-<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
-<li>发出HTTP请求后，Xdebug将从HTTP头中检测IP地址</li>
-<li>Xdebug连接到端口9000上检测到的IP（10.0.1.42）</li>
-<li>调试运行，提供HTTP响应</li>
-</ul>
-<h2 id="HTTP调试会话"><a href="#HTTP调试会话" class="headerlink" title="HTTP调试会话"></a>HTTP调试会话</h2><p>Xdebug包含通过浏览器启动时跟踪调试会话的功能：Cookie。 这是这样工作：</p>
-<ul>
-<li><p>当URL变量XDEBUG_SESSION_START = name附加到URL或通过具有相同名称的POST变量时，-Xdebug会发出名为“XDEBUG_SESSION”的cookie，并将值设置为XDEBUG_SESSION_START URL参数的值。 cookie的到期时间为1小时。 当连接到“idekey”属性中的debugclient时，DBGp协议也将此相同的值传递给init包。</p>
-</li>
-<li><p>当有一个GET（或POST）变量XDEBUG_SESSION_START或XDEBUG_SESSION cookie被设置时，Xdebug将尝试连接到一个调试客户端。</p>
-</li>
-<li><p>要停止调试会话（并销毁cookie），只需添加URL参数XDEBUG_SESSION_STOP即可。 Xdebug将不再尝试连接到调试客户端。</p>
-</li>
-</ul>
-<h2 id="多用户调试"><a href="#多用户调试" class="headerlink" title="多用户调试"></a>多用户调试</h2><p>Xdebug仅允许您在执行远程调试时指定一个IP地址与xdebug.remote_host连接。它不会自动连接回浏览器运行的计算机的IP地址，除非您使用xdebug.remote_connect_back。</p>
-<p>如果所有开发人员在同一（开发）服务器上的不同项目上工作，则可以通过Apache的.htaccess功能为每个目录设置xdebug.remote_host设置，方法是使用php_value xdebug.remote_host = 10.0.0.5。但是，对于多个开发人员在同一代码上工作的情况，.htaccess技巧不工作，因为代码所在的目录是相同的。</p>
-<p>有两个解决方案。首先，你可以使用DBGp代理。有关如何使用此代理的概述，请参阅多个用户调试中的文章。您可以在ActiveState的网站上下载代理作为python远程调试包的一部分。 Komodo FAQ中还有一些文档。</p>
-<p>其次，您可以使用Xdebug 2.1中引入的xdebug.remote_connect_back设置。</p>
-<h2 id="实施细则"><a href="#实施细则" class="headerlink" title="实施细则"></a>实施细则</h2><p>Xdebug的DBGp协议的context_names命令的实现不依赖于栈级别。 在每个调试器会话期间返回的值总是相同的，因此，可以安全地缓存。</p>
-<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-extended-info"><a href="#xdebug-extended-info" class="headerlink" title="xdebug.extended_info"></a>xdebug.extended_info</h3><p>类型：整数，默认值：1</p>
-<p>控制Xdebug是否应该为PHP解析器强制执行’extended_info’模式;这允许Xdebug使用远程调试器执行文件/行断点。当跟踪或剖析脚本时，通常希望关闭此选项，因为PHP生成的oparrays将增加大约三分之一的大小减慢脚本。此设置不能在带有ini_set（）的脚本中设置，但只能在php.ini中设置。</p>
-<h3 id="xdebug-idekey"><a href="#xdebug-idekey" class="headerlink" title="xdebug.idekey"></a>xdebug.idekey</h3><p>类型：字符串，默认值：<em> complex </em></p>
-<p>控制哪个IDE密钥Xdebug应该传递到DBGp调试器处理程序。默认值基于环境设置。首先查询环境设置DBGP_IDEKEY，然后查询USER和最后一个USERNAME。默认值设置为找到的第一个环境变量。如果找不到，则设置为默认的“”。如果设置此设置，它始终覆盖环境变量。</p>
-<h3 id="xdebug-remote-addr-header"><a href="#xdebug-remote-addr-header" class="headerlink" title="xdebug.remote_addr_header"></a>xdebug.remote_addr_header</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.4中引入</p>
-<p>如果xdebug.remote_addr_header配置为非空字符串，那么该值将用作$ SERVER超全局数组中的键，以确定用于查找用于“连接回”的IP地址或主机名的头。此设置仅与xdebug.remote_connect_back结合使用，否则将被忽略。</p>
-<h3 id="xdebug-remote-autostart"><a href="#xdebug-remote-autostart" class="headerlink" title="xdebug.remote_autostart"></a>xdebug.remote_autostart</h3><p>类型：布尔值，默认值：0</p>
-<p>通常，您需要使用特定的HTTP GET / POST变量来启动远程调试（请参阅远程调试）。当此设置设置为1时，Xdebug将始终尝试启动远程调试会话并尝试连接到客户端，即使GET / POST / COOKIE变量不存在。</p>
-<h3 id="xdebug-remote-connect-back"><a href="#xdebug-remote-connect-back" class="headerlink" title="xdebug.remote_connect_back"></a>xdebug.remote_connect_back</h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
-<p>如果启用，xdebug.remote_host设置将被忽略，Xdebug将尝试连接到发出HTTP请求的客户端。它检查$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量以找出要使用的IP地址。</p>
-<p>如果配置了xdebug.remote_addr_header，那么将在$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量之前检查具有配置名称的$ SERVER变量。</p>
-<p>此设置不适用于通过CLI进行调试，因为$ SERVER标题变量在那里不可用。</p>
-<p>请注意，没有可用的过滤器，任何可以连接到Web服务器的人都能够启动调试会话，即使他们的地址与xdebug.remote_host不匹配。</p>
-<h3 id="xdebug-remote-cookie-expire-time"><a href="#xdebug-remote-cookie-expire-time" class="headerlink" title="xdebug.remote_cookie_expire_time"></a>xdebug.remote_cookie_expire_time</h3><p>类型：整数，默认值：3600，在Xdebug&gt; 2.1中引入</p>
-<p>此设置可用于增加（或减少）远程调试会话通过会话cookie保持活动的时间。</p>
-<h3 id="xdebug-remote-enable"><a href="#xdebug-remote-enable" class="headerlink" title="xdebug.remote_enable"></a>xdebug.remote_enable</h3><p>类型：布尔值，默认值：0</p>
-<p>此开关控制Xdebug是否应尝试联系正在侦听主机上的调试客户端，并使用设置xdebug.remote_host和xdebug.remote_port设置的端口。如果无法建立连接，脚本将继续，就像此设置为0。</p>
-<h3 id="xdebug-remote-handler"><a href="#xdebug-remote-handler" class="headerlink" title="xdebug.remote_handler"></a>xdebug.remote_handler</h3><p>类型：字符串，默认值：dbgp</p>
-<p>可以是“php3”选择旧的PHP 3式调试器输出，“gdb”启用GDB像调试器接口或’dbgp’ - 调试器协议。 DBGp协议是唯一支持的协议。</p>
-<p>注意：Xdebug 2.1和更高版本只支持’db​​gp’作为协议。</p>
-<h3 id="xdebug-remote-host"><a href="#xdebug-remote-host" class="headerlink" title="xdebug.remote_host"></a>xdebug.remote_host</h3><p>类型：字符串，默认值：localhost<br>选择运行调试客户端的主机，您可以使用主机名或IP地址。如果启用xdebug.remote_connect_back，将忽略此设置。</p>
-<h3 id="xdebug-remote-log"><a href="#xdebug-remote-log" class="headerlink" title="xdebug.remote_log"></a>xdebug.remote_log</h3><p>类型：字符串，默认值：</p>
-<p>如果设置为某个值，则将其用作所有远程调试器通信记录到的文件的文件名。 该文件始终以附加模式打开，因此默认情况下不会被覆盖。 没有可用的并发保护。 该文件的格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Log opened at 2007-05-27 14:28:15</div><div class="line">-&gt; &lt;init xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/dbgp/x ... ight&gt;&lt;/init&gt;</div><div class="line"></div><div class="line">&lt;- step_into -i 1</div><div class="line">-&gt; &lt;response xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/db ... &gt;&lt;/response&gt;</div></pre></td></tr></table></figure></p>
-<h3 id="xdebug-remote-mode"><a href="#xdebug-remote-mode" class="headerlink" title="xdebug.remote_mode"></a>xdebug.remote_mode</h3><p>类型：字符串，默认值：req</p>
-<p>选择启动调试连接的时间。 此设置可以有两个不同的值：</p>
-<ul>
-<li><p>req</p>
-<blockquote>
-<p>一旦脚本启动，Xdebug将尝试连接到调试客户端。</p>
-</blockquote>
-</li>
-<li><p>jit</p>
-<blockquote>
-<p>Xdebug只会在出现错误情况时尝试连接到调试客户端。</p>
-</blockquote>
-</li>
-</ul>
-<h3 id="xdebug-remote-port"><a href="#xdebug-remote-port" class="headerlink" title="xdebug.remote_port"></a>xdebug.remote_port</h3><p>类型：整数，默认值：9000</p>
-<p>Xdebug尝试在远程主机上连接的端口。 端口9000是客户端和捆绑的debugclient的默认值。 由于许多客户端使用此端口号，最好保持此设置不变。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="bool-xdebug-break（）"><a href="#bool-xdebug-break（）" class="headerlink" title="bool xdebug_break（）"></a>bool xdebug_break（）</h3><p>向调试客户端发出断点。</p>
-<p>此函数使调试器在特定行上断开，就好像在此行上设置了正常的文件/行断点。</p>
-<p>over~</p>
+<p>如果上面的两个数字不匹配，你正在使用错误的PHP头文件进行编译。请参阅下一个常见问题条目以确定要使用的phpize。</p>
+<hr>
+<p>问：Xdebug仅作为PHP扩展加载，而不是作为Zend扩展。<br>定制的安装指导可能已指向此条目。</p>
+<p>为了使Xdebug正常工作，包括断点等，它需要它作为Zend扩展加载，而不只是作为一个普通的PHP扩展。有些安装工具（PEAR / PECL）有时建议您使用extension = xdebug.so加载Xdebug。这是不正确的。为了解决这个问题，请在顶部块中“加载配置文件”和“其他.ini文件解析”下列出的任何INI文件中查找一行extension = xdebug.so。删除此行，并返回到定制安装说明。</p>
+<hr>
+<p>问：我如何找到使用哪个phpize？</p>
+<p>A：运行：“phpize –help”。这将显示phpize的完整路径。此路径应该与您具有CLI二进制文件“php-config”和安装的“pear”和“pecl”二进制文件的路径相同。如果你运行“php-config –version”它应该显示与你运行的PHP版本相同。如果它不匹配，并且可能在路径上找到错误的“phpize”二进制，您可以运行configure如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/full/path/to/php/bin/phpize</div><div class="line">./configure --with-php-config=/full/path/to/php/bin/php-config</div></pre></td></tr></table></figure>
+<hr>
+<p>问：我使用XAMPP，但我似乎不能得到打包的xdebug扩展正常工作。</p>
+<p>A：如果你取消注释“extension = php_xdebug.dll”行，这是预期的。 Xdebug需要加载zend_extension_ts =“C：\ path \ to \ php_xdebug.dll”指令。 你也可能必须禁用加载Zend优化器，因为它默认情况下启用，并且不能很好地与Xdebug。 因此，查找php.ini中的相关条目，并将其注释掉。 从PHP 5.3起，您总是需要使用zend_extension PHP.ini设置名称，而不是zend_extension_ts。<br>问：在Debian，我看到以下问题与Xdebug的构建….任何修复？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/usr/lib/libc_nonshared.a(stat.oS)(.text.__i686.get_pc_thunk.bx+0x0):</div><div class="line">In function `__i686.get_pc_thunk.bx&apos;:</div><div class="line">: multiple definition of `__i686.get_pc_thunk.bx&apos;</div><div class="line">/usr/lib/gcc-lib/i486-linux/3.3.5/crtbeginS.o</div><div class="line">(.gnu.linkonce.t.__i686.get_pc_thunk.bx+0x0): first defined here</div><div class="line">collect2: ld returned 1 exit status</div><div class="line">make: *** [xdebug.la] Error 1</div></pre></td></tr></table></figure>
+<p>A：这是Debian本身的问题，有关更多信息，请参阅<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>和<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。&lt;/p&gt;
+      &lt;ul&gt;
+&lt;li&gt;&lt;p&gt;xdebug的使用&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;xdebug的编译安装&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
     
     </summary>
     
@@ -1177,59 +1209,343 @@
   </entry>
   
   <entry>
-    <title>Xdebug之代码覆盖率分析</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之代码覆盖率分析/</id>
+    <title>Xdebug之变量显示功能</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%8F%98%E9%87%8F%E6%98%BE%E7%A4%BA%E5%8A%9F%E8%83%BD/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/</id>
     <published>2016-10-22T12:30:00.000Z</published>
     <updated>2016-11-29T02:32:38.000Z</updated>
     
-    <content type="html"><![CDATA[<p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
+    <content type="html"><![CDATA[<p>Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。</p>
 <a id="more"></a>
-<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-coverage-enable"><a href="#xdebug-coverage-enable" class="headerlink" title="xdebug.coverage_enable"></a>xdebug.coverage_enable</h3><p>类型：boolean，默认值：1，在Xdebug&gt; = 2.2中引入</p>
-<p>如果此设置设置为0，则Xdebug不会设置内部结构以允许代码覆盖。 这加快了Xdebug相当有点，但当然，代码覆盖率分析将不工作。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="boolean-xdebug-code-coverage-started（）"><a href="#boolean-xdebug-code-coverage-started（）" class="headerlink" title="boolean xdebug_code_coverage_started（）"></a>boolean xdebug_code_coverage_started（）</h3><p>返回代码覆盖是否处于活动状态。</p>
-<p>返回代码覆盖是否已开始。</p>
-<p>Example:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<p>Returns:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">bool(false)</div><div class="line">bool(true)</div></pre></td></tr></table></figure>
-<h3 id="array-xdebug-get-code-coverage（）"><a href="#array-xdebug-get-code-coverage（）" class="headerlink" title="array xdebug_get_code_coverage（）"></a>array xdebug_get_code_coverage（）</h3><p>返回代码覆盖率信息</p>
-<p>返回一个结构，其中包含有关在脚本中执行哪些行（包括include文件）的信息。 以下示例显示了一个特定文件的代码覆盖率：</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">a</span><span class="params">($a)</span> </span>&#123;</div><div class="line">        <span class="keyword">echo</span> $a * <span class="number">2.5</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">b</span><span class="params">($count)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $count; $i++) &#123;</div><div class="line">            a($i + <span class="number">0.17</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    b(<span class="number">6</span>);</div><div class="line">    b(<span class="number">10</span>);</div><div class="line"></div><div class="line">    var_dump(xdebug_get_code_coverage());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;/home/httpd/html/test/xdebug/docs/xdebug_get_code_coverage.php&apos; =&gt;</div><div class="line">    array</div><div class="line">      5 =&gt; int 1</div><div class="line">      6 =&gt; int 1</div><div class="line">      7 =&gt; int 1</div><div class="line">      9 =&gt; int 1</div><div class="line">      10 =&gt; int 1</div><div class="line">      11 =&gt; int 1</div><div class="line">      12 =&gt; int 1</div><div class="line">      13 =&gt; int 1</div><div class="line">      15 =&gt; int 1</div><div class="line">      16 =&gt; int 1</div><div class="line">      18 =&gt; int 1</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-start-code-coverage（-int-options-）"><a href="#void-xdebug-start-code-coverage（-int-options-）" class="headerlink" title="void xdebug_start_code_coverage（[int options]）"></a>void xdebug_start_code_coverage（[int options]）</h3><p>开始代码覆盖</p>
-<p>此函数开始收集代码覆盖的信息。 收集的信息包括一个二维数组，其主要索引为执行的文件名，辅助键为行号。 元素中的值表示行是否已执行或它是否具有不可达行。</p>
-<p>每行的返回值为：</p>
+<p>有一些设置控制Xdebug修改的var_dump（）函数的输出：</p>
 <ul>
-<li><p>1：这行被执行</p>
+<li>xdebug.var_display_max_children，</li>
+<li>xdebug.var_display_max_data</li>
+<li><p>xdebug.var_display_max_depth</p>
+<p>这三个设置的效果最好用一个例子。 下面的脚本运行四次，每次使用不同的设置。 您可以使用选项卡查看差异。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">test</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> $pub = <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">private</span> $priv = <span class="keyword">true</span>;</div><div class="line">    <span class="keyword">protected</span> $prot = <span class="number">42</span>;</div><div class="line">&#125;</div><div class="line">$t = <span class="keyword">new</span> test;</div><div class="line">$t-&gt;pub = $t;</div><div class="line">$data = <span class="keyword">array</span>(</div><div class="line">    <span class="string">'one'</span> =&gt; <span class="string">'a somewhat long string!'</span>,</div><div class="line">    <span class="string">'two'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">        <span class="string">'two.one'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">            <span class="string">'two.one.zero'</span> =&gt; <span class="number">210</span>,</div><div class="line">            <span class="string">'two.one.one'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">                <span class="string">'two.one.one.zero'</span> =&gt; <span class="number">3.141592564</span>,</div><div class="line">                <span class="string">'two.one.one.one'</span>  =&gt; <span class="number">2.7</span>,</div><div class="line">            ),</div><div class="line">        ),</div><div class="line">    ),</div><div class="line">    <span class="string">'three'</span> =&gt; $t,</div><div class="line">    <span class="string">'four'</span> =&gt; range(<span class="number">0</span>, <span class="number">5</span>),</div><div class="line">);</div><div class="line">var_dump( $data );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
 </li>
-<li><p>-1：此行未执行</p>
+<li><p>默认</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
 </li>
-<li><p>-2：这行没有可执行代码就可以了</p>
+<li><p>children=2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  more elements...</div></pre></td></tr></table></figure>
+</li>
+<li><p>data=16</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long &apos;... (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
+</li>
+<li><p>depth=2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
+</li>
+<li><p>children=3, data=8, depth=1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewh&apos;... (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      ...</div><div class="line">  more elements...</div></pre></td></tr></table></figure>
 </li>
 </ul>
-<p>值-1仅在启用XDEBUG_CC_UNUSED时返回，并且仅当启用了XDEBUG_CC_UNUSED和XDEBUG_CC_DEAD_CODE时才返回值-2。</p>
-<p>此函数有两个选项，用作位字段：</p>
+<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-cli-color"><a href="#xdebug-cli-color" class="headerlink" title="xdebug.cli_color"></a><strong>xdebug.cli_color</strong></h3><p>类型：整数，默认值：0，在Xdebug&gt; 2.2中引入</p>
 <ul>
-<li><p>XDEBUG_CC_UNUSED</p>
-<blockquote>
-<p>启用代码扫描，以确定哪行有可执行代码。 如果没有这个选项，返回的数组将只包含实际执行的行。</p>
-</blockquote>
+<li><p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
 </li>
-<li><p>XDEBUG_CC_DEAD_CODE</p>
-<blockquote>
-<p>启用分支分析以确定是否可以执行代码。<br>启用这些选项会使代码覆盖率显着降低。<br>您可以使用以下示例中所示的选项。</p>
-</blockquote>
+<li><p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
 </li>
 </ul>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_code_coverage( XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-stop-code-coverage（-int-cleanup-true-）"><a href="#void-xdebug-stop-code-coverage（-int-cleanup-true-）" class="headerlink" title="void xdebug_stop_code_coverage（[int cleanup = true]）"></a>void xdebug_stop_code_coverage（[int cleanup = true]）</h3><p>停止代码覆盖</p>
-<p>此功能停止收集信息，内存中的信息将被销毁。 如果传递“false”作为参数，那么代码覆盖率信息不会被销毁，因此您可以再次使用xdebug_start_code_coverage（）函数恢复信息收集。</p>
+<p>有关更多信息，请参阅此<a href="http://drck.me/clicolor-9cr" target="_blank" rel="external">文章</a>。</p>
+<h3 id="xdebug-overload-var-dump"><a href="#xdebug-overload-var-dump" class="headerlink" title="xdebug.overload_var_dump"></a><strong>xdebug.overload_var_dump</strong></h3><p>类型：boolean，默认值：2，在Xdebug&gt; 2.1中引入</p>
+<ul>
+<li><p>默认情况下，当html_errors php.ini设置为1或2时，Xdebug会自动重载var_dump（）并显示变量。</p>
+</li>
+<li><p>如果您不想要，可以将此设置设置为0，但首先检查它是否不是更聪明的关闭html_errors。</p>
+</li>
+<li><p>您也可以使用2作为此设置的值。除了格式化var_dump（）输出很好，它还将添加文件名和行号到输出。还尊重xdebug.file_link_format设置。 （Xdebug 2.3中的新功能）</p>
+</li>
+</ul>
+<p>在Xdebug 2.4之前，此设置的默认值为1。</p>
+<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
+<ul>
+<li>要禁用任何限制，请使用-1作为值。</li>
+</ul>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
+<ul>
+<li>要禁用任何限制，请使用-1作为值。</li>
+</ul>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
+<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
+<ul>
+<li>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</li>
+</ul>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="void-var-dump（-mixture-var-，…-）"><a href="#void-var-dump（-mixture-var-，…-）" class="headerlink" title="void var_dump（[mixture var [，…]]）"></a><strong>void var_dump（[mixture var [，…]]）</strong></h3><blockquote>
+<p>显示有关变量的详细信息</p>
+</blockquote>
+<p>此函数由Xdebug重载，请参阅xdebug_var_dump（）的说明。</p>
+<h3 id="void-xdebug-debug-zval（-string-varname-，…-）"><a href="#void-xdebug-debug-zval（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval（[string varname [，…]]）"></a><strong>void xdebug_debug_zval（[string varname [，…]]）</strong></h3><blockquote>
+<p>显示有关变量的信息</p>
+</blockquote>
+<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。使用值递归地探索数组。这个函数的实现不同于PHP的debug_zval_dump（）函数，以解决该函数的问题，因为变量本身实际上传递给函数。 Xdebug的版本是更好的，因为它使用变量名称来查找内部符号表中的变量，并直接访问所有的属性，而不必处理实际传递一个变量到一个函数。结果是，该函数返回的信息比PHP自己的用于显示zval信息的函数准确得多。</p>
+<p>从Xdebug 2.3开始支持除了简单变量名（例如下面的“a [2]”）之外的任何东西。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    $a = <span class="keyword">array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line">    $b =&amp; $a;</div><div class="line">    $c =&amp; $a[<span class="number">2</span>];</div><div class="line"></div><div class="line">    xdebug_debug_zval(<span class="string">'a'</span>);</div><div class="line">    xdebug_debug_zval(<span class="string">"a[2]"</span>);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>结果：(refcount:引用次数，)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">a: (refcount=2, is_ref=1)=array (</div><div class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</div><div class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</div><div class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</div><div class="line">a[2]: (refcount=2, is_ref=1)=3</div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-debug-zval-stdout（-string-varname-，…-）"><a href="#void-xdebug-debug-zval-stdout（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval_stdout（[string varname [，…]]）"></a><strong>void xdebug_debug_zval_stdout（[string varname [，…]]）</strong></h3><blockquote>
+<p>将有关变量的信息返回到stdout。</p>
+</blockquote>
+<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。 使用值递归地探索数组。 与xdebug_debug_zval（）的区别在于，该信息不通过Web服务器API层显示，而是直接显示在stdout上（因此，在Apache以单进程模式运行时，它会在控制台上运行）。</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;?php</div><div class="line">    $a = array(1, 2, 3);</div><div class="line">    $b =&amp; $a;</div><div class="line">    $c =&amp; $a[2];</div><div class="line"></div><div class="line">    xdebug_debug_zval_stdout(&apos;a&apos;);</div></pre></td></tr></table></figure></p>
+<p>返回：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">a: (refcount=2, is_ref=1)=array (</div><div class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</div><div class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</div><div class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-dump-superglobals（）"><a href="#void-xdebug-dump-superglobals（）" class="headerlink" title="void xdebug_dump_superglobals（）"></a><strong>void xdebug_dump_superglobals（）</strong></h3><blockquote>
+<p>显示有关超级全局的信息</p>
+</blockquote>
+<p>此函数转储指定的超级全局元素的值通过php.ini中的xdebug.dump.*选项。 对于下面的示例，php.ini中的设置是：</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">xdebug.dump.GET=*</div><div class="line">xdebug.dump.SERVER=REMOTE_ADDR</div><div class="line"></div><div class="line">Query string:</div><div class="line">?var=fourty%20two&amp;array[a]=a&amp;array[9]=b</div></pre></td></tr></table></figure></p>
+<p>结果：<br><img src="http://n.sinaimg.cn/games/3ece443e/20161022/8F0658D7-C951-4B12-BC74-92E15E31C44C.png" alt="img"></p>
+<h3 id="void-xdebug-var-dump（-mixed-var-，…-）"><a href="#void-xdebug-var-dump（-mixed-var-，…-）" class="headerlink" title="void xdebug_var_dump（[mixed var [，…]]）"></a><strong>void xdebug_var_dump（[mixed var [，…]]）</strong></h3><blockquote>
+<p>显示有关变量的详细信息</p>
+</blockquote>
+<p>此函数显示有关包含其类型和值的一个或多个表达式的结构化信息。 使用值递归地探索数组。 请参阅变量显示功能的介绍，其中php.ini设置影响此功能。</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&lt;?php</div><div class="line">ini_set(&apos;xdebug.var_display_max_children&apos;, 3 );</div><div class="line">$c = new stdClass;</div><div class="line">$c-&gt;foo = &apos;bar&apos;;</div><div class="line">$c-&gt;file = fopen( &apos;/etc/passwd&apos;, &apos;r&apos; );</div><div class="line">var_dump(</div><div class="line">    array(</div><div class="line">        array(TRUE, 2, 3.14, &apos;foo&apos;),</div><div class="line">        &apos;object&apos; =&gt; $c</div><div class="line">    )</div><div class="line">);</div><div class="line">?&gt;</div></pre></td></tr></table></figure></p>
+<p>结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; boolean true</div><div class="line">      1 =&gt; int 2</div><div class="line">      2 =&gt; float 3.14</div><div class="line">      more elements...</div><div class="line">  &apos;object&apos; =&gt;</div><div class="line">    object(stdClass)[1]</div><div class="line">      public &apos;foo&apos; =&gt; string &apos;bar&apos; (length=3)</div><div class="line">      public &apos;file&apos; =&gt; resource(3, stream)</div></pre></td></tr></table></figure></p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。&lt;/p&gt;
+      &lt;p&gt;Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Xdebug之变量显示功能</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%A0%86%E6%A0%88%E8%B7%9F%E8%B8%AA/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/</id>
+    <published>2016-10-22T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
+<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
+<a id="more"></a>
+<h2 id="堆栈跟踪中的变量"><a href="#堆栈跟踪中的变量" class="headerlink" title="堆栈跟踪中的变量"></a>堆栈跟踪中的变量</h2><p>默认情况下，Xdebug现在会在它生成的堆栈跟踪中显示变量信息。 在收集或显示时，可变信息可能需要相当多的资源。 然而，在许多情况下，显示变量信息是有用的，这就是为什么Xdebug具有设置xdebug.collect_params。 下面的脚本结合了该设置的不同值的输出结果，如下例所示。</p>
+<p>示例：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $a )</span> </span>&#123;</div><div class="line">    <span class="keyword">for</span> ($i = <span class="number">1</span>; $i &lt; $a[<span class="string">'foo'</span>]; $i++) &#123;</div><div class="line">        <span class="keyword">if</span> ($i == <span class="number">500000</span>) xdebug_break();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">set_time_limit(<span class="number">1</span>);</div><div class="line">$c = <span class="keyword">new</span> stdClass;</div><div class="line">$c-&gt;bar = <span class="number">100</span>;</div><div class="line">$a = <span class="keyword">array</span>(</div><div class="line">    <span class="number">42</span> =&gt; <span class="keyword">false</span>, <span class="string">'foo'</span> =&gt; <span class="number">912124</span>,</div><div class="line">    $c, <span class="keyword">new</span> stdClass, fopen( <span class="string">'/etc/passwd'</span>, <span class="string">'r'</span> )</div><div class="line">);</div><div class="line">foo( $a );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>结果:<br>xdebug.collect_params设置的不同值提供不同的输出，您可以在下面看到：</p>
+<ul>
+<li>default</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-0@2x.png" alt="default"></p>
+<ul>
+<li>1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;1&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-1@2x.png" alt="default"></p>
+<ul>
+<li>2<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;2&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-2@2x.png" alt="default"></p>
+<ul>
+<li>3<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;3&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-3@2x.png" alt="default"></p>
+<ul>
+<li>4<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-4@2x.png" alt="default"></p>
+<h2 id="附加信息"><a href="#附加信息" class="headerlink" title="附加信息"></a>附加信息</h2><p>除了显示传递给每个函数的变量的值之外，Xdebug还可以通过使用xdebug.dump_globals和xdebug.dump.* 设置来选择性地显示关于所选超级元素的信息。 设置xdebug.dump_once和xdebug.dump_undefined会稍微修改可用超级元素显示的时间和信息。 使用xdebug.show_local_vars设置，您可以指示Xdebug为用户定义的函数显示最顶层栈级中可用的所有变量。 下面的示例显示了这一点（脚本从上面的示例中使用）。</p>
+<ul>
+<li>default</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-5@2x.png" alt="default"></p>
+<ul>
+<li>dump_superglobals=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div><div class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-6@2x.png" alt="default"></p>
+<ul>
+<li>show_local_vars=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div><div class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</div><div class="line">ini_set(&apos;xdebug.show_local_vars&apos;, &apos;on&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-8@2x.png" alt="default"></p>
+<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-cli-color"><a href="#xdebug-cli-color" class="headerlink" title="xdebug.cli_color"></a><strong>xdebug.cli_color</strong></h3><p>类型：整数，默认值：0，在Xdebug&gt; 2.2中引入</p>
+<p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
+<p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
+<p>有关更多信息，请参阅此<a href="http://drck.me/clicolor-9cr" target="_blank" rel="external">文章</a>。</p>
+<h3 id="xdebug-collect-includes"><a href="#xdebug-collect-includes" class="headerlink" title="xdebug.collect_includes"></a><strong>xdebug.collect_includes</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>此设置默认为1，控制Xdebug是否应将include（），include_once（），require（）或require_once（）中使用的文件名写入跟踪文件。</p>
+<h3 id="xdebug-collect-params"><a href="#xdebug-collect-params" class="headerlink" title="xdebug.collect_params"></a><strong>xdebug.collect_params</strong></h3><p>类型：整数，默认值：0</p>
+<p>此设置默认为0，控制在函数跟踪或堆栈跟踪中记录函数调用时，Xdebug是否应收集传递给函数的参数。</p>
+<p>该设置默认为0，因为对于非常大的脚本，它可能使用大量的内存，因此使巨量脚本无法运行。您可以最安全地打开此设置，但是您可以预期在具有大量函数调用和/或巨大的数据结构作为参数的脚本中存在一些问题。</p>
+<p>Xdebug 2不会有增加的内存使用这个问题，因为它永远不会将此信息存储在内存中。相反，它将只被写入磁盘。这意味着您需要查看磁盘使用情况。</p>
+<p>此设置可以有四个不同的值。对于每个值，示出了不同量的信息。下面你将看到每个值提供什么信息。另请参见功能堆栈跟踪的几个截图的介绍。</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>显示参数信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>无。</td>
+</tr>
+<tr>
+<td>1</td>
+<td>元素的类型和数量（f.e. string（6），array（8））。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>元素的类型和数量，带有完整信息的工具提示1。在CLI版本的PHP它不会有工具提示，而不是在输出文件。</td>
+</tr>
+<tr>
+<td>3</td>
+<td>完全变量内容（具有由xdebug.var_display_max_children，xdebug.var_display_max_data和xdebug.var_display_max_depth设置的限制）。</td>
+</tr>
+<tr>
+<td>4</td>
+<td>完全变量内容和变量名称。</td>
+</tr>
+<tr>
+<td>5</td>
+<td>PHP序列化变量内容，没有名称。 （Xdebug 2.3中的新功能）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xdebug-collect-vars"><a href="#xdebug-collect-vars" class="headerlink" title="xdebug.collect_vars"></a><strong>xdebug.collect_vars</strong></h3><p>类型：布尔值，默认值：0</p>
+<p>此设置告诉Xdebug收集有关在某个范围中使用哪些变量的信息。 这个分析可能很慢，因为Xdebug必须逆向工程PHP的操作码数组。 此设置不会记录不同变量具有的值，因为使用xdebug.collect_params。 仅当您希望使用xdebug_get_declared_vars（）时，才需要启用此设置。</p>
+<h3 id="xdebug-dump"><a href="#xdebug-dump" class="headerlink" title="xdebug.dump.*"></a><strong>xdebug.dump.*</strong></h3><p>类型：字符串，默认值：空</p>
+<p>*可以是COOKIE，FILES，GET，POST，REQUEST，SERVER，SESSION中的任何一个。 这七个设置控制当发生错误情况时来自超级溶剂的数据。</p>
+<p>每个php.ini设置可以包括一个逗号分隔的变量从这个超级全局转储，或*所有的。 请确保您在此设置中不添加空格。</p>
+<p>为了在发生错误时转储REMOTE_ADDR和REQUEST_METHOD，以及所有GET参数，请添加以下设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">xdebug.dump.SERVER = REMOTE_ADDR,REQUEST_METHOD</div><div class="line">xdebug.dump.GET = *</div></pre></td></tr></table></figure></p>
+<h3 id="xdebug-dump-globals"><a href="#xdebug-dump-globals" class="headerlink" title="xdebug.dump_globals"></a><strong>xdebug.dump_globals</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>控制是否应显示由xdebug.dump.*设置定义的超级元素的值。</p>
+<h3 id="xdebug-dump-once"><a href="#xdebug-dump-once" class="headerlink" title="xdebug.dump_once"></a><strong>xdebug.dump_once</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>控制是否应在所有错误情况（设置为0）或仅在第一个（设置为1）上转储超级元素的值。</p>
+<h3 id="xdebug-dump-undefined"><a href="#xdebug-dump-undefined" class="headerlink" title="xdebug.dump_undefined"></a><strong>xdebug.dump_undefined</strong></h3><p>类型：布尔值，默认值：0<br>如果要从超级元组转储未定义的值，您应该将此设置设置为1，否则将其设置为0。</p>
+<h3 id="xdebug-file-link-format"><a href="#xdebug-file-link-format" class="headerlink" title="xdebug.file_link_format"></a><strong>xdebug.file_link_format</strong></h3><p>类型：字符串，默认值：，在Xdebug&gt; 2.1中引入</p>
+<p>此设置确定在使用文件名的堆栈跟踪显示中进行的链接的格式。 这允许IDE设置一个链接协议，通过单击Xdebug在堆栈跟踪中显示的文件名，可以直接转到行和文件。 示例格式可能如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">myide://%f@%l</div></pre></td></tr></table></figure></p>
+<p>可能的格式说明符是：</p>
+<table>
+<thead>
+<tr>
+<th>说明符</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>％f</td>
+<td>文件名</td>
+</tr>
+<tr>
+<td>％l</td>
+<td>行号</td>
+</tr>
+</tbody>
+</table>
+<p>对于各种IDE / OSses，有一些关于如何使这项工作的指示：</p>
+<p>Linux上的Firefox</p>
+<ul>
+<li>打开about：config</li>
+<li>添加一个新的布尔设置“network.protocol-handler.expose.xdebug”并将其设置为“false”</li>
+<li>将以下内容添加到shell脚本〜/ bin / ff-xdebug.sh中：<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#! /bin/sh</span></div><div class="line">f=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut <span class="_">-d</span> @ <span class="_">-f</span> 1 | sed <span class="string">'s/xdebug:\/\///'</span>`</div><div class="line">l=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut <span class="_">-d</span> @ <span class="_">-f</span> 2`</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>添加（取决于你有komodo，vim vs netbeans）：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">komodo <span class="variable">$f</span> <span class="_">-l</span> <span class="variable">$l</span></div><div class="line">gvim --remote-tab +<span class="variable">$l</span> <span class="variable">$f</span></div><div class="line">netbeans <span class="string">"<span class="variable">$f</span>:<span class="variable">$l</span>"</span></div></pre></td></tr></table></figure></p>
+<ul>
+<li>使用chmod + x〜/ bin / ff-xdebug.sh来使脚本可执行</li>
+<li>将xdebug.file_link_format设置为xdebug：//％f @％l</li>
+</ul>
+<p>Windows和netbeans</p>
+<ul>
+<li>创建文件netbeans.bat并将其保存在您的路径（C：\ Windows）：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@echo off</div><div class="line">setlocal enableextensions enabledelayedexpansion</div><div class="line">set NETBEANS=%1</div><div class="line">set FILE=%~2</div><div class="line">%NETBEANS% --nosplash --console suppress --open &quot;%FILE:~19%&quot;</div><div class="line">nircmd win activate process netbeans.exe</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>注意：如果没有nircmd，请删除最后一行。</p>
+<ul>
+<li>将以下代码保存在netbeans protocol.reg中：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Windows Registry Editor Version 5.00</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans]</div><div class="line">&quot;URL Protocol&quot;=&quot;&quot;</div><div class="line">@=&quot;URL:Netbeans Protocol&quot;</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\DefaultIcon]</div><div class="line">@=&quot;\&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe,1\&quot;&quot;</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell]</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open]</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open\command]</div><div class="line">@=&quot;\&quot;C:\\Windows\\netbeans.bat\&quot; \&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe\&quot; \&quot;%1\&quot;&quot;</div></pre></td></tr></table></figure>
+<p>注意：确保更改Netbeans（两次）的路径以及netbeans.bat批处理文件（如果将其保存在C：\Windows 以外的其他位置）。</p>
+<p>Double click on the netbeans_protocol.reg file to import it into the registry.<br>Set the xdebug.file_link_format setting to</p>
+<ul>
+<li><p>双击netbeans protocol.reg文件将其导入到注册表中。</p>
+</li>
+<li><p>将xdebug.file_link_format设置设置为<code>xdebug.file_link_format = &quot;netbeans://open/?f=%f:%l&quot;</code></p>
+</li>
+</ul>
+<h3 id="xdebug-manual-url"><a href="#xdebug-manual-url" class="headerlink" title="xdebug.manual_url"></a><strong>xdebug.manual_url</strong></h3><p>类型：字符串，默认值：http：//www.php.net，在Xdebug &lt;2.2.1中引入</p>
+<p>这是从函数跟踪和错误消息到函数的手册页的链接的基本URL。建议将此设置设置为使用最近的镜像。</p>
+<h3 id="xdebug-show-exception-trace"><a href="#xdebug-show-exception-trace" class="headerlink" title="xdebug.show_exception_trace"></a><strong>xdebug.show_exception_trace</strong></h3><p>类型：整数，默认值：0</p>
+<p>当此设置设置为1时，每当引发异常时，即使此异常实际被捕获，Xdebug也将显示堆栈跟踪。</p>
+<h3 id="xdebug-show-local-vars"><a href="#xdebug-show-local-vars" class="headerlink" title="xdebug.show_local_vars"></a><strong>xdebug.show_local_vars</strong></h3><p>类型：整数，默认值：0</p>
+<p>当这个设置设置为某事！= 0 Xdebug的错误情况下生成的堆栈转储也将显示最顶层范围中的所有变量。请注意，这可能会生成大量的信息，因此默认情况下关闭。</p>
+<h3 id="xdebug-show-mem-delta"><a href="#xdebug-show-mem-delta" class="headerlink" title="xdebug.show_mem_delta"></a><strong>xdebug.show_mem_delta</strong></h3><p>类型：整数，默认值：0</p>
+<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
+<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
+<p>要禁用任何限制，请使用-1作为值。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
+<p>要禁用任何限制，请使用-1作为值。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
+<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
+<p>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="array-xdebug-get-declared-vars（）"><a href="#array-xdebug-get-declared-vars（）" class="headerlink" title="array xdebug_get_declared_vars（）"></a><strong>array xdebug_get_declared_vars（）</strong></h3><p>返回声明的变量</p>
+<p>返回一个数组，其中每个元素是在当前范围中定义的变量名称。 需要启用xdebug.collect_vars设置。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</div><div class="line">        <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($a, $b)</span> </span>&#123;</div><div class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</div><div class="line">            &#125;</div><div class="line">            var_dump(xdebug_get_declared_vars());</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    strings::fix_strings(<span class="keyword">array</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>), <span class="keyword">array</span>(<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>));</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt; string &apos;a&apos; (length=1)</div><div class="line">  1 =&gt; string &apos;b&apos; (length=1)</div><div class="line">  2 =&gt; string &apos;item&apos; (length=4)</div></pre></td></tr></table></figure></p>
+<p>在5.1之前的PHP版本中，变量名“a”不在返回的数组中，因为它在调用函数xdebug_get_declared_vars（）的作用域中不使用。</p>
+<h3 id="array-xdebug-get-function-stack（）"><a href="#array-xdebug-get-function-stack（）" class="headerlink" title="array xdebug_get_function_stack（）"></a><strong>array xdebug_get_function_stack（）</strong></h3><p>返回有关堆栈的信息</p>
+<p>返回类似于此点的堆栈跟踪的数组。 示例脚本：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</div><div class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_string</span><span class="params">($a)</span></span></div><div class="line">        &#123;</div><div class="line">            var_dump(xdebug_get_function_stack());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($b)</span> </span>&#123;</div><div class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</div><div class="line">                <span class="keyword">$this</span>-&gt;fix_string($item);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    $s = <span class="keyword">new</span> strings();</div><div class="line">    $ret = $s-&gt;fix_strings(<span class="keyword">array</span>(<span class="string">'Derick'</span>));</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;&#123;main&#125;&apos; (length=6)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 0</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          empty</div><div class="line">  1 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;fix_strings&apos; (length=11)</div><div class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 18</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;b&apos; =&gt; string &apos;array (0 =&gt; &apos;Derick&apos;)&apos; (length=21)</div><div class="line">  2 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;fix_string&apos; (length=10)</div><div class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 12</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;a&apos; =&gt; string &apos;&apos;Derick&apos;&apos; (length=8)</div></pre></td></tr></table></figure></p>
+<h3 id="array-xdebug-get-monitored-functions（）"><a href="#array-xdebug-get-monitored-functions（）" class="headerlink" title="array xdebug_get_monitored_functions（）"></a><strong>array xdebug_get_monitored_functions（）</strong></h3><p>返回有关受监视函数的信息</p>
+<p>在2.4版本中引入</p>
+<p>返回一个结构，其中包含有关在脚本中执行受监视函数的位置的信息。 以下示例显示如何使用此和返回的信息：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">/* Start the function monitor for strrev and array_push: */</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</div><div class="line"></div><div class="line"><span class="comment">/* Run some code: */</span></div><div class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</div><div class="line"></div><div class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</div><div class="line"></div><div class="line">var_dump(xdebug_get_monitored_functions());</div><div class="line">xdebug_stop_function_monitor();</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">/tmp/monitor-example.php:10:</div><div class="line">array(2) &#123;</div><div class="line">  [0] =&gt;</div><div class="line">  array(3) &#123;</div><div class="line">    &apos;function&apos; =&gt;</div><div class="line">    string(6) &quot;strrev&quot;</div><div class="line">    &apos;filename&apos; =&gt;</div><div class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</div><div class="line">    &apos;lineno&apos; =&gt;</div><div class="line">    int(6)</div><div class="line">  &#125;</div><div class="line">  [1] =&gt;</div><div class="line">  array(3) &#123;</div><div class="line">    &apos;function&apos; =&gt;</div><div class="line">    string(6) &quot;strrev&quot;</div><div class="line">    &apos;filename&apos; =&gt;</div><div class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</div><div class="line">    &apos;lineno&apos; =&gt;</div><div class="line">    int(8)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="integer-xdebug-get-stack-depth（）"><a href="#integer-xdebug-get-stack-depth（）" class="headerlink" title="integer xdebug_get_stack_depth（）"></a><strong>integer xdebug_get_stack_depth（）</strong></h3><p>返回当前堆栈深度级别</p>
+<p>返回堆栈深度级别。 脚本的主体是级别0，每个包含和/或函数调用将向堆栈深度级别添加一个。</p>
+<h3 id="none-xdebug-print-function-stack-string-message-int-options"><a href="#none-xdebug-print-function-stack-string-message-int-options" class="headerlink" title="none xdebug_print_function_stack( [ string message [, int options ] ] )"></a><strong>none xdebug_print_function_stack( [ string message [, int options ] ] )</strong></h3><p>显示当前函数栈</p>
+<p>以类似于Xdebug在错误情况下显示的方式显示当前函数堆栈。</p>
+<p>“message”参数允许您使用自己的头部替换消息。 （在Xdebug 2.1中引入）。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $far, $out )</span></span></div><div class="line">&#123;</div><div class="line">    xdebug_print_function_stack( <span class="string">'Your own message'</span> );</div><div class="line">&#125;</div><div class="line">foo( <span class="number">42</span>, <span class="number">3141592654</span> );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-9@2x.png" alt="img"></p>
+<p>位掩码“options”允许您配置一些额外的选项。 目前支持以下选项：</p>
+<ul>
+<li>XDEBUG_STACK_NO_DESC<blockquote>
+<p>如果设置了此选项，则打印的堆栈跟踪将不具有标题。 如果要从自己的错误处理程序打印堆栈跟踪，否则打印位置是从中调用xdebug_print_function_stack（）时，这是有用的。 （在Xdebug 2.3中引入）。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）"><a href="#void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）" class="headerlink" title="void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）"></a><strong>void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）</strong></h3><p>开始功能监控</p>
+<p>在2.4版本中引入</p>
+<p>此函数开始监视列表中给出的函数作为此函数的参数。 函数监视允许您找到代码中提供的作为参数的函数在哪里调用。 这可以用于跟踪使用旧的或不鼓励的函数的位置。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>您还可以向定义要监视的函数的数组添加类方法和静态方法。 例如，要捕获对DramModel :: canSee的静态调用和对Whisky-&gt; drink的动态调用，您将启动监视器：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'DramModel::canSee'</span>, <span class="string">'Whisky-&gt;drink'</span>] );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>定义的函数区分大小写，并且不会捕获对静态方法的动态调用。</p>
+<h3 id="void-xdebug-stop-function-monitor（）"><a href="#void-xdebug-stop-function-monitor（）" class="headerlink" title="void xdebug_stop_function_monitor（）"></a><strong>void xdebug_stop_function_monitor（）</strong></h3><p>停止监视功能</p>
+<p>在2.4版本中引入</p>
+<p>此功能停止功能监视器。 为了获得受监视函数的列表，您需要使用xdebug_get_monitored_functions（）函数。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。&lt;/p&gt;
+&lt;p&gt;Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。&lt;/p&gt;
     
     </summary>
     
@@ -1518,179 +1834,59 @@
   </entry>
   
   <entry>
-    <title>Xdebug之变量显示功能</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%8F%98%E9%87%8F%E6%98%BE%E7%A4%BA%E5%8A%9F%E8%83%BD/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/</id>
+    <title>Xdebug之代码覆盖率分析</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之代码覆盖率分析/</id>
     <published>2016-10-22T12:30:00.000Z</published>
     <updated>2016-11-29T02:32:38.000Z</updated>
     
-    <content type="html"><![CDATA[<p>Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。</p>
+    <content type="html"><![CDATA[<p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
 <a id="more"></a>
-<p>有一些设置控制Xdebug修改的var_dump（）函数的输出：</p>
+<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-coverage-enable"><a href="#xdebug-coverage-enable" class="headerlink" title="xdebug.coverage_enable"></a>xdebug.coverage_enable</h3><p>类型：boolean，默认值：1，在Xdebug&gt; = 2.2中引入</p>
+<p>如果此设置设置为0，则Xdebug不会设置内部结构以允许代码覆盖。 这加快了Xdebug相当有点，但当然，代码覆盖率分析将不工作。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="boolean-xdebug-code-coverage-started（）"><a href="#boolean-xdebug-code-coverage-started（）" class="headerlink" title="boolean xdebug_code_coverage_started（）"></a>boolean xdebug_code_coverage_started（）</h3><p>返回代码覆盖是否处于活动状态。</p>
+<p>返回代码覆盖是否已开始。</p>
+<p>Example:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<p>Returns:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">bool(false)</div><div class="line">bool(true)</div></pre></td></tr></table></figure>
+<h3 id="array-xdebug-get-code-coverage（）"><a href="#array-xdebug-get-code-coverage（）" class="headerlink" title="array xdebug_get_code_coverage（）"></a>array xdebug_get_code_coverage（）</h3><p>返回代码覆盖率信息</p>
+<p>返回一个结构，其中包含有关在脚本中执行哪些行（包括include文件）的信息。 以下示例显示了一个特定文件的代码覆盖率：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">a</span><span class="params">($a)</span> </span>&#123;</div><div class="line">        <span class="keyword">echo</span> $a * <span class="number">2.5</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">b</span><span class="params">($count)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $count; $i++) &#123;</div><div class="line">            a($i + <span class="number">0.17</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    b(<span class="number">6</span>);</div><div class="line">    b(<span class="number">10</span>);</div><div class="line"></div><div class="line">    var_dump(xdebug_get_code_coverage());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;/home/httpd/html/test/xdebug/docs/xdebug_get_code_coverage.php&apos; =&gt;</div><div class="line">    array</div><div class="line">      5 =&gt; int 1</div><div class="line">      6 =&gt; int 1</div><div class="line">      7 =&gt; int 1</div><div class="line">      9 =&gt; int 1</div><div class="line">      10 =&gt; int 1</div><div class="line">      11 =&gt; int 1</div><div class="line">      12 =&gt; int 1</div><div class="line">      13 =&gt; int 1</div><div class="line">      15 =&gt; int 1</div><div class="line">      16 =&gt; int 1</div><div class="line">      18 =&gt; int 1</div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-start-code-coverage（-int-options-）"><a href="#void-xdebug-start-code-coverage（-int-options-）" class="headerlink" title="void xdebug_start_code_coverage（[int options]）"></a>void xdebug_start_code_coverage（[int options]）</h3><p>开始代码覆盖</p>
+<p>此函数开始收集代码覆盖的信息。 收集的信息包括一个二维数组，其主要索引为执行的文件名，辅助键为行号。 元素中的值表示行是否已执行或它是否具有不可达行。</p>
+<p>每行的返回值为：</p>
 <ul>
-<li>xdebug.var_display_max_children，</li>
-<li>xdebug.var_display_max_data</li>
-<li><p>xdebug.var_display_max_depth</p>
-<p>这三个设置的效果最好用一个例子。 下面的脚本运行四次，每次使用不同的设置。 您可以使用选项卡查看差异。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">test</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> $pub = <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">private</span> $priv = <span class="keyword">true</span>;</div><div class="line">    <span class="keyword">protected</span> $prot = <span class="number">42</span>;</div><div class="line">&#125;</div><div class="line">$t = <span class="keyword">new</span> test;</div><div class="line">$t-&gt;pub = $t;</div><div class="line">$data = <span class="keyword">array</span>(</div><div class="line">    <span class="string">'one'</span> =&gt; <span class="string">'a somewhat long string!'</span>,</div><div class="line">    <span class="string">'two'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">        <span class="string">'two.one'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">            <span class="string">'two.one.zero'</span> =&gt; <span class="number">210</span>,</div><div class="line">            <span class="string">'two.one.one'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">                <span class="string">'two.one.one.zero'</span> =&gt; <span class="number">3.141592564</span>,</div><div class="line">                <span class="string">'two.one.one.one'</span>  =&gt; <span class="number">2.7</span>,</div><div class="line">            ),</div><div class="line">        ),</div><div class="line">    ),</div><div class="line">    <span class="string">'three'</span> =&gt; $t,</div><div class="line">    <span class="string">'four'</span> =&gt; range(<span class="number">0</span>, <span class="number">5</span>),</div><div class="line">);</div><div class="line">var_dump( $data );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<li><p>1：这行被执行</p>
 </li>
-<li><p>默认</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
+<li><p>-1：此行未执行</p>
 </li>
-<li><p>children=2</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  more elements...</div></pre></td></tr></table></figure>
-</li>
-<li><p>data=16</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long &apos;... (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
-</li>
-<li><p>depth=2</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
-</li>
-<li><p>children=3, data=8, depth=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewh&apos;... (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      ...</div><div class="line">  more elements...</div></pre></td></tr></table></figure>
+<li><p>-2：这行没有可执行代码就可以了</p>
 </li>
 </ul>
-<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-cli-color"><a href="#xdebug-cli-color" class="headerlink" title="xdebug.cli_color"></a><strong>xdebug.cli_color</strong></h3><p>类型：整数，默认值：0，在Xdebug&gt; 2.2中引入</p>
+<p>值-1仅在启用XDEBUG_CC_UNUSED时返回，并且仅当启用了XDEBUG_CC_UNUSED和XDEBUG_CC_DEAD_CODE时才返回值-2。</p>
+<p>此函数有两个选项，用作位字段：</p>
 <ul>
-<li><p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
-</li>
-<li><p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
-</li>
-</ul>
-<p>有关更多信息，请参阅此<a href="http://drck.me/clicolor-9cr" target="_blank" rel="external">文章</a>。</p>
-<h3 id="xdebug-overload-var-dump"><a href="#xdebug-overload-var-dump" class="headerlink" title="xdebug.overload_var_dump"></a><strong>xdebug.overload_var_dump</strong></h3><p>类型：boolean，默认值：2，在Xdebug&gt; 2.1中引入</p>
-<ul>
-<li><p>默认情况下，当html_errors php.ini设置为1或2时，Xdebug会自动重载var_dump（）并显示变量。</p>
-</li>
-<li><p>如果您不想要，可以将此设置设置为0，但首先检查它是否不是更聪明的关闭html_errors。</p>
-</li>
-<li><p>您也可以使用2作为此设置的值。除了格式化var_dump（）输出很好，它还将添加文件名和行号到输出。还尊重xdebug.file_link_format设置。 （Xdebug 2.3中的新功能）</p>
-</li>
-</ul>
-<p>在Xdebug 2.4之前，此设置的默认值为1。</p>
-<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
-<ul>
-<li>要禁用任何限制，请使用-1作为值。</li>
-</ul>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
-<ul>
-<li>要禁用任何限制，请使用-1作为值。</li>
-</ul>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
-<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
-<ul>
-<li>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</li>
-</ul>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="void-var-dump（-mixture-var-，…-）"><a href="#void-var-dump（-mixture-var-，…-）" class="headerlink" title="void var_dump（[mixture var [，…]]）"></a><strong>void var_dump（[mixture var [，…]]）</strong></h3><blockquote>
-<p>显示有关变量的详细信息</p>
+<li><p>XDEBUG_CC_UNUSED</p>
+<blockquote>
+<p>启用代码扫描，以确定哪行有可执行代码。 如果没有这个选项，返回的数组将只包含实际执行的行。</p>
 </blockquote>
-<p>此函数由Xdebug重载，请参阅xdebug_var_dump（）的说明。</p>
-<h3 id="void-xdebug-debug-zval（-string-varname-，…-）"><a href="#void-xdebug-debug-zval（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval（[string varname [，…]]）"></a><strong>void xdebug_debug_zval（[string varname [，…]]）</strong></h3><blockquote>
-<p>显示有关变量的信息</p>
+</li>
+<li><p>XDEBUG_CC_DEAD_CODE</p>
+<blockquote>
+<p>启用分支分析以确定是否可以执行代码。<br>启用这些选项会使代码覆盖率显着降低。<br>您可以使用以下示例中所示的选项。</p>
 </blockquote>
-<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。使用值递归地探索数组。这个函数的实现不同于PHP的debug_zval_dump（）函数，以解决该函数的问题，因为变量本身实际上传递给函数。 Xdebug的版本是更好的，因为它使用变量名称来查找内部符号表中的变量，并直接访问所有的属性，而不必处理实际传递一个变量到一个函数。结果是，该函数返回的信息比PHP自己的用于显示zval信息的函数准确得多。</p>
-<p>从Xdebug 2.3开始支持除了简单变量名（例如下面的“a [2]”）之外的任何东西。</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    $a = <span class="keyword">array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line">    $b =&amp; $a;</div><div class="line">    $c =&amp; $a[<span class="number">2</span>];</div><div class="line"></div><div class="line">    xdebug_debug_zval(<span class="string">'a'</span>);</div><div class="line">    xdebug_debug_zval(<span class="string">"a[2]"</span>);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>结果：(refcount:引用次数，)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">a: (refcount=2, is_ref=1)=array (</div><div class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</div><div class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</div><div class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</div><div class="line">a[2]: (refcount=2, is_ref=1)=3</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-debug-zval-stdout（-string-varname-，…-）"><a href="#void-xdebug-debug-zval-stdout（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval_stdout（[string varname [，…]]）"></a><strong>void xdebug_debug_zval_stdout（[string varname [，…]]）</strong></h3><blockquote>
-<p>将有关变量的信息返回到stdout。</p>
-</blockquote>
-<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。 使用值递归地探索数组。 与xdebug_debug_zval（）的区别在于，该信息不通过Web服务器API层显示，而是直接显示在stdout上（因此，在Apache以单进程模式运行时，它会在控制台上运行）。</p>
-<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;?php</div><div class="line">    $a = array(1, 2, 3);</div><div class="line">    $b =&amp; $a;</div><div class="line">    $c =&amp; $a[2];</div><div class="line"></div><div class="line">    xdebug_debug_zval_stdout(&apos;a&apos;);</div></pre></td></tr></table></figure></p>
-<p>返回：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">a: (refcount=2, is_ref=1)=array (</div><div class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</div><div class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</div><div class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-dump-superglobals（）"><a href="#void-xdebug-dump-superglobals（）" class="headerlink" title="void xdebug_dump_superglobals（）"></a><strong>void xdebug_dump_superglobals（）</strong></h3><blockquote>
-<p>显示有关超级全局的信息</p>
-</blockquote>
-<p>此函数转储指定的超级全局元素的值通过php.ini中的xdebug.dump.*选项。 对于下面的示例，php.ini中的设置是：</p>
-<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">xdebug.dump.GET=*</div><div class="line">xdebug.dump.SERVER=REMOTE_ADDR</div><div class="line"></div><div class="line">Query string:</div><div class="line">?var=fourty%20two&amp;array[a]=a&amp;array[9]=b</div></pre></td></tr></table></figure></p>
-<p>结果：<br><img src="http://n.sinaimg.cn/games/3ece443e/20161022/8F0658D7-C951-4B12-BC74-92E15E31C44C.png" alt="img"></p>
-<h3 id="void-xdebug-var-dump（-mixed-var-，…-）"><a href="#void-xdebug-var-dump（-mixed-var-，…-）" class="headerlink" title="void xdebug_var_dump（[mixed var [，…]]）"></a><strong>void xdebug_var_dump（[mixed var [，…]]）</strong></h3><blockquote>
-<p>显示有关变量的详细信息</p>
-</blockquote>
-<p>此函数显示有关包含其类型和值的一个或多个表达式的结构化信息。 使用值递归地探索数组。 请参阅变量显示功能的介绍，其中php.ini设置影响此功能。</p>
-<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&lt;?php</div><div class="line">ini_set(&apos;xdebug.var_display_max_children&apos;, 3 );</div><div class="line">$c = new stdClass;</div><div class="line">$c-&gt;foo = &apos;bar&apos;;</div><div class="line">$c-&gt;file = fopen( &apos;/etc/passwd&apos;, &apos;r&apos; );</div><div class="line">var_dump(</div><div class="line">    array(</div><div class="line">        array(TRUE, 2, 3.14, &apos;foo&apos;),</div><div class="line">        &apos;object&apos; =&gt; $c</div><div class="line">    )</div><div class="line">);</div><div class="line">?&gt;</div></pre></td></tr></table></figure></p>
-<p>结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; boolean true</div><div class="line">      1 =&gt; int 2</div><div class="line">      2 =&gt; float 3.14</div><div class="line">      more elements...</div><div class="line">  &apos;object&apos; =&gt;</div><div class="line">    object(stdClass)[1]</div><div class="line">      public &apos;foo&apos; =&gt; string &apos;bar&apos; (length=3)</div><div class="line">      public &apos;file&apos; =&gt; resource(3, stream)</div></pre></td></tr></table></figure></p>
+</li>
+</ul>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_code_coverage( XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-stop-code-coverage（-int-cleanup-true-）"><a href="#void-xdebug-stop-code-coverage（-int-cleanup-true-）" class="headerlink" title="void xdebug_stop_code_coverage（[int cleanup = true]）"></a>void xdebug_stop_code_coverage（[int cleanup = true]）</h3><p>停止代码覆盖</p>
+<p>此功能停止收集信息，内存中的信息将被销毁。 如果传递“false”作为参数，那么代码覆盖率信息不会被销毁，因此您可以再次使用xdebug_start_code_coverage（）函数恢复信息收集。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之常见问题</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之常见问题/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:38.000Z</updated>
-    
-    <content type="html"><![CDATA[<ul>
-<li><p>xdebug的使用</p>
-</li>
-<li><p>xdebug的编译安装</p>
-</li>
-</ul>
-<a id="more"></a>
-<h2 id="xdebug的使用"><a href="#xdebug的使用" class="headerlink" title="xdebug的使用"></a>xdebug的使用</h2><p>问：phpinfo（）报告Xdebug已安装和启用，但我仍然不会得到任何堆栈跟踪时发生错误。</p>
-<p>A1：你必须搜索所有的PHP库，并包含任何“set_error<em>handler”调用的文件。如果有任何，你必须将其注释掉，或者更改handler函数的主体以调用xdebug</em> * api函数。</p>
-<p>A2：您没有在php.ini中将display_errors设置为1</p>
-<hr>
-<p>问：Xdebug不格式化输出。</p>
-<p>A：确保php.ini中的PHP的html_errors设置为1</p>
-<hr>
-<p>问：调试客户端没有收到任何连接，我怎么办？</p>
-<p>A：您可能忘记设置环境变量或向URL中添加必要的信息。有关详细信息，请参阅文档。</p>
-<p>A：您检查过防火墙设置了吗？确保Xdebug正在侦听的端口（默认为9000）未被阻止。</p>
-<p>A：你使用FastCGI，可能是通过FPM（FastCGI过程管理器）？它默认使用相同的端口作为Xdebug（9000），因此您需要将其中一个更改为不同的数字。在Xdebug，你可以使用xdebug.remote_port。</p>
-<p>A：如果你使用SELinux运行，你应该确保它不会阻止连接;查找关于name_connect或与Xdebug端口相关的任何警告。您可能必须明确允许访问。访问此网站或搜索“selinux name_connect apache”有关如何执行此操作的详细信息</p>
-<h2 id="xdebug的编译安装"><a href="#xdebug的编译安装" class="headerlink" title="xdebug的编译安装"></a>xdebug的编译安装</h2><p>问：我没有phpize工具。</p>
-<p>答：Debian和Ubuntu用户需要用apt安装php5-dev软件包。</p>
-<hr>
-<p>问：如何处理：Xdebug需要Zend Engine API版本xxxxxxxx。安装的Zend Engine API版本2xxxxxxxx较新。</p>
-<p>A：此消息意味着您正在尝试加载Xdebug的PHP版本，它不是为它构建的。如果你自己编译PHP，很可能是因为你编译Xdebug对PHP头，属于你运行的不同的PHP版本。例如，你使用PHP 5.3，你使用的头仍然是PHP 5.2。如果你使用一个预编译的二进制文件，那么你使用的是错误的。</p>
-<p>要诊断这是否是您的问题，请执行以下步骤：</p>
-<ul>
-<li><p>通过查看phpinfo（）（或“php -i”）输出，检查您正在运行的PHP版本的“Zend Extension”API号。您可以在输出的顶部找到它，与PHP徽标和PHP版本在同一个块中。例如，对于PHP 5.2，数字是“220060519”，对于PHP 5.3，它是“220090626”。</p>
-</li>
-<li><p>当您完成编译步骤时，检查“phpize”的输出。您要查找的数字是在“Zend Extension Api No”的行上。</p>
-</li>
-</ul>
-<p>如果上面的两个数字不匹配，你正在使用错误的PHP头文件进行编译。请参阅下一个常见问题条目以确定要使用的phpize。</p>
-<hr>
-<p>问：Xdebug仅作为PHP扩展加载，而不是作为Zend扩展。<br>定制的安装指导可能已指向此条目。</p>
-<p>为了使Xdebug正常工作，包括断点等，它需要它作为Zend扩展加载，而不只是作为一个普通的PHP扩展。有些安装工具（PEAR / PECL）有时建议您使用extension = xdebug.so加载Xdebug。这是不正确的。为了解决这个问题，请在顶部块中“加载配置文件”和“其他.ini文件解析”下列出的任何INI文件中查找一行extension = xdebug.so。删除此行，并返回到定制安装说明。</p>
-<hr>
-<p>问：我如何找到使用哪个phpize？</p>
-<p>A：运行：“phpize –help”。这将显示phpize的完整路径。此路径应该与您具有CLI二进制文件“php-config”和安装的“pear”和“pecl”二进制文件的路径相同。如果你运行“php-config –version”它应该显示与你运行的PHP版本相同。如果它不匹配，并且可能在路径上找到错误的“phpize”二进制，您可以运行configure如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/full/path/to/php/bin/phpize</div><div class="line">./configure --with-php-config=/full/path/to/php/bin/php-config</div></pre></td></tr></table></figure>
-<hr>
-<p>问：我使用XAMPP，但我似乎不能得到打包的xdebug扩展正常工作。</p>
-<p>A：如果你取消注释“extension = php_xdebug.dll”行，这是预期的。 Xdebug需要加载zend_extension_ts =“C：\ path \ to \ php_xdebug.dll”指令。 你也可能必须禁用加载Zend优化器，因为它默认情况下启用，并且不能很好地与Xdebug。 因此，查找php.ini中的相关条目，并将其注释掉。 从PHP 5.3起，您总是需要使用zend_extension PHP.ini设置名称，而不是zend_extension_ts。<br>问：在Debian，我看到以下问题与Xdebug的构建….任何修复？</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/usr/lib/libc_nonshared.a(stat.oS)(.text.__i686.get_pc_thunk.bx+0x0):</div><div class="line">In function `__i686.get_pc_thunk.bx&apos;:</div><div class="line">: multiple definition of `__i686.get_pc_thunk.bx&apos;</div><div class="line">/usr/lib/gcc-lib/i486-linux/3.3.5/crtbeginS.o</div><div class="line">(.gnu.linkonce.t.__i686.get_pc_thunk.bx+0x0): first defined here</div><div class="line">collect2: ld returned 1 exit status</div><div class="line">make: *** [xdebug.la] Error 1</div></pre></td></tr></table></figure>
-<p>A：这是Debian本身的问题，有关更多信息，请参阅<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>和<a href="http://www.xdebug.org/archives/xdebug-general/0825.html" target="_blank" rel="external">此处</a>。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;xdebug的使用&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;xdebug的编译安装&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+      &lt;p&gt;代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。&lt;/p&gt;
     
     </summary>
     
@@ -1753,241 +1949,6 @@
     <summary type="html">
     
       &lt;p&gt;Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之变量显示功能</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%A0%86%E6%A0%88%E8%B7%9F%E8%B8%AA/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:38.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
-<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
-<a id="more"></a>
-<h2 id="堆栈跟踪中的变量"><a href="#堆栈跟踪中的变量" class="headerlink" title="堆栈跟踪中的变量"></a>堆栈跟踪中的变量</h2><p>默认情况下，Xdebug现在会在它生成的堆栈跟踪中显示变量信息。 在收集或显示时，可变信息可能需要相当多的资源。 然而，在许多情况下，显示变量信息是有用的，这就是为什么Xdebug具有设置xdebug.collect_params。 下面的脚本结合了该设置的不同值的输出结果，如下例所示。</p>
-<p>示例：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $a )</span> </span>&#123;</div><div class="line">    <span class="keyword">for</span> ($i = <span class="number">1</span>; $i &lt; $a[<span class="string">'foo'</span>]; $i++) &#123;</div><div class="line">        <span class="keyword">if</span> ($i == <span class="number">500000</span>) xdebug_break();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">set_time_limit(<span class="number">1</span>);</div><div class="line">$c = <span class="keyword">new</span> stdClass;</div><div class="line">$c-&gt;bar = <span class="number">100</span>;</div><div class="line">$a = <span class="keyword">array</span>(</div><div class="line">    <span class="number">42</span> =&gt; <span class="keyword">false</span>, <span class="string">'foo'</span> =&gt; <span class="number">912124</span>,</div><div class="line">    $c, <span class="keyword">new</span> stdClass, fopen( <span class="string">'/etc/passwd'</span>, <span class="string">'r'</span> )</div><div class="line">);</div><div class="line">foo( $a );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>结果:<br>xdebug.collect_params设置的不同值提供不同的输出，您可以在下面看到：</p>
-<ul>
-<li>default</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-0@2x.png" alt="default"></p>
-<ul>
-<li>1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;1&apos;);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-1@2x.png" alt="default"></p>
-<ul>
-<li>2<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;2&apos;);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-2@2x.png" alt="default"></p>
-<ul>
-<li>3<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;3&apos;);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-3@2x.png" alt="default"></p>
-<ul>
-<li>4<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-4@2x.png" alt="default"></p>
-<h2 id="附加信息"><a href="#附加信息" class="headerlink" title="附加信息"></a>附加信息</h2><p>除了显示传递给每个函数的变量的值之外，Xdebug还可以通过使用xdebug.dump_globals和xdebug.dump.* 设置来选择性地显示关于所选超级元素的信息。 设置xdebug.dump_once和xdebug.dump_undefined会稍微修改可用超级元素显示的时间和信息。 使用xdebug.show_local_vars设置，您可以指示Xdebug为用户定义的函数显示最顶层栈级中可用的所有变量。 下面的示例显示了这一点（脚本从上面的示例中使用）。</p>
-<ul>
-<li>default</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-5@2x.png" alt="default"></p>
-<ul>
-<li>dump_superglobals=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div><div class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-6@2x.png" alt="default"></p>
-<ul>
-<li>show_local_vars=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div><div class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</div><div class="line">ini_set(&apos;xdebug.show_local_vars&apos;, &apos;on&apos;);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-8@2x.png" alt="default"></p>
-<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-cli-color"><a href="#xdebug-cli-color" class="headerlink" title="xdebug.cli_color"></a><strong>xdebug.cli_color</strong></h3><p>类型：整数，默认值：0，在Xdebug&gt; 2.2中引入</p>
-<p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
-<p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
-<p>有关更多信息，请参阅此<a href="http://drck.me/clicolor-9cr" target="_blank" rel="external">文章</a>。</p>
-<h3 id="xdebug-collect-includes"><a href="#xdebug-collect-includes" class="headerlink" title="xdebug.collect_includes"></a><strong>xdebug.collect_includes</strong></h3><p>类型：布尔值，默认值：1</p>
-<p>此设置默认为1，控制Xdebug是否应将include（），include_once（），require（）或require_once（）中使用的文件名写入跟踪文件。</p>
-<h3 id="xdebug-collect-params"><a href="#xdebug-collect-params" class="headerlink" title="xdebug.collect_params"></a><strong>xdebug.collect_params</strong></h3><p>类型：整数，默认值：0</p>
-<p>此设置默认为0，控制在函数跟踪或堆栈跟踪中记录函数调用时，Xdebug是否应收集传递给函数的参数。</p>
-<p>该设置默认为0，因为对于非常大的脚本，它可能使用大量的内存，因此使巨量脚本无法运行。您可以最安全地打开此设置，但是您可以预期在具有大量函数调用和/或巨大的数据结构作为参数的脚本中存在一些问题。</p>
-<p>Xdebug 2不会有增加的内存使用这个问题，因为它永远不会将此信息存储在内存中。相反，它将只被写入磁盘。这意味着您需要查看磁盘使用情况。</p>
-<p>此设置可以有四个不同的值。对于每个值，示出了不同量的信息。下面你将看到每个值提供什么信息。另请参见功能堆栈跟踪的几个截图的介绍。</p>
-<table>
-<thead>
-<tr>
-<th>值</th>
-<th>显示参数信息</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>无。</td>
-</tr>
-<tr>
-<td>1</td>
-<td>元素的类型和数量（f.e. string（6），array（8））。</td>
-</tr>
-<tr>
-<td>2</td>
-<td>元素的类型和数量，带有完整信息的工具提示1。在CLI版本的PHP它不会有工具提示，而不是在输出文件。</td>
-</tr>
-<tr>
-<td>3</td>
-<td>完全变量内容（具有由xdebug.var_display_max_children，xdebug.var_display_max_data和xdebug.var_display_max_depth设置的限制）。</td>
-</tr>
-<tr>
-<td>4</td>
-<td>完全变量内容和变量名称。</td>
-</tr>
-<tr>
-<td>5</td>
-<td>PHP序列化变量内容，没有名称。 （Xdebug 2.3中的新功能）</td>
-</tr>
-</tbody>
-</table>
-<h3 id="xdebug-collect-vars"><a href="#xdebug-collect-vars" class="headerlink" title="xdebug.collect_vars"></a><strong>xdebug.collect_vars</strong></h3><p>类型：布尔值，默认值：0</p>
-<p>此设置告诉Xdebug收集有关在某个范围中使用哪些变量的信息。 这个分析可能很慢，因为Xdebug必须逆向工程PHP的操作码数组。 此设置不会记录不同变量具有的值，因为使用xdebug.collect_params。 仅当您希望使用xdebug_get_declared_vars（）时，才需要启用此设置。</p>
-<h3 id="xdebug-dump"><a href="#xdebug-dump" class="headerlink" title="xdebug.dump.*"></a><strong>xdebug.dump.*</strong></h3><p>类型：字符串，默认值：空</p>
-<p>*可以是COOKIE，FILES，GET，POST，REQUEST，SERVER，SESSION中的任何一个。 这七个设置控制当发生错误情况时来自超级溶剂的数据。</p>
-<p>每个php.ini设置可以包括一个逗号分隔的变量从这个超级全局转储，或*所有的。 请确保您在此设置中不添加空格。</p>
-<p>为了在发生错误时转储REMOTE_ADDR和REQUEST_METHOD，以及所有GET参数，请添加以下设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">xdebug.dump.SERVER = REMOTE_ADDR,REQUEST_METHOD</div><div class="line">xdebug.dump.GET = *</div></pre></td></tr></table></figure></p>
-<h3 id="xdebug-dump-globals"><a href="#xdebug-dump-globals" class="headerlink" title="xdebug.dump_globals"></a><strong>xdebug.dump_globals</strong></h3><p>类型：布尔值，默认值：1</p>
-<p>控制是否应显示由xdebug.dump.*设置定义的超级元素的值。</p>
-<h3 id="xdebug-dump-once"><a href="#xdebug-dump-once" class="headerlink" title="xdebug.dump_once"></a><strong>xdebug.dump_once</strong></h3><p>类型：布尔值，默认值：1</p>
-<p>控制是否应在所有错误情况（设置为0）或仅在第一个（设置为1）上转储超级元素的值。</p>
-<h3 id="xdebug-dump-undefined"><a href="#xdebug-dump-undefined" class="headerlink" title="xdebug.dump_undefined"></a><strong>xdebug.dump_undefined</strong></h3><p>类型：布尔值，默认值：0<br>如果要从超级元组转储未定义的值，您应该将此设置设置为1，否则将其设置为0。</p>
-<h3 id="xdebug-file-link-format"><a href="#xdebug-file-link-format" class="headerlink" title="xdebug.file_link_format"></a><strong>xdebug.file_link_format</strong></h3><p>类型：字符串，默认值：，在Xdebug&gt; 2.1中引入</p>
-<p>此设置确定在使用文件名的堆栈跟踪显示中进行的链接的格式。 这允许IDE设置一个链接协议，通过单击Xdebug在堆栈跟踪中显示的文件名，可以直接转到行和文件。 示例格式可能如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">myide://%f@%l</div></pre></td></tr></table></figure></p>
-<p>可能的格式说明符是：</p>
-<table>
-<thead>
-<tr>
-<th>说明符</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>％f</td>
-<td>文件名</td>
-</tr>
-<tr>
-<td>％l</td>
-<td>行号</td>
-</tr>
-</tbody>
-</table>
-<p>对于各种IDE / OSses，有一些关于如何使这项工作的指示：</p>
-<p>Linux上的Firefox</p>
-<ul>
-<li>打开about：config</li>
-<li>添加一个新的布尔设置“network.protocol-handler.expose.xdebug”并将其设置为“false”</li>
-<li>将以下内容添加到shell脚本〜/ bin / ff-xdebug.sh中：<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#! /bin/sh</span></div><div class="line">f=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut <span class="_">-d</span> @ <span class="_">-f</span> 1 | sed <span class="string">'s/xdebug:\/\///'</span>`</div><div class="line">l=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut <span class="_">-d</span> @ <span class="_">-f</span> 2`</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>添加（取决于你有komodo，vim vs netbeans）：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">komodo <span class="variable">$f</span> <span class="_">-l</span> <span class="variable">$l</span></div><div class="line">gvim --remote-tab +<span class="variable">$l</span> <span class="variable">$f</span></div><div class="line">netbeans <span class="string">"<span class="variable">$f</span>:<span class="variable">$l</span>"</span></div></pre></td></tr></table></figure></p>
-<ul>
-<li>使用chmod + x〜/ bin / ff-xdebug.sh来使脚本可执行</li>
-<li>将xdebug.file_link_format设置为xdebug：//％f @％l</li>
-</ul>
-<p>Windows和netbeans</p>
-<ul>
-<li>创建文件netbeans.bat并将其保存在您的路径（C：\ Windows）：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@echo off</div><div class="line">setlocal enableextensions enabledelayedexpansion</div><div class="line">set NETBEANS=%1</div><div class="line">set FILE=%~2</div><div class="line">%NETBEANS% --nosplash --console suppress --open &quot;%FILE:~19%&quot;</div><div class="line">nircmd win activate process netbeans.exe</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>注意：如果没有nircmd，请删除最后一行。</p>
-<ul>
-<li>将以下代码保存在netbeans protocol.reg中：</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Windows Registry Editor Version 5.00</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans]</div><div class="line">&quot;URL Protocol&quot;=&quot;&quot;</div><div class="line">@=&quot;URL:Netbeans Protocol&quot;</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\DefaultIcon]</div><div class="line">@=&quot;\&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe,1\&quot;&quot;</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell]</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open]</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open\command]</div><div class="line">@=&quot;\&quot;C:\\Windows\\netbeans.bat\&quot; \&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe\&quot; \&quot;%1\&quot;&quot;</div></pre></td></tr></table></figure>
-<p>注意：确保更改Netbeans（两次）的路径以及netbeans.bat批处理文件（如果将其保存在C：\Windows 以外的其他位置）。</p>
-<p>Double click on the netbeans_protocol.reg file to import it into the registry.<br>Set the xdebug.file_link_format setting to</p>
-<ul>
-<li><p>双击netbeans protocol.reg文件将其导入到注册表中。</p>
-</li>
-<li><p>将xdebug.file_link_format设置设置为<code>xdebug.file_link_format = &quot;netbeans://open/?f=%f:%l&quot;</code></p>
-</li>
-</ul>
-<h3 id="xdebug-manual-url"><a href="#xdebug-manual-url" class="headerlink" title="xdebug.manual_url"></a><strong>xdebug.manual_url</strong></h3><p>类型：字符串，默认值：http：//www.php.net，在Xdebug &lt;2.2.1中引入</p>
-<p>这是从函数跟踪和错误消息到函数的手册页的链接的基本URL。建议将此设置设置为使用最近的镜像。</p>
-<h3 id="xdebug-show-exception-trace"><a href="#xdebug-show-exception-trace" class="headerlink" title="xdebug.show_exception_trace"></a><strong>xdebug.show_exception_trace</strong></h3><p>类型：整数，默认值：0</p>
-<p>当此设置设置为1时，每当引发异常时，即使此异常实际被捕获，Xdebug也将显示堆栈跟踪。</p>
-<h3 id="xdebug-show-local-vars"><a href="#xdebug-show-local-vars" class="headerlink" title="xdebug.show_local_vars"></a><strong>xdebug.show_local_vars</strong></h3><p>类型：整数，默认值：0</p>
-<p>当这个设置设置为某事！= 0 Xdebug的错误情况下生成的堆栈转储也将显示最顶层范围中的所有变量。请注意，这可能会生成大量的信息，因此默认情况下关闭。</p>
-<h3 id="xdebug-show-mem-delta"><a href="#xdebug-show-mem-delta" class="headerlink" title="xdebug.show_mem_delta"></a><strong>xdebug.show_mem_delta</strong></h3><p>类型：整数，默认值：0</p>
-<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
-<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
-<p>要禁用任何限制，请使用-1作为值。</p>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
-<p>要禁用任何限制，请使用-1作为值。</p>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
-<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
-<p>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</p>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="array-xdebug-get-declared-vars（）"><a href="#array-xdebug-get-declared-vars（）" class="headerlink" title="array xdebug_get_declared_vars（）"></a><strong>array xdebug_get_declared_vars（）</strong></h3><p>返回声明的变量</p>
-<p>返回一个数组，其中每个元素是在当前范围中定义的变量名称。 需要启用xdebug.collect_vars设置。</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</div><div class="line">        <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($a, $b)</span> </span>&#123;</div><div class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</div><div class="line">            &#125;</div><div class="line">            var_dump(xdebug_get_declared_vars());</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    strings::fix_strings(<span class="keyword">array</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>), <span class="keyword">array</span>(<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>));</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt; string &apos;a&apos; (length=1)</div><div class="line">  1 =&gt; string &apos;b&apos; (length=1)</div><div class="line">  2 =&gt; string &apos;item&apos; (length=4)</div></pre></td></tr></table></figure></p>
-<p>在5.1之前的PHP版本中，变量名“a”不在返回的数组中，因为它在调用函数xdebug_get_declared_vars（）的作用域中不使用。</p>
-<h3 id="array-xdebug-get-function-stack（）"><a href="#array-xdebug-get-function-stack（）" class="headerlink" title="array xdebug_get_function_stack（）"></a><strong>array xdebug_get_function_stack（）</strong></h3><p>返回有关堆栈的信息</p>
-<p>返回类似于此点的堆栈跟踪的数组。 示例脚本：</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</div><div class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_string</span><span class="params">($a)</span></span></div><div class="line">        &#123;</div><div class="line">            var_dump(xdebug_get_function_stack());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($b)</span> </span>&#123;</div><div class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</div><div class="line">                <span class="keyword">$this</span>-&gt;fix_string($item);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    $s = <span class="keyword">new</span> strings();</div><div class="line">    $ret = $s-&gt;fix_strings(<span class="keyword">array</span>(<span class="string">'Derick'</span>));</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;&#123;main&#125;&apos; (length=6)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 0</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          empty</div><div class="line">  1 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;fix_strings&apos; (length=11)</div><div class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 18</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;b&apos; =&gt; string &apos;array (0 =&gt; &apos;Derick&apos;)&apos; (length=21)</div><div class="line">  2 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;fix_string&apos; (length=10)</div><div class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 12</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;a&apos; =&gt; string &apos;&apos;Derick&apos;&apos; (length=8)</div></pre></td></tr></table></figure></p>
-<h3 id="array-xdebug-get-monitored-functions（）"><a href="#array-xdebug-get-monitored-functions（）" class="headerlink" title="array xdebug_get_monitored_functions（）"></a><strong>array xdebug_get_monitored_functions（）</strong></h3><p>返回有关受监视函数的信息</p>
-<p>在2.4版本中引入</p>
-<p>返回一个结构，其中包含有关在脚本中执行受监视函数的位置的信息。 以下示例显示如何使用此和返回的信息：</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">/* Start the function monitor for strrev and array_push: */</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</div><div class="line"></div><div class="line"><span class="comment">/* Run some code: */</span></div><div class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</div><div class="line"></div><div class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</div><div class="line"></div><div class="line">var_dump(xdebug_get_monitored_functions());</div><div class="line">xdebug_stop_function_monitor();</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">/tmp/monitor-example.php:10:</div><div class="line">array(2) &#123;</div><div class="line">  [0] =&gt;</div><div class="line">  array(3) &#123;</div><div class="line">    &apos;function&apos; =&gt;</div><div class="line">    string(6) &quot;strrev&quot;</div><div class="line">    &apos;filename&apos; =&gt;</div><div class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</div><div class="line">    &apos;lineno&apos; =&gt;</div><div class="line">    int(6)</div><div class="line">  &#125;</div><div class="line">  [1] =&gt;</div><div class="line">  array(3) &#123;</div><div class="line">    &apos;function&apos; =&gt;</div><div class="line">    string(6) &quot;strrev&quot;</div><div class="line">    &apos;filename&apos; =&gt;</div><div class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</div><div class="line">    &apos;lineno&apos; =&gt;</div><div class="line">    int(8)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<h3 id="integer-xdebug-get-stack-depth（）"><a href="#integer-xdebug-get-stack-depth（）" class="headerlink" title="integer xdebug_get_stack_depth（）"></a><strong>integer xdebug_get_stack_depth（）</strong></h3><p>返回当前堆栈深度级别</p>
-<p>返回堆栈深度级别。 脚本的主体是级别0，每个包含和/或函数调用将向堆栈深度级别添加一个。</p>
-<h3 id="none-xdebug-print-function-stack-string-message-int-options"><a href="#none-xdebug-print-function-stack-string-message-int-options" class="headerlink" title="none xdebug_print_function_stack( [ string message [, int options ] ] )"></a><strong>none xdebug_print_function_stack( [ string message [, int options ] ] )</strong></h3><p>显示当前函数栈</p>
-<p>以类似于Xdebug在错误情况下显示的方式显示当前函数堆栈。</p>
-<p>“message”参数允许您使用自己的头部替换消息。 （在Xdebug 2.1中引入）。</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $far, $out )</span></span></div><div class="line">&#123;</div><div class="line">    xdebug_print_function_stack( <span class="string">'Your own message'</span> );</div><div class="line">&#125;</div><div class="line">foo( <span class="number">42</span>, <span class="number">3141592654</span> );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:</p>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-9@2x.png" alt="img"></p>
-<p>位掩码“options”允许您配置一些额外的选项。 目前支持以下选项：</p>
-<ul>
-<li>XDEBUG_STACK_NO_DESC<blockquote>
-<p>如果设置了此选项，则打印的堆栈跟踪将不具有标题。 如果要从自己的错误处理程序打印堆栈跟踪，否则打印位置是从中调用xdebug_print_function_stack（）时，这是有用的。 （在Xdebug 2.3中引入）。</p>
-</blockquote>
-</li>
-</ul>
-<h3 id="void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）"><a href="#void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）" class="headerlink" title="void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）"></a><strong>void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）</strong></h3><p>开始功能监控</p>
-<p>在2.4版本中引入</p>
-<p>此函数开始监视列表中给出的函数作为此函数的参数。 函数监视允许您找到代码中提供的作为参数的函数在哪里调用。 这可以用于跟踪使用旧的或不鼓励的函数的位置。</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>您还可以向定义要监视的函数的数组添加类方法和静态方法。 例如，要捕获对DramModel :: canSee的静态调用和对Whisky-&gt; drink的动态调用，您将启动监视器：</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'DramModel::canSee'</span>, <span class="string">'Whisky-&gt;drink'</span>] );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>定义的函数区分大小写，并且不会捕获对静态方法的动态调用。</p>
-<h3 id="void-xdebug-stop-function-monitor（）"><a href="#void-xdebug-stop-function-monitor（）" class="headerlink" title="void xdebug_stop_function_monitor（）"></a><strong>void xdebug_stop_function_monitor（）</strong></h3><p>停止监视功能</p>
-<p>在2.4版本中引入</p>
-<p>此功能停止功能监视器。 为了获得受监视函数的列表，您需要使用xdebug_get_monitored_functions（）函数。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。&lt;/p&gt;
-&lt;p&gt;Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。&lt;/p&gt;
     
     </summary>
     

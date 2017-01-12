@@ -1,0 +1,852 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Redis," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Redis这个key-value的存储系统，由于其高性能，支持主从复制和丰富的数据结构等特性，目前已经广泛应用于我们的各个场景之中。所以了解整理其相关的一些内容，用以加深我们对其的了解，方便之后更好的使用它实现我们的各种功能。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入了解Redis之Redis数据库的实现">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis数据库的实现/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Redis这个key-value的存储系统，由于其高性能，支持主从复制和丰富的数据结构等特性，目前已经广泛应用于我们的各个场景之中。所以了解整理其相关的一些内容，用以加深我们对其的了解，方便之后更好的使用它实现我们的各种功能。">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170111/redisGuoQiJianShanChuLiuCheng.png">
+<meta property="og:updated_time" content="2017-01-12T07:46:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入了解Redis之Redis数据库的实现">
+<meta name="twitter:description" content="Redis这个key-value的存储系统，由于其高性能，支持主从复制和丰富的数据结构等特性，目前已经广泛应用于我们的各个场景之中。所以了解整理其相关的一些内容，用以加深我们对其的了解，方便之后更好的使用它实现我们的各种功能。">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20170111/redisGuoQiJianShanChuLiuCheng.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis数据库的实现/"/>
+
+  <title> 深入了解Redis之Redis数据库的实现 | 行云流水 </title>
+</head>
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e4b7d6d381ddeae9bb9afe7349625074";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">行云流水</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">却也碎碎念念</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-atom">
+          <a href="/atom.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-rss"></i> <br />
+            
+            订阅
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '5esyb9coehH1NCtAqKqX','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                深入了解Redis之Redis数据库的实现
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-12T20:30:00+08:00" content="2017-01-12">
+              2017-01-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/01/12/深入了解Redis之Redis数据库的实现/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/12/深入了解Redis之Redis数据库的实现/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+              &nbsp; | &nbsp;
+              <span class="page-pv">本文总阅读量
+              <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+              </span>
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Redis这个<code>key-value</code>的存储系统，由于其高性能，支持主从复制和丰富的数据结构等特性，目前已经广泛应用于我们的各个场景之中。所以了解整理其相关的一些内容，用以加深我们对其的了解，方便之后更好的使用它实现我们的各种功能。</p>
+<a id="more"></a>
+<h2 id="数据结构与对象"><a href="#数据结构与对象" class="headerlink" title="数据结构与对象"></a>数据结构与对象</h2><p>Redis底层的实现，主要用到的数据结构有简单动态字符串（SDS）、双端链表、字典、压缩列表、整数集合等。但REdis没有直接用这些数据结构来实现数据库的设计。而是基于这些数据结构创建了一个对象系统。</p>
+<p>使用这种对象系统的好处</p>
+<ul>
+<li>对不同的使用场景，可以为对象设置多种不同的数据结构实现，从而可以优化对象在不同场景下的使用效率</li>
+<li>基于对象方便实现基于引用计数技术的内存回收机制</li>
+</ul>
+<p>键值对的具体组成：</p>
+<ul>
+<li>键 =&gt; 自字符串对象</li>
+<li>值<ul>
+<li>字符串对象</li>
+<li>列表对象</li>
+<li>哈希对象</li>
+<li>集合对象</li>
+<li>有序集合对象</li>
+</ul>
+</li>
+</ul>
+<h2 id="数据库的实现"><a href="#数据库的实现" class="headerlink" title="数据库的实现"></a>数据库的实现</h2><p>Redis服务器的所有数据库都保存在”redisSeriver”结构中的“db” 的数组中。而db的结构则主要由“dict”和“expires”另个字典构成，dict字典负责保存键值对，而expires字典负责保存键的过期时间。</p>
+<p>redisSeriver结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">struct redisSeriver&#123;</div><div class="line">  //...</div><div class="line"></div><div class="line">  redisDb *db;</div><div class="line"></div><div class="line">  //...</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>redisDb结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">typeed struct redisDb&#123;</div><div class="line">  //...</div><div class="line"></div><div class="line">  //数据库键值字典，保存数据库中所有键值对（又称之为，键空间）</div><div class="line">  dict *dict;</div><div class="line"></div><div class="line">  //过期字典，保存键的过期时间</div><div class="line">  dict *expires;</div><div class="line"></div><div class="line">&#125; redisDb;</div></pre></td></tr></table></figure></p>
+<h3 id="服务器保存键值对的方法"><a href="#服务器保存键值对的方法" class="headerlink" title="服务器保存键值对的方法"></a>服务器保存键值对的方法</h3><p>键值字典和用户所见的数据库是直接对应的</p>
+<ul>
+<li>该字典里的键就是我们数据库的键（每个键都是一个字符串对象）</li>
+<li>字典的值就是数据库的值，每个值可以是字符串对象、列表对象、哈希表对象、集合对象和有序集合对象中的任一种对象。</li>
+</ul>
+<p>相应的操作</p>
+<ul>
+<li><p>当添加新键值对时</p>
+<blockquote>
+<p>实际就是将一个新键值对添加到该“dict”键值字典中，其键为字符串对象，值为任意的一个Redis对象</p>
+</blockquote>
+</li>
+<li><p>删除键</p>
+<blockquote>
+<p>实际上就是在该“dict”键值字典中删除键对应的键值对对象</p>
+</blockquote>
+</li>
+<li><p>更新键</p>
+</li>
+<li>对该键取值</li>
+</ul>
+<p>当我们对这些键值进行这些读写操作的时候，redis还会执行一些额外的（维护）操作。这些操作有</p>
+<ul>
+<li>当读取一个键后，会更新服务器键空间命中次数（hit）或不命中次数（miss）</li>
+<li>读取一个键后，还会更新该键的LRU（最后一次使用时间）</li>
+<li>当读取一个键时，发现该键已经过期，那么出返回结果还需要删除这个键</li>
+<li>如果有客户端watch这个键，那么操作过这个键之后还需要将这个键标记为“dirty”，让watch这个键的客户端知道该键已经被修改过</li>
+<li>当每次修改过一个键之后，都会对“dirty”计数器的值增1，以便触发服务器的持久化以及复制操作。</li>
+<li>如果服务器开启了数据库通知的功能，那么修改了键之后，还需要按配置发送相应的通知。</li>
+</ul>
+<h3 id="服务器保存键值对过期时间的方法"><a href="#服务器保存键值对过期时间的方法" class="headerlink" title="服务器保存键值对过期时间的方法"></a>服务器保存键值对过期时间的方法</h3><p>过期时间是一个UNIX时间戳，当键的过期时间来临时，服务器就会自动从数据库中删除这个键。</p>
+<p>redis有四个不同的命令来设置键的过期时间</p>
+<ul>
+<li>EXPIRE <key> <ttl> (秒级)</ttl></key></li>
+<li>PEXPIRE <key> <ttl> (毫秒级)</ttl></key></li>
+<li>EXPIREAT <key> <timestamp> (秒级)</timestamp></key></li>
+<li>PEXPIREAT <key> <timestamp> (毫秒级)</timestamp></key></li>
+</ul>
+<p>实际上，EXPIRE、PEXPIRE、EXPIREAT三个命令最终都是使用PEXPIREAT命令来实现的。</p>
+<p>redisDb结构中，expires字典保存了数据库中所有键的过期时间。</p>
+<ul>
+<li>过期字典的键是一个指针，这个指针指向键空间中的某个键对象</li>
+<li>过期字典的值是一个long类型的整数，这个整数保存着过期时间（一个毫秒精度的UNIX时间戳）</li>
+</ul>
+<h3 id="服务器删除过期键值对的方法"><a href="#服务器删除过期键值对的方法" class="headerlink" title="服务器删除过期键值对的方法"></a>服务器删除过期键值对的方法</h3><h4 id="过期键的判定"><a href="#过期键的判定" class="headerlink" title="过期键的判定"></a>过期键的判定</h4><ul>
+<li>1、检查给定的键是否存在于过期字典，如果存在，那么取得键的过期时间</li>
+<li>2、检查当前UNIX时间戳是否大于取得的键的过期时间，如果大于的，那么该键已过期；否则该键未过期。</li>
+</ul>
+<h4 id="一般的常见的过期键删除机制"><a href="#一般的常见的过期键删除机制" class="headerlink" title="一般的常见的过期键删除机制"></a>一般的常见的过期键删除机制</h4><ul>
+<li>定时删除，在设置键的时候设定一个定时器，让其在定时器结束时执行对键的删除操作</li>
+<li>惰性删除，设置后不管，当需要再次获取该键时，先检查该键是否已经过期，如果过期的话，执行删除操作，没有过期的话，返回键值</li>
+<li>定期删除，每隔一段时间，对所有键检查一次，有过期的则主动删除</li>
+</ul>
+<h4 id="Redis采用的过期键删除机制（惰性-定期）"><a href="#Redis采用的过期键删除机制（惰性-定期）" class="headerlink" title="Redis采用的过期键删除机制（惰性+定期）"></a>Redis采用的过期键删除机制（惰性+定期）</h4><ul>
+<li><p>惰性删除策略的实现</p>
+<blockquote>
+<p>redis在所有读写数据库的Redis命令之前都会执行一个叫”expireIfNeeded”的函数对要操作的键进行检查</p>
+</blockquote>
+<ul>
+<li>如果要操作的键已经过期，那么”expireIfNeeded”函数将该键从数据库中删除</li>
+<li>如果未过期，那么”expireIfNeeded”函数不做操作</li>
+</ul>
+</li>
+</ul>
+<p>注：对所操作键存在与否的判断先与是否过期的判断</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170111/redisGuoQiJianShanChuLiuCheng.png" alt="img"></p>
+<ul>
+<li>定期删除策略的实现<blockquote>
+<p>redis中会有一个周期性运行的操作函数“serverCron”。过期键的定期删除是由一个叫“activeExpireCycle”的函数实现。当serverCron函数运行时，activeExpireCycle 函数就会被调用。它会在规定的时间内分多次遍历服务器中各个数据库，从数据库的expires字典中随机检查一部分键的过期时间，并删除其中的过期键。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="redis集群中过期键的删除"><a href="#redis集群中过期键的删除" class="headerlink" title="redis集群中过期键的删除"></a>redis集群中过期键的删除</h4><p>在Redis集群中 当主服务器删除一个过期键之后，它会向所有从服务器发送一条DEL命令，而从服务器即使发现过期键也不会自作主张的将其删除，而是等待主节点发来DEL命令，显式的进行删除。这种统一的、中心化的过期键策略可以保证主从服务器数据一致。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag">#Redis</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/" rel="next" title="微服务架构下使用Nginx变量对应用程序进行性能追踪[转]">
+                <i class="fa fa-chevron-left"></i> 微服务架构下使用Nginx变量对应用程序进行性能追踪[转]
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/01/12/深入了解Redis之Redis的持久化方式/" rel="prev" title="深入了解Redis之Redis的持久化方式">
+                深入了解Redis之Redis的持久化方式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/01/12/深入了解Redis之Redis数据库的实现/"
+           data-title="深入了解Redis之Redis数据库的实现" data-url="https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis数据库的实现/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars3.githubusercontent.com/u/11239812?v=3&u=aede3c90c7e5cbc2d029e3f0988d9e1503b59943&s=140"
+               alt="zhimiao" />
+          <p class="site-author-name" itemprop="name">zhimiao</p>
+          <p class="site-description motion-element" itemprop="description">像“草根”一样，紧贴着地面，低调的存在，冬去春来枯荣无恙。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">84</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/weizhimiao" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据结构与对象"><span class="nav-number">1.</span> <span class="nav-text">数据结构与对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库的实现"><span class="nav-number">2.</span> <span class="nav-text">数据库的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#服务器保存键值对的方法"><span class="nav-number">2.1.</span> <span class="nav-text">服务器保存键值对的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#服务器保存键值对过期时间的方法"><span class="nav-number">2.2.</span> <span class="nav-text">服务器保存键值对过期时间的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#服务器删除过期键值对的方法"><span class="nav-number">2.3.</span> <span class="nav-text">服务器删除过期键值对的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#过期键的判定"><span class="nav-number">2.3.1.</span> <span class="nav-text">过期键的判定</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#一般的常见的过期键删除机制"><span class="nav-number">2.3.2.</span> <span class="nav-text">一般的常见的过期键删除机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Redis采用的过期键删除机制（惰性-定期）"><span class="nav-number">2.3.3.</span> <span class="nav-text">Redis采用的过期键删除机制（惰性+定期）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis集群中过期键的删除"><span class="nav-number">2.3.4.</span> <span class="nav-text">redis集群中过期键的删除</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+<!--
+<div class="theme-info">
+    | 京ICP备 
+    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+          16031041号
+    </a>
+</div>
+-->
+
+
+        
+
+<div class="busuanzi-count">
+
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">本站访客数<span class="busuanzi-value" id="busuanzi_value_site_uv"></span>人次</span>
+  
+
+  
+    <span class="site-pv">本站总访问量<span class="busuanzi-value" id="busuanzi_value_site_pv"></span>次</span>
+  
+  
+</div>
+
+
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"weizhimiao"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+  <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+
+  
+
+
+</body>
+</html>
