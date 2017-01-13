@@ -273,6 +273,147 @@
             
               
                 
+                <a class="post-title-link" href="/2016/10/03/Nginx配置整理/" itemprop="url">
+                  Nginx配置整理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-03T22:30:00+08:00" content="2016-10-03">
+              2016-10-03
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Nginx/" itemprop="url" rel="index">
+                    <span itemprop="name">Nginx</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/03/Nginx配置整理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/03/Nginx配置整理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Nginx配置主要分成四部分：main、server、upstream 和 location，每部分包含若干个指令。<br>main(全局设置)</p>
+<blockquote>
+<p>该部分设置的指令将影响其它所有部分的设置；</p>
+</blockquote>
+<p>server(主机设置)</p>
+<blockquote>
+<p>该部分的指令主要用于指定虚拟主机域名、IP和端口；</p>
+</blockquote>
+<p>upstream(上游服务器设置)</p>
+<blockquote>
+<p>该部分的指令用于设置一系列的后端服务器，设置反向代理及后端服务器的负载均衡；</p>
+</blockquote>
+<p>location(URL匹配特定位置后的设置)</p>
+<blockquote>
+<p>该部分用于匹配网页位置（比如，根目录“/”,“/images”,等等）。</p>
+</blockquote>
+<p>Nginx本身是模块化设计。全局的配置区段负责全局的各个方面，对于不同的协议可以单独划分成一个部分。我们可以通过在这些单独的协议配置中（http或mail）指定server来定义每一个请求应该被如何处理，以便请求被路由到特定的IP地址或端口上。在http区段中，使用location来匹配URI请求，这些location又可以嵌套使用或者按照一定顺序使用，以确保请求被路由到正确的文件系统区域或者其他地方。</p>
+<p><strong>他们之间的关系式：</strong> server继承main，location继承server；upstream既不会继承指令也不会被继承。它有自己的特殊指令，不需要在其他地方的应用。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/03/Nginx配置整理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/10/01/Memcached分布式部署算法整理/" itemprop="url">
                   Memcached分布式部署算法整理
                 </a>
@@ -1167,149 +1308,6 @@
             
               
                 
-                <a class="post-title-link" href="/2016/09/27/Redis安装与管理/" itemprop="url">
-                  Redis安装与管理
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-27T20:30:00+08:00" content="2016-09-27">
-              2016-09-27
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index">
-                    <span itemprop="name">Linux</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/27/Redis安装与管理/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis安装与管理/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>redis是一个key-value存储系统。<br>和Memcached类似，它支持存储的value类型相对更多，<br>包括string(字符串)、list(链表)、set(集合)和zset(有序集合)。<br>这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。</p>
-<p>在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。<br>区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。</p>
-<p>Redis 是一个高性能的key-value数据库。<br> redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。<br>它提供了Python，Ruby，Erlang，PHP客户端，使用很方便。</p>
-<ul>
-<li><p>Memcache</p>
-<blockquote>
-<p>内存缓存服务，缓存数据保存在内存中，一旦断电重启，数据将丢失</p>
-</blockquote>
-</li>
-<li><p>mangoDB</p>
-<blockquote>
-<p>开源免费的NOSQL 数据库，提供数据持久化服务，以文档的形式提供数据组织方式，而不是表</p>
-</blockquote>
-</li>
-<li><p>Redis</p>
-<blockquote>
-<p>开源免费的 NOSQL数据库，提供数据持久化服务，即能实现内存缓存服务，也能提供数据结构服务取代MySQL 自建索引用来弥补关系型数据的不足</p>
-</blockquote>
-</li>
-</ul>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/27/Redis安装与管理/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
                 <a class="post-title-link" href="/2016/09/27/Redis数据类型与操作/" itemprop="url">
                   Redis数据类型与操作
                 </a>
@@ -1441,8 +1439,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/09/26/PHP扩展模块安装/" itemprop="url">
-                  PHP扩展模块安装
+                <a class="post-title-link" href="/2016/09/27/Redis安装与管理/" itemprop="url">
+                  Redis安装与管理
                 </a>
               
             
@@ -1455,8 +1453,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-26T21:30:00+08:00" content="2016-09-26">
-              2016-09-26
+            <time itemprop="dateCreated" datetime="2016-09-27T20:30:00+08:00" content="2016-09-27">
+              2016-09-27
             </time>
           </span>
 
@@ -1469,8 +1467,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
                   </a>
                 </span>
 
@@ -1485,8 +1483,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/09/26/PHP扩展模块安装/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/26/PHP扩展模块安装/" itemprop="commentsCount"></span>
+                <a href="/2016/09/27/Redis安装与管理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis安装与管理/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -1512,9 +1510,28 @@
 
       
         
-          <p>PHP编译安装之后，通常我们还需要根据我们的业务需求去安装各种扩展。通常我们可以通过php提供的phpize这个工具来为PHP动态地添加我们需要的模块。</p>
+          <p>redis是一个key-value存储系统。<br>和Memcached类似，它支持存储的value类型相对更多，<br>包括string(字符串)、list(链表)、set(集合)和zset(有序集合)。<br>这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。</p>
+<p>在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。<br>区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。</p>
+<p>Redis 是一个高性能的key-value数据库。<br> redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。<br>它提供了Python，Ruby，Erlang，PHP客户端，使用很方便。</p>
+<ul>
+<li><p>Memcache</p>
+<blockquote>
+<p>内存缓存服务，缓存数据保存在内存中，一旦断电重启，数据将丢失</p>
+</blockquote>
+</li>
+<li><p>mangoDB</p>
+<blockquote>
+<p>开源免费的NOSQL 数据库，提供数据持久化服务，以文档的形式提供数据组织方式，而不是表</p>
+</blockquote>
+</li>
+<li><p>Redis</p>
+<blockquote>
+<p>开源免费的 NOSQL数据库，提供数据持久化服务，即能实现内存缓存服务，也能提供数据结构服务取代MySQL 自建索引用来弥补关系型数据的不足</p>
+</blockquote>
+</li>
+</ul>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/26/PHP扩展模块安装/#more" rel="contents">
+            <a class="btn" href="/2016/09/27/Redis安装与管理/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1589,7 +1606,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">84</span>
+              <span class="site-state-item-count">85</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
