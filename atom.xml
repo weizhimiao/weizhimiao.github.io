@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2017-01-13T09:24:36.000Z</updated>
+  <updated>2017-01-22T14:36:12.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -14,6 +14,237 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>深入了解Redis之客户端C-服务器S设计与实现</title>
+    <link href="https://weizhimiao.github.io/2017/01/22/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8B%E5%AE%A2%E6%88%B7%E7%AB%AFC-%E6%9C%8D%E5%8A%A1%E5%99%A8S%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/"/>
+    <id>https://weizhimiao.github.io/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/</id>
+    <published>2017-01-22T12:30:00.000Z</published>
+    <updated>2017-01-22T14:36:12.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>我们知道<code>Redis</code>是一个典型的<code>C/S</code>设计程序，一个服务器可以与多个客户端建立连接。通过<code>I/O</code>多路复用技术实现的文件事件处理器，<code>Redis</code>服务器使用单线程单进程的方式来处理命令请求，并与多个客户端进行网络通信。</p>
+<p>所以，对于<code>Redis</code>我们分为这两部分来了解，</p>
+<ul>
+<li><code>Redis</code>服务器维护和管理客户端状态的方法</li>
+<li><code>Redis</code>服务器的运行机制</li>
+</ul>
+<a id="more"></a>
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>对于每个与服务器进行连接的客户端，服务器都为这些客户端建立了相应的 <code>redisClient</code> 结构（客户端状态），这个结构保存了客户端当前的状态信息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">typedef struct redisClent&#123;</div><div class="line"></div><div class="line">  // ...</div><div class="line">  // 客户端的套接字描述符</div><div class="line">  int fd;</div><div class="line">  // 客户端的名字</div><div class="line">  robj *name;</div><div class="line">  // 客户端的标识值（flag）</div><div class="line">  int flags;</div><div class="line">  // 输入缓冲区</div><div class="line">  sqs querybuf;</div><div class="line">  // 命令与命令参数</div><div class="line">  robj **argv;</div><div class="line">  // 命令参数个数</div><div class="line">  int argc;</div><div class="line">  //命令的实现函数</div><div class="line">  struct redisCommand *cmd;</div><div class="line">  //输出缓冲区</div><div class="line">  char buf[REDIS_REPLY_CHUNK_BYTES];</div><div class="line">  //</div><div class="line">  int bufpos;</div><div class="line">  // 身份认证相关属性</div><div class="line">  int authenticated;</div><div class="line">  //</div><div class="line">  time_t ctime;</div><div class="line">  time_t lastinteraction;</div><div class="line">  time_t obuf_soft_limit_reached_time;</div><div class="line"></div><div class="line">  // ...</div><div class="line"></div><div class="line">&#125; redisClient</div></pre></td></tr></table></figure></p>
+<p><code>Redis</code>服务器状态结构的<code>clients</code>属性是一个链表，这个链表保存了所有与服务器连接的客户端的状态结构(<code>redisClient</code>)，对客户端执行批量操作或者查找某个指定的客户端，都可以通过遍历 <code>clients</code> 链表来完成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">struct redisServer &#123;</div><div class="line">  //...</div><div class="line"></div><div class="line">  // 一个链表，保存了所有客户端状态</div><div class="line">  list *clients;</div><div class="line"></div><div class="line">  //...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如图，是一个与三个客户端进行连接的服务器。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170116/clientsLianBiao.png" alt="clients 链表"></p>
+<h3 id="客户端类型"><a href="#客户端类型" class="headerlink" title="客户端类型"></a>客户端类型</h3><p>按照处理的命令请求的来源，客户端可以分为以下两种：</p>
+<ul>
+<li><p>伪客户端</p>
+<blockquote>
+<p>处理来自<code>AOF</code>文件或者Lua脚本的命令请求。目前<code>Redis</code>会在两个地方用到伪客户端，</p>
+<ul>
+<li>用于载入 <code>AOF</code> 文件并还原数据库状态</li>
+<li>用于执行<code>Lua</code>脚本中包含的<code>Redis</code>命令</li>
+</ul>
+</blockquote>
+</li>
+<li><p>普通客户端</p>
+<blockquote>
+<p>处理来自网络的普通命令请求。</p>
+</blockquote>
+</li>
+</ul>
+<p>两者的主要区别是，在客户端状态结构（<code>redisClient</code>）中的 <code>fd</code> 属性，伪客户端的该属性值为<code>-1</code>，普通客户端的该属性的值是普通客户端的套接字的描述符。</p>
+<h3 id="客户端状态属性"><a href="#客户端状态属性" class="headerlink" title="客户端状态属性"></a>客户端状态属性</h3><p>客户端状态属性主要可以分为两类：</p>
+<ul>
+<li><p>比较通用的属性</p>
+<ul>
+<li>套接字描述，根据客户端端类型的不同，该属性的值可以是<code>-1</code> 或者是大于<code>-1</code> 的整数。</li>
+<li>名字，默认情况下，一个连接到服务器的客户端是没有名字的，使用 <code>CLIENT setname</code> 可以为客户端设置一个名字。</li>
+<li>标识，记录了客户端的角色（<code>role</code>）如，主服务器，从服务器，低版本的从服务器，专门处理<code>Lua</code>脚本的伪客户端；以及客户端目前所处的状态，如客户端正在执行<code>MONITOR</code>命令，客户端正在被<code>BRPOP</code>、<code>BLPOP</code>等命令阻塞，客户端正在执行事务等等。</li>
+<li>输入缓冲区，用于保存客户端发送的命令请求。</li>
+<li>命令与命令参数，保存命令参数以及命令参数个数。</li>
+<li>命令的实现函数，保存命令的实现函数。</li>
+<li>输出缓冲区，保存执行命令所得的命令回复内容。</li>
+<li>身份验证，用于记录客户端是否通过了身份验证。</li>
+<li>时间，记录创建客户端的时间、客户端与服务器最后一次交互的时间、输出缓冲区第一次到达软性限制的时间等等。</li>
+</ul>
+</li>
+<li><p>和特定功能相关的属性</p>
+<ul>
+<li><code>db</code>属性（数据库操作时需要）</li>
+<li><code>dictid</code>属性（数据库操作时需要）</li>
+<li><code>mstate</code>属性（执行事务时需要）</li>
+<li><code>watched_keys</code>属性（执行<code>WATCH</code>命令时需要）</li>
+<li>…</li>
+</ul>
+</li>
+</ul>
+<h3 id="客户端的创建与关闭"><a href="#客户端的创建与关闭" class="headerlink" title="客户端的创建与关闭"></a>客户端的创建与关闭</h3><h4 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h4><p>如果客户端是通过网络连接与服务器进行连接的普通客户端，在客户端使用connect函数连接到服务器时，服务器就会调用连接事件处理器，为客户端创建相应的客户端状态，并将这个新的客户端状态添加到服务器状态结构 clients 链表的末尾。</p>
+<p>对于Lua脚本的伪客户端，服务器会在初始化时，创建负责执行Lua脚本中包含的<code>Redis</code>命令的伪客户端，并将这个伪客户端关联在服务器状态结构的 <code>lua_client</code> 属性中。且 <code>lua_client</code> 伪客户端会在服务器运行的整个生命周期中会一直存在，只有在服务器关闭时，这个伪客户端才会关闭。</p>
+<p>对于用户载入 <code>AOF</code> 文件还原数据库的伪客户端，会在服务器载入<code>AOF</code>文件时创建，用于执行<code>AOF</code>文件包含的<code>Redis</code>命令，在完成载入操作之后，这个伪客户端就会关闭。</p>
+<h4 id="关闭"><a href="#关闭" class="headerlink" title="关闭"></a>关闭</h4><p>对于一个普通客户端可以有多种原因而被关闭，</p>
+<ul>
+<li>客户端进程推出或者被杀死</li>
+<li>客户单向服务器端发送了不符合协议格式的命令请求</li>
+<li>客户端成为了 <code>CLIENT KILL</code> 命令的目标</li>
+<li>客户端空转时间 大于了 <code>timeout</code> 的设置</li>
+<li>客户端发送的命令请求的大小超过了输入缓冲区的大小限制（默认 <code>1GB</code>）</li>
+<li>发送给客户端的命令回复的大小超过了输出缓冲区的限制大小</li>
+</ul>
+<h2 id="服务器"><a href="#服务器" class="headerlink" title="服务器"></a>服务器</h2><p><code>Redis</code> 服务器负责与多个客户端建立网络连接，处理客户端发送的命令请求，在数据库中保存客户端执行命令所产生的数据，并通过资源管理来维持服务器自身的运转。</p>
+<h3 id="一条请求命令的执行过程"><a href="#一条请求命令的执行过程" class="headerlink" title="一条请求命令的执行过程"></a>一条请求命令的执行过程</h3><p>一条命令请求从发送到获得回复的过程中，客户端和服务器需要完成一系列操作。，例如，执行 <code>redis&gt; SET KEY VALUE</code>这条命令的执行过程如下：</p>
+<ul>
+<li>1）客户端向服务器发送命令请求 <code>SET KEY VALUE</code></li>
+<li>2）服务器接收并处理客户端发送过来的命令请求 <code>SET KEY VALUE</code>，在数据库中进行设置操作，并返回命令回复 <code>OK</code></li>
+<li>3）服务器将命令回复<code>OK</code>发送给客户端</li>
+<li>4）客户端接收服务器返回的命令回复<code>OK</code>，并将这个回复打印给用户</li>
+</ul>
+<h4 id="发送命令请求"><a href="#发送命令请求" class="headerlink" title="发送命令请求"></a>发送命令请求</h4><p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanJieShouBingFaSongMingLingQingQiuDeGuoCheng.png" alt="客户端接收并发送命令请求的过程"><br>如图所示，用户在客户端中键入一个命令请求时，客户端会将这个命令请求转换成协议格式，然后通过连接到服务器的套接字，将协议格式的命令发送服务器。</p>
+<p>示例，假设用户在客户端键入了命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SET KEY VALUE</div></pre></td></tr></table></figure></p>
+<p>那么客户端会将这个命令转换成协议格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">*3\r\n$3\r\nSET\r\n$3\r\nKEY\r\n$5\r\nVALUE\r\n</div></pre></td></tr></table></figure></p>
+<p>然后将这段协议内容发送给服务器。</p>
+<h4 id="服务器读取命令请求"><a href="#服务器读取命令请求" class="headerlink" title="服务器读取命令请求"></a>服务器读取命令请求</h4><p>当客户端与服务器之间的连接套接字因为客户端的写入而变得可读时，服务器将调用命令请求出来器来执行一下操作。</p>
+<ul>
+<li>1）读取套接字中协议格式的命令请求，并将其保存到客户端状态的输入缓冲区里。</li>
+<li>2）对输入缓冲区中的命令请求进行分析，提取出命令请求中包含的命令参数，以及参数的个数，然后分别保存到客户端状态的<code>argv</code>属性和<code>argc</code>属性中。</li>
+<li>3）调用命令执行器，执行客户端指定的命令。</li>
+</ul>
+<p>示例，</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanZhuangTaiZhongDeMingLingQingQiu.png" alt="客户端状态中的命令请求"></p>
+<p>服务器将命令请求保存到客户端状态的输入缓冲区。之后，分析程序将对输入缓冲区的协议进行分析，并将分析结果保存到客户端状态的<code>argv</code>属性和<code>argc</code>属性里。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanZhuangTaiDeargvShuXingHeargcShuXing.png" alt="客户端状态的argv属性和argc属性"></p>
+<h4 id="执行命令"><a href="#执行命令" class="headerlink" title="执行命令"></a>执行命令</h4><p>分析程序将分析结果保存到客户端状态的<code>argv</code>属性和<code>argc</code>属性里之后，服务器将通过调用命令执行器来完成执行命令所需的余下步骤。</p>
+<ul>
+<li><p>命令执行器：查找命令实现</p>
+<blockquote>
+<p>根据客户端状态的 <code>argv[0]</code> 参数，在命令表（<code>command table</code>） 中查找参数所指定的命令，并将找到的命令保存到客户端状态的cmd属性中。</p>
+</blockquote>
+</li>
+<li><p>命令执行器：执行预备操作</p>
+<blockquote>
+<p>到目前为止，服务器已经将执行命令所需的命令实现函数（<code>cmd</code>属性）、参数（<code>argv</code>属性）、参数个数（<code>argc</code>属性）都收集齐了。但在真正执行命令前，还需要进行一些预备操作，从而确保命令能够正确的、顺序被执行。这些操作有，</p>
+<ul>
+<li>检查实现函数是否为空</li>
+<li>检查参数个数满足当前实现函数的要求</li>
+<li>检查客户端是否已经通过了身份验证</li>
+<li>如果服务器打开了 <code>maxmemory</code> 功能，那么检查服务器的内从占用情况，并在有需要的情况下回收内存</li>
+<li>如果服务器上一次执行 <code>BGSAVE</code> 命令出错，且打开了 <code>stop-writes-on-bgsave-error</code> 功能，且服务器当前要执行的是一个写命令，则拒绝执行这个命令，并返回错误。</li>
+<li>检查服务器是否正处于某种状态（正在用<code>subscribe</code>命令订阅频道、正在用<code>psubscribe</code>命令订阅模式、正在进行数据载入、正在阻塞、正在执行事务），如果处于某种状态之下，则需要分别当前命令是否可以在该状态下被执行。</li>
+<li>如果服务器打开了监视功能，那么服务器会将要执行的命令和参数等信息，发送给监视器。</li>
+</ul>
+<p>当完成以上操作之后，服务器就可以开始真正执行命令了。</p>
+</blockquote>
+</li>
+<li><p>命令执行器：调用命令的实现函数</p>
+<blockquote>
+<p>因为之前服务器已经将要执行的命令的实现保存到了客户端状态的cmd属性、参数和个数分别保存到了<code>argv</code>属性和<code>argc</code>属性，所以当服务器决定要执行命令时，是需要执行就可以了。<code>client-&gt;cmd-&gt;proc(client);</code>实现函数执行完操作之后，会产生相应的命令回复，这些回复会保存在客户端状态的输出缓冲区里，之后实现函数还会为客户端的套接字关联命令回复处理器，这个处理器负责将命令回复返回给客户端。</p>
+</blockquote>
+</li>
+<li><p>命令执行器：执行后续操作</p>
+<blockquote>
+<p>在执行完函数之后，服务器还需要执行一些后续工作，</p>
+<ul>
+<li>如果服务器开启了慢日志功能，那么检查刚执行的命令是否符合条件</li>
+<li>更新命令的<code>redisCommand</code>结构中<code>milliseconds</code>属性（执行命令耗费时长），和<code>calls</code>属性（被调用次数）</li>
+<li>如果服务器开启<code>AOF</code>持久化功能，将刚执行的命令传播给所有从服务器</li>
+</ul>
+<p>到此，服务器对于当前命令的执行就告一段落了。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="将命令回复发送给客户端"><a href="#将命令回复发送给客户端" class="headerlink" title="将命令回复发送给客户端"></a>将命令回复发送给客户端</h4><p>前面的命令实现函数会将命令回复保存到客户端的输出缓冲区里面，并为客户端的套接字关联命令回复处理器，当客户端套接字变成可写状态时，服务器就会执行命令回复处理器，将保存在输出缓冲区中的命令回复发送给客户端。</p>
+<p>当命令回复发送完毕之后，回复处理器会清空客户端状态的输出缓冲区，为处理下一个命令请求做好准备。</p>
+<h4 id="客户端接收并打印命令回复"><a href="#客户端接收并打印命令回复" class="headerlink" title="客户端接收并打印命令回复"></a>客户端接收并打印命令回复</h4><p>当客户端接收到协议格式的命令回复之后，它会将这些回复转换成人类可读的格式，并打印给用户。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanJieShouBingDaYinMingLingHuiFuDeGuoCheng.png" alt="客户端接收并打印显示命令回复的过程"></p>
+<h3 id="serverCron-函数"><a href="#serverCron-函数" class="headerlink" title="serverCron 函数"></a>serverCron 函数</h3><p><code>redis</code>服务器中的<code>serverCron</code>函数负责管理服务器的资源，并保持服务器自身的良好运转，其默认每隔 <code>100 ms</code> 执行一次。</p>
+<p><code>serverCron</code>函数需要做的事情，</p>
+<ul>
+<li>更新服务器的时间缓存（用于获得当前时间时）</li>
+<li>更新<code>LRU</code>时钟（用于计算键的空转事件）</li>
+<li>更新服务器每秒执行命令次数</li>
+<li>更新服务器内存峰值记录</li>
+<li>处理<code>SIGTERM</code>信号</li>
+<li>管理客户端资源</li>
+<li>管理数据库资源</li>
+<li>执行被延迟的<code>BGREWRITEAOF</code></li>
+<li>检查持久化操作的运行状态</li>
+<li>将<code>AOF</code>缓冲区中的内容写入<code>AOF</code>文件</li>
+<li>关闭异步客户端</li>
+<li>增加<code>cronloops</code>计数器值</li>
+</ul>
+<h3 id="初始化服务器"><a href="#初始化服务器" class="headerlink" title="初始化服务器"></a>初始化服务器</h3><p>一个<code>redis</code>服务器从启动到能够接受客户端的命令请求，需要经过一些列的初始化和设置过程，如</p>
+<ul>
+<li>初始化服务器状态结构</li>
+<li>载入配置选项</li>
+<li>初始化服务器数据结构</li>
+<li>还原数据库状态</li>
+<li>执行事件循环</li>
+</ul>
+<h4 id="初始化服务器状态结构"><a href="#初始化服务器状态结构" class="headerlink" title="初始化服务器状态结构"></a>初始化服务器状态结构</h4><p>服务器状态结构指的就是 <code>redisServer</code> 结构，初始化服务器的第一步就是创建一个 <code>struct redisServer</code>类型的实例变量 <code>server</code> 作为服务器的状态，并为结构中的各个属性设置默认值。</p>
+<p>具体初始化工作由 <code>redis.c/initServerConfig</code> 函数完成，<code>initServerConfig</code> 函数完成的主要工作是，</p>
+<ul>
+<li>设置服务器的运行ID</li>
+<li>设置服务器的默认运行频率</li>
+<li>设置服务器的默认配置文件路径</li>
+<li>设置服务器的运行架构</li>
+<li>设置服务器的默认端口号</li>
+<li>设置服务器的默认<code>RDB</code>持久化条件和<code>AOF</code>持久化条件</li>
+<li>创建命令表</li>
+</ul>
+<p>当<code>initServerConfig</code> 函数执行完毕之后，服务器就可以进入初始化的第二阶段–载入配置选项</p>
+<h4 id="载入配置选项"><a href="#载入配置选项" class="headerlink" title="载入配置选项"></a>载入配置选项</h4><p>服务器在用 <code>initServerConfig</code> 函数初始化完 <code>server</code> 变量之后，就会载入用户给指定的配置参数和配置文件，并根据用户设定的配置，对 <code>server</code> 变量相关属性进行修改：</p>
+<p>例如，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ redis-server --port 10086</div></pre></td></tr></table></figure></p>
+<p>那么我们就会修改了服务器默认的运行端口号。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ redis-server redis.conf</div></pre></td></tr></table></figure>
+<p>按照配置文件中的配置，修改 <code>server</code> 变量属性。</p>
+<p>服务器在载入用户指定的配置选项，并对<code>server</code>状态进行更新之后，服务器就可以进入初始化的第三个阶段–初始化服务器数据结构。</p>
+<h4 id="初始化服务器数据结构"><a href="#初始化服务器数据结构" class="headerlink" title="初始化服务器数据结构"></a>初始化服务器数据结构</h4><p>在之前执行 <code>initServerConfig</code> 函数初始化 <code>server</code> 状态，程序只创建了命令表的一个数据结构，不过了命令表之外，服务器状态还包含其他数据结构。</p>
+<ul>
+<li><code>server.client</code> 链表，记录了所有与服务器相连的客户端的状态结构，链表的每个节点都包含了一个<code>redisClient</code>结构实例。</li>
+<li><code>server.db</code> 数组，包含了服务器的所有数据库。</li>
+<li><code>server.pubsub_channels</code> 字典，保存频道订阅信息。</li>
+<li><code>server.pubsub_patterns</code> 链表，保存模式订阅信息。</li>
+<li><code>server.lua</code>，保存执行<code>lua</code>脚本的<code>Lua</code>环境。</li>
+<li><code>server.slowlog</code> ，保存慢查询日志。</li>
+</ul>
+<p>这些数据结构是通过 <code>iniServer</code> 函数来实现，为这些数据结构分配内存，并设置或关联初始化值。</p>
+<p><code>iniServer</code> 函数除了初始化这些数据结构之外，还会进行一些其他非常重要的设置操作，包括:</p>
+<ul>
+<li>为服务器是指进程信号处理器</li>
+<li>创建共享对象：这些对象包括<code>redis</code>服务器经常用到的一些值（如，包含“OK”回复的字符串对象，包含“ERR”回复的字符串对象，等等），服务器通过重用这些对象来避免反复重复的创建相同的对象。</li>
+<li>打开服务器的监听端口，并为监听套接字关联连接应答事件处理器，等待服务器正式运行时接收客户端连接。</li>
+<li>为 <code>serverCron</code> 函数创建时间事件，等待服务器正式运行时实行 <code>serverCron</code> 函数。</li>
+<li>如果<code>AOF</code>持久化功能已经打开，那么打开现有的<code>AOF</code>文件，如果<code>AOF</code>文件不存在，那么创建并打开一个新的<code>AOF</code>文件，为<code>AOF</code>文件写入做好准备。</li>
+<li>初始化后台<code>I/O</code>模块（<code>bio</code>），为将来的<code>I/O</code>操作做好准备。</li>
+</ul>
+<p>当<code>iniServer</code>函数执行完毕之后，服务器会用 <code>ASCII</code>字符在日志中打印出<code>Redis</code>的图标，以及Redis的版本信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">root@5254004e45d0:/srv/rorapps/redis/redis-2.8.15# src/redis-server</div><div class="line">[16445] 16 Sep 09:54:32.684 # Warning: no config file specified, using the default config. In order to specify a config file use src/redis-server /path/to/redis.conf</div><div class="line">[16445] 16 Sep 09:54:32.686 * Increased maximum number of open files to 10032 (it was originally set to 1024).</div><div class="line">				_._												  </div><div class="line">		   _.-``__ &apos;&apos;-._											 </div><div class="line">	  _.-``	`.  `_.  &apos;&apos;-._		   Redis 2.8.15 (00000000/0) 64 bit</div><div class="line">  .-`` .-```.  ```\/	_.,_ &apos;&apos;-._								   </div><div class="line"> (	&apos;	  ,	   .-`  | `,	)	 Running in stand alone mode</div><div class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|	 Port: 6379</div><div class="line"> |	`-._   `._	/	 _.-&apos;	|	 PID: 16445</div><div class="line">  `-._	`-._  `-./  _.-&apos;	_.-&apos;								   </div><div class="line"> |`-._`-._	`-.__.-&apos;	_.-&apos;_.-&apos;|								  </div><div class="line"> |	`-._`-._		_.-&apos;_.-&apos;	|		   http://redis.io		</div><div class="line">  `-._	`-._`-.__.-&apos;_.-&apos;	_.-&apos;								   </div><div class="line"> |`-._`-._	`-.__.-&apos;	_.-&apos;_.-&apos;|								  </div><div class="line"> |	`-._`-._		_.-&apos;_.-&apos;	|								  </div><div class="line">  `-._	`-._`-.__.-&apos;_.-&apos;	_.-&apos;								   </div><div class="line">	  `-._	`-.__.-&apos;	_.-&apos;									   </div><div class="line">		  `-._		_.-&apos;										   </div><div class="line">			  `-.__.-&apos;											   </div><div class="line"></div><div class="line">[16445] 16 Sep 09:54:32.688 # Server started, Redis version 2.8.15</div><div class="line">[16445] 16 Sep 09:54:32.688 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &apos;vm.overcommit_memory = 1&apos; to /etc/sysctl.conf and then reboot or run the command &apos;sysctl vm.overcommit_memory=1&apos; for this to take effect.</div><div class="line">[16445] 16 Sep 09:54:32.688 * The server is now ready to accept connections on port 6379</div></pre></td></tr></table></figure>
+<h4 id="还原数据库状态"><a href="#还原数据库状态" class="headerlink" title="还原数据库状态"></a>还原数据库状态</h4><p>在完成对 <code>server</code> 变量的初始化之后，服务器需要载入 <code>RDB</code> 文件或者 <code>AOF</code> 文件，并根据文件记录的内容来还原服务器的数据库状态。</p>
+<ul>
+<li>如果服务器采用的是 <code>AOF</code>方式的持久化方式，那么服务器将使用<code>AOF</code>文件来还原数据库状态。</li>
+<li>相反的如果服务器没有采用<code>AOF</code>方式的持久化方式，那么服务器使用<code>RDB</code>文件来还原服务器数据库状态。</li>
+</ul>
+<p>当服务器完成数据库的还原操作之后，服务器将在日志中打印出载入文件并还原数据库状态所耗费的时长<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[5244] 21 Nov 22:43:49.084 * DB loaded from disk: 0.067 seconds</div></pre></td></tr></table></figure></p>
+<h4 id="执行事件循环"><a href="#执行事件循环" class="headerlink" title="执行事件循环"></a>执行事件循环</h4><p>初始化的最后一步，服务器将打印以下日志，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[5244] 21 Nov 22:43:49.084 * The server is now ready to accept connections on port  6379</div></pre></td></tr></table></figure></p>
+<p>并开始执行服务器的时间循环（<code>loop</code>）<br>。</p>
+<p>至此，服务器的初始化操作就圆满完成。服务器从现在开始就可以接受客户端的连接请求，并处理客户端发来的命令请求了。。。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;我们知道&lt;code&gt;Redis&lt;/code&gt;是一个典型的&lt;code&gt;C/S&lt;/code&gt;设计程序，一个服务器可以与多个客户端建立连接。通过&lt;code&gt;I/O&lt;/code&gt;多路复用技术实现的文件事件处理器，&lt;code&gt;Redis&lt;/code&gt;服务器使用单线程单进程的方式来处理命令请求，并与多个客户端进行网络通信。&lt;/p&gt;
+&lt;p&gt;所以，对于&lt;code&gt;Redis&lt;/code&gt;我们分为这两部分来了解，&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Redis&lt;/code&gt;服务器维护和管理客户端状态的方法&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Redis&lt;/code&gt;服务器的运行机制&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
+    
+    
+      <category term="Redis" scheme="https://weizhimiao.github.io/tags/Redis/"/>
+    
+  </entry>
   
   <entry>
     <title>深入了解Redis之事件原理和实现</title>
@@ -1356,187 +1587,72 @@
   
   <entry>
     <title>Xdebug之变量显示功能</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%8F%98%E9%87%8F%E6%98%BE%E7%A4%BA%E5%8A%9F%E8%83%BD/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/</id>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%A0%86%E6%A0%88%E8%B7%9F%E8%B8%AA/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/</id>
     <published>2016-10-22T12:30:00.000Z</published>
     <updated>2016-11-29T02:32:38.000Z</updated>
     
-    <content type="html"><![CDATA[<p>Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。</p>
+    <content type="html"><![CDATA[<p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
+<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
 <a id="more"></a>
-<p>有一些设置控制Xdebug修改的var_dump（）函数的输出：</p>
+<h2 id="堆栈跟踪中的变量"><a href="#堆栈跟踪中的变量" class="headerlink" title="堆栈跟踪中的变量"></a>堆栈跟踪中的变量</h2><p>默认情况下，Xdebug现在会在它生成的堆栈跟踪中显示变量信息。 在收集或显示时，可变信息可能需要相当多的资源。 然而，在许多情况下，显示变量信息是有用的，这就是为什么Xdebug具有设置xdebug.collect_params。 下面的脚本结合了该设置的不同值的输出结果，如下例所示。</p>
+<p>示例：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $a )</span> </span>&#123;</div><div class="line">    <span class="keyword">for</span> ($i = <span class="number">1</span>; $i &lt; $a[<span class="string">'foo'</span>]; $i++) &#123;</div><div class="line">        <span class="keyword">if</span> ($i == <span class="number">500000</span>) xdebug_break();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">set_time_limit(<span class="number">1</span>);</div><div class="line">$c = <span class="keyword">new</span> stdClass;</div><div class="line">$c-&gt;bar = <span class="number">100</span>;</div><div class="line">$a = <span class="keyword">array</span>(</div><div class="line">    <span class="number">42</span> =&gt; <span class="keyword">false</span>, <span class="string">'foo'</span> =&gt; <span class="number">912124</span>,</div><div class="line">    $c, <span class="keyword">new</span> stdClass, fopen( <span class="string">'/etc/passwd'</span>, <span class="string">'r'</span> )</div><div class="line">);</div><div class="line">foo( $a );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>结果:<br>xdebug.collect_params设置的不同值提供不同的输出，您可以在下面看到：</p>
 <ul>
-<li>xdebug.var_display_max_children，</li>
-<li>xdebug.var_display_max_data</li>
-<li><p>xdebug.var_display_max_depth</p>
-<p>这三个设置的效果最好用一个例子。 下面的脚本运行四次，每次使用不同的设置。 您可以使用选项卡查看差异。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">test</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> $pub = <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">private</span> $priv = <span class="keyword">true</span>;</div><div class="line">    <span class="keyword">protected</span> $prot = <span class="number">42</span>;</div><div class="line">&#125;</div><div class="line">$t = <span class="keyword">new</span> test;</div><div class="line">$t-&gt;pub = $t;</div><div class="line">$data = <span class="keyword">array</span>(</div><div class="line">    <span class="string">'one'</span> =&gt; <span class="string">'a somewhat long string!'</span>,</div><div class="line">    <span class="string">'two'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">        <span class="string">'two.one'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">            <span class="string">'two.one.zero'</span> =&gt; <span class="number">210</span>,</div><div class="line">            <span class="string">'two.one.one'</span> =&gt; <span class="keyword">array</span>(</div><div class="line">                <span class="string">'two.one.one.zero'</span> =&gt; <span class="number">3.141592564</span>,</div><div class="line">                <span class="string">'two.one.one.one'</span>  =&gt; <span class="number">2.7</span>,</div><div class="line">            ),</div><div class="line">        ),</div><div class="line">    ),</div><div class="line">    <span class="string">'three'</span> =&gt; $t,</div><div class="line">    <span class="string">'four'</span> =&gt; range(<span class="number">0</span>, <span class="number">5</span>),</div><div class="line">);</div><div class="line">var_dump( $data );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>默认</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
-</li>
-<li><p>children=2</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  more elements...</div></pre></td></tr></table></figure>
-</li>
-<li><p>data=16</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long &apos;... (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;two.one.zero&apos; =&gt; int 210</div><div class="line">          &apos;two.one.one&apos; =&gt;</div><div class="line">            array</div><div class="line">              ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
-</li>
-<li><p>depth=2</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      &apos;two.one&apos; =&gt;</div><div class="line">        array</div><div class="line">          ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      public &apos;pub&apos; =&gt;</div><div class="line">        &amp;object(test)[1]</div><div class="line">      private &apos;priv&apos; =&gt; boolean true</div><div class="line">      protected &apos;prot&apos; =&gt; int 42</div><div class="line">  &apos;four&apos; =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; int 0</div><div class="line">      1 =&gt; int 1</div><div class="line">      2 =&gt; int 2</div><div class="line">      3 =&gt; int 3</div><div class="line">      4 =&gt; int 4</div><div class="line">      5 =&gt; int 5</div></pre></td></tr></table></figure>
-</li>
-<li><p>children=3, data=8, depth=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;one&apos; =&gt; string &apos;a somewh&apos;... (length=23)</div><div class="line">  &apos;two&apos; =&gt;</div><div class="line">    array</div><div class="line">      ...</div><div class="line">  &apos;three&apos; =&gt;</div><div class="line">    object(test)[1]</div><div class="line">      ...</div><div class="line">  more elements...</div></pre></td></tr></table></figure>
+<li>default</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-0@2x.png" alt="default"></p>
+<ul>
+<li>1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;1&apos;);</div></pre></td></tr></table></figure>
 </li>
 </ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-1@2x.png" alt="default"></p>
+<ul>
+<li>2<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;2&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-2@2x.png" alt="default"></p>
+<ul>
+<li>3<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;3&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-3@2x.png" alt="default"></p>
+<ul>
+<li>4<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-4@2x.png" alt="default"></p>
+<h2 id="附加信息"><a href="#附加信息" class="headerlink" title="附加信息"></a>附加信息</h2><p>除了显示传递给每个函数的变量的值之外，Xdebug还可以通过使用xdebug.dump_globals和xdebug.dump.* 设置来选择性地显示关于所选超级元素的信息。 设置xdebug.dump_once和xdebug.dump_undefined会稍微修改可用超级元素显示的时间和信息。 使用xdebug.show_local_vars设置，您可以指示Xdebug为用户定义的函数显示最顶层栈级中可用的所有变量。 下面的示例显示了这一点（脚本从上面的示例中使用）。</p>
+<ul>
+<li>default</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-5@2x.png" alt="default"></p>
+<ul>
+<li>dump_superglobals=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div><div class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-6@2x.png" alt="default"></p>
+<ul>
+<li>show_local_vars=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</div><div class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</div><div class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</div><div class="line">ini_set(&apos;xdebug.show_local_vars&apos;, &apos;on&apos;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-8@2x.png" alt="default"></p>
 <h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-cli-color"><a href="#xdebug-cli-color" class="headerlink" title="xdebug.cli_color"></a><strong>xdebug.cli_color</strong></h3><p>类型：整数，默认值：0，在Xdebug&gt; 2.2中引入</p>
-<ul>
-<li><p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
-</li>
-<li><p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
-</li>
-</ul>
+<p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
+<p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
 <p>有关更多信息，请参阅此<a href="http://drck.me/clicolor-9cr" target="_blank" rel="external">文章</a>。</p>
-<h3 id="xdebug-overload-var-dump"><a href="#xdebug-overload-var-dump" class="headerlink" title="xdebug.overload_var_dump"></a><strong>xdebug.overload_var_dump</strong></h3><p>类型：boolean，默认值：2，在Xdebug&gt; 2.1中引入</p>
-<ul>
-<li><p>默认情况下，当html_errors php.ini设置为1或2时，Xdebug会自动重载var_dump（）并显示变量。</p>
-</li>
-<li><p>如果您不想要，可以将此设置设置为0，但首先检查它是否不是更聪明的关闭html_errors。</p>
-</li>
-<li><p>您也可以使用2作为此设置的值。除了格式化var_dump（）输出很好，它还将添加文件名和行号到输出。还尊重xdebug.file_link_format设置。 （Xdebug 2.3中的新功能）</p>
-</li>
-</ul>
-<p>在Xdebug 2.4之前，此设置的默认值为1。</p>
-<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
-<ul>
-<li>要禁用任何限制，请使用-1作为值。</li>
-</ul>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
-<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
-<ul>
-<li>要禁用任何限制，请使用-1作为值。</li>
-</ul>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
-<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
-<ul>
-<li>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</li>
-</ul>
-<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="void-var-dump（-mixture-var-，…-）"><a href="#void-var-dump（-mixture-var-，…-）" class="headerlink" title="void var_dump（[mixture var [，…]]）"></a><strong>void var_dump（[mixture var [，…]]）</strong></h3><blockquote>
-<p>显示有关变量的详细信息</p>
-</blockquote>
-<p>此函数由Xdebug重载，请参阅xdebug_var_dump（）的说明。</p>
-<h3 id="void-xdebug-debug-zval（-string-varname-，…-）"><a href="#void-xdebug-debug-zval（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval（[string varname [，…]]）"></a><strong>void xdebug_debug_zval（[string varname [，…]]）</strong></h3><blockquote>
-<p>显示有关变量的信息</p>
-</blockquote>
-<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。使用值递归地探索数组。这个函数的实现不同于PHP的debug_zval_dump（）函数，以解决该函数的问题，因为变量本身实际上传递给函数。 Xdebug的版本是更好的，因为它使用变量名称来查找内部符号表中的变量，并直接访问所有的属性，而不必处理实际传递一个变量到一个函数。结果是，该函数返回的信息比PHP自己的用于显示zval信息的函数准确得多。</p>
-<p>从Xdebug 2.3开始支持除了简单变量名（例如下面的“a [2]”）之外的任何东西。</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    $a = <span class="keyword">array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line">    $b =&amp; $a;</div><div class="line">    $c =&amp; $a[<span class="number">2</span>];</div><div class="line"></div><div class="line">    xdebug_debug_zval(<span class="string">'a'</span>);</div><div class="line">    xdebug_debug_zval(<span class="string">"a[2]"</span>);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>结果：(refcount:引用次数，)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">a: (refcount=2, is_ref=1)=array (</div><div class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</div><div class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</div><div class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</div><div class="line">a[2]: (refcount=2, is_ref=1)=3</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-debug-zval-stdout（-string-varname-，…-）"><a href="#void-xdebug-debug-zval-stdout（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval_stdout（[string varname [，…]]）"></a><strong>void xdebug_debug_zval_stdout（[string varname [，…]]）</strong></h3><blockquote>
-<p>将有关变量的信息返回到stdout。</p>
-</blockquote>
-<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。 使用值递归地探索数组。 与xdebug_debug_zval（）的区别在于，该信息不通过Web服务器API层显示，而是直接显示在stdout上（因此，在Apache以单进程模式运行时，它会在控制台上运行）。</p>
-<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;?php</div><div class="line">    $a = array(1, 2, 3);</div><div class="line">    $b =&amp; $a;</div><div class="line">    $c =&amp; $a[2];</div><div class="line"></div><div class="line">    xdebug_debug_zval_stdout(&apos;a&apos;);</div></pre></td></tr></table></figure></p>
-<p>返回：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">a: (refcount=2, is_ref=1)=array (</div><div class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</div><div class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</div><div class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-dump-superglobals（）"><a href="#void-xdebug-dump-superglobals（）" class="headerlink" title="void xdebug_dump_superglobals（）"></a><strong>void xdebug_dump_superglobals（）</strong></h3><blockquote>
-<p>显示有关超级全局的信息</p>
-</blockquote>
-<p>此函数转储指定的超级全局元素的值通过php.ini中的xdebug.dump.*选项。 对于下面的示例，php.ini中的设置是：</p>
-<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">xdebug.dump.GET=*</div><div class="line">xdebug.dump.SERVER=REMOTE_ADDR</div><div class="line"></div><div class="line">Query string:</div><div class="line">?var=fourty%20two&amp;array[a]=a&amp;array[9]=b</div></pre></td></tr></table></figure></p>
-<p>结果：<br><img src="http://n.sinaimg.cn/games/3ece443e/20161022/8F0658D7-C951-4B12-BC74-92E15E31C44C.png" alt="img"></p>
-<h3 id="void-xdebug-var-dump（-mixed-var-，…-）"><a href="#void-xdebug-var-dump（-mixed-var-，…-）" class="headerlink" title="void xdebug_var_dump（[mixed var [，…]]）"></a><strong>void xdebug_var_dump（[mixed var [，…]]）</strong></h3><blockquote>
-<p>显示有关变量的详细信息</p>
-</blockquote>
-<p>此函数显示有关包含其类型和值的一个或多个表达式的结构化信息。 使用值递归地探索数组。 请参阅变量显示功能的介绍，其中php.ini设置影响此功能。</p>
-<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&lt;?php</div><div class="line">ini_set(&apos;xdebug.var_display_max_children&apos;, 3 );</div><div class="line">$c = new stdClass;</div><div class="line">$c-&gt;foo = &apos;bar&apos;;</div><div class="line">$c-&gt;file = fopen( &apos;/etc/passwd&apos;, &apos;r&apos; );</div><div class="line">var_dump(</div><div class="line">    array(</div><div class="line">        array(TRUE, 2, 3.14, &apos;foo&apos;),</div><div class="line">        &apos;object&apos; =&gt; $c</div><div class="line">    )</div><div class="line">);</div><div class="line">?&gt;</div></pre></td></tr></table></figure></p>
-<p>结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt;</div><div class="line">    array</div><div class="line">      0 =&gt; boolean true</div><div class="line">      1 =&gt; int 2</div><div class="line">      2 =&gt; float 3.14</div><div class="line">      more elements...</div><div class="line">  &apos;object&apos; =&gt;</div><div class="line">    object(stdClass)[1]</div><div class="line">      public &apos;foo&apos; =&gt; string &apos;bar&apos; (length=3)</div><div class="line">      public &apos;file&apos; =&gt; resource(3, stream)</div></pre></td></tr></table></figure></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之函数轨迹跟踪</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E5%87%BD%E6%95%B0%E8%BD%A8%E8%BF%B9%E8%B7%9F%E8%B8%AA/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之函数轨迹跟踪/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:38.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。</p>
-<p>那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。<br>函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。</p>
-<a id="more"></a>
-<h2 id="输出格式"><a href="#输出格式" class="headerlink" title="输出格式"></a>输出格式</h2><p>有三种输出格式。 一个是作为一个人类可读的跟踪，另一个更适合计算机程序，因为它更容易解析，最后一个使用HTML格式化跟踪。 您可以使用xdebug.trace_format设置在两种不同的格式之间切换。 有一些设置控制哪些信息写入跟踪文件。 有一些设置包括变量（xdebug.collect_params）和包括返回值（xdebug.collect_return）例如。 下面的示例显示了不同设置对人类可读功能轨迹的影响。</p>
-<p>脚本<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">$str = <span class="string">"Xdebug"</span>;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">ret_ord</span><span class="params">( $c )</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">return</span> ord( $c );</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">foreach</span> ( str_split( $str ) <span class="keyword">as</span> $char )</div><div class="line">&#123;</div><div class="line">    <span class="keyword">echo</span> $char, <span class="string">": "</span>, ret_ord( $char ), <span class="string">"\n"</span>;</div><div class="line">&#125;</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>结果：</p>
-<p>以下是使用xdebug.collect_params设置的不同设置的结果。 因为这不是一个Web环境,值2没有任何意义，因为工具提示不工作在文本文件。</p>
-<ul>
-<li><p>default</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:06]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split() ../trace.php:8</div><div class="line">    0.0153     117424     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0165     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0166     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0167     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0168     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0168     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0170     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0170     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0172     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0172     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0173     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0174     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0177      41152</div><div class="line">TRACE END   [2007-05-06 14:37:07]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_params=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:11]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(string(6)) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord(string(1)) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(string(1)) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:11]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_params=3</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:13]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord(&apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord(&apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord(&apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord(&apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord(&apos;u&apos;) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord(&apos;g&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:13]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_params=4</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:16]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0010     117584     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0012     117584     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0014     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:16]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>除了xdebug.collect_params设置，还有另一些影响跟踪文件输出的设置。<br>第一个选项卡“默认”显示与上面的默认值相同。<br>第二个选项卡“show_mem_delta = 1”还显示输出文件中两个不同行之间的内存使用差异。</p>
-<p>在“collect return = 1”选项卡上，所有函数调用的返回值也是可见的。 这使用xdebug.collect返回设置打开。</p>
-<p>名为“collect assignments = 1”的选项卡显示可变分配，可以使用xdebug.collect分配设置打开。</p>
-<p>最后一个选项卡显示不同的输出格式，更容易解析，但更难阅读。<br>因此，如果有一个额外的工具来解释跟踪文件，xdebug.trace_format设置是非常有用的。</p>
-<ul>
-<li><p>default</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:06]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split() ../trace.php:8</div><div class="line">    0.0153     117424     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0165     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0166     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0167     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0168     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0168     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0170     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0170     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0172     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0172     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0173     117584     -&gt; ret_ord() ../trace.php:10</div><div class="line">    0.0174     117584       -&gt; ord() ../trace.php:5</div><div class="line">    0.0177      41152</div><div class="line">TRACE END   [2007-05-06 14:37:07]</div></pre></td></tr></table></figure>
-</li>
-<li><p>show_mem_delta=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:26]</div><div class="line">    0.0003     114112  +114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     +160     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">    0.0007     117424    +3152     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584     +160       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">    0.0009     117584       +0     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       +0       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">    0.0011     117584       +0     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       +0       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">    0.0013     117584       +0     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       +0       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">    0.0014     117584       +0     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0015     117584       +0       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">    0.0016     117584       +0     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0017     117584       +0       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">    0.0019      41152</div><div class="line">TRACE END   [2007-05-06 14:37:26]</div></pre></td></tr></table></figure>
-</li>
-<li><p>collect_return=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">TRACE START [2007-05-06 14:37:35]</div><div class="line">    0.0003     114112   -&gt; &#123;main&#125;() ../trace.php:0</div><div class="line">    0.0004     114272     -&gt; str_split(&apos;Xdebug&apos;) ../trace.php:8</div><div class="line">                          &gt;=&gt; array (0 =&gt; &apos;X&apos;, 1 =&gt; &apos;d&apos;, 2 =&gt; &apos;e&apos;, 3 =&gt; &apos;b&apos;, 4 =&gt; &apos;u&apos;, 5 =&gt; &apos;g&apos;)</div><div class="line">    0.0007     117424     -&gt; ret_ord($c = &apos;X&apos;) ../trace.php:10</div><div class="line">    0.0007     117584       -&gt; ord(&apos;X&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 88</div><div class="line">                          &gt;=&gt; 88</div><div class="line">    0.0009     117584     -&gt; ret_ord($c = &apos;d&apos;) ../trace.php:10</div><div class="line">    0.0009     117584       -&gt; ord(&apos;d&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 100</div><div class="line">                          &gt;=&gt; 100</div><div class="line">    0.0011     117584     -&gt; ret_ord($c = &apos;e&apos;) ../trace.php:10</div><div class="line">    0.0011     117584       -&gt; ord(&apos;e&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 101</div><div class="line">                          &gt;=&gt; 101</div><div class="line">    0.0013     117584     -&gt; ret_ord($c = &apos;b&apos;) ../trace.php:10</div><div class="line">    0.0013     117584       -&gt; ord(&apos;b&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 98</div><div class="line">                          &gt;=&gt; 98</div><div class="line">    0.0015     117584     -&gt; ret_ord($c = &apos;u&apos;) ../trace.php:10</div><div class="line">    0.0016     117584       -&gt; ord(&apos;u&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 117</div><div class="line">                          &gt;=&gt; 117</div><div class="line">    0.0017     117584     -&gt; ret_ord($c = &apos;g&apos;) ../trace.php:10</div><div class="line">    0.0018     117584       -&gt; ord(&apos;g&apos;) ../trace.php:5</div><div class="line">                            &gt;=&gt; 103</div><div class="line">                          &gt;=&gt; 103</div><div class="line">                        &gt;=&gt; 1</div><div class="line">    0.0021      41152</div><div class="line">TRACE END   [2007-05-06 14:37:35]</div></pre></td></tr></table></figure>
-</li>
-<li><p>trace_format=1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">Version: 2.0.0RC4-dev</div><div class="line">TRACE START [2007-05-06 18:29:01]</div><div class="line">1	0	0	0.010870	114112	&#123;main&#125;	1	../trace.php	0</div><div class="line">2	1	0	0.032009	114272	str_split	0	../trace.php	8</div><div class="line">2	1	1	0.032073	116632</div><div class="line">2	2	0	0.033505	117424	ret_ord	1	../trace.php	10</div><div class="line">3	3	0	0.033531	117584	ord	0	../trace.php	5</div><div class="line">3	3	1	0.033551	117584</div><div class="line">2	2	1	0.033567	117584</div><div class="line">2	4	0	0.033718	117584	ret_ord	1	../trace.php	10</div><div class="line">3	5	0	0.033740	117584	ord	0	../trace.php	5</div><div class="line">3	5	1	0.033758	117584</div><div class="line">2	4	1	0.033770	117584</div><div class="line">2	6	0	0.033914	117584	ret_ord	1	../trace.php	10</div><div class="line">3	7	0	0.033936	117584	ord	0	../trace.php	5</div><div class="line">3	7	1	0.033953	117584</div><div class="line">2	6	1	0.033965	117584</div><div class="line">2	8	0	0.034108	117584	ret_ord	1	../trace.php	10</div><div class="line">3	9	0	0.034130	117584	ord	0	../trace.php	5</div><div class="line">3	9	1	0.034147	117584</div><div class="line">2	8	1	0.034160	117584</div><div class="line">2	10	0	0.034302	117584	ret_ord	1	../trace.php	10</div><div class="line">3	11	0	0.034325	117584	ord	0	../trace.php	5</div><div class="line">3	11	1	0.034342	117584</div><div class="line">2	10	1	0.034354	117584</div><div class="line">2	12	0	0.034497	117584	ret_ord	1	../trace.php	10</div><div class="line">3	13	0	0.034519	117584	ord	0	../trace.php	5</div><div class="line">3	13	1	0.034536	117584</div><div class="line">2	12	1	0.034549	117584</div><div class="line">1	0	1	0.034636	117584</div><div class="line">TRACE END   [2007-05-06 18:29:01]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><strong>VIM语法文件</strong></p>
-<p>Xdebug附带了语法高亮显示跟踪文件的VIM语法文件：xt.vim。<br>为了使VIM能够识别这种新格式，您需要执行以下步骤：</p>
-<ol>
-<li>复制 xt.vim 文件到 ~/.vim/syntax</li>
-<li>修改, 或者创建, ~/.vim/filetype.vim 并添加下列内容<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">augroup filetypedetect</div><div class="line">au BufNewFile,BufRead *.xt  setf xt</div><div class="line">augroup END</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>使用这些设置，打开的跟踪文件看起来像：</p>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-10@2x.png" alt="img"></p>
-<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-auto-trace"><a href="#xdebug-auto-trace" class="headerlink" title="xdebug.auto_trace"></a><strong>xdebug.auto_trace</strong></h3><p>类型：布尔值，默认值：0</p>
-<p>当此设置设置为on时，将在脚本运行之前启用函数调用的跟踪。这使得可以跟踪auto_prepend_file中的代码。</p>
-<h3 id="xdebug-collect-assignments"><a href="#xdebug-collect-assignments" class="headerlink" title="xdebug.collect_assignments"></a><strong>xdebug.collect_assignments</strong></h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
-<p>此设置（默认为0）控制Xdebug是否应向函数轨迹添加变量分配。</p>
 <h3 id="xdebug-collect-includes"><a href="#xdebug-collect-includes" class="headerlink" title="xdebug.collect_includes"></a><strong>xdebug.collect_includes</strong></h3><p>类型：布尔值，默认值：1</p>
 <p>此设置默认为1，控制Xdebug是否应将include（），include_once（），require（）或require_once（）中使用的文件名写入跟踪文件。</p>
 <h3 id="xdebug-collect-params"><a href="#xdebug-collect-params" class="headerlink" title="xdebug.collect_params"></a><strong>xdebug.collect_params</strong></h3><p>类型：整数，默认值：0</p>
 <p>此设置默认为0，控制在函数跟踪或堆栈跟踪中记录函数调用时，Xdebug是否应收集传递给函数的参数。</p>
-<p>该设置默认为0，因为对于非常大的脚本，它可能使用大量的内存，因此使巨量脚本无法运行。您可以最安全地打开此设置，但是您可以预期在具有大量函数调用和/或巨大的数据结构作为参数的脚本中存在一些问题。 Xdebug 2不会有增加的内存使用这个问题，因为它永远不会将此信息存储在内存中。相反，它将只被写入磁盘。这意味着您需要查看磁盘使用情况。</p>
+<p>该设置默认为0，因为对于非常大的脚本，它可能使用大量的内存，因此使巨量脚本无法运行。您可以最安全地打开此设置，但是您可以预期在具有大量函数调用和/或巨大的数据结构作为参数的脚本中存在一些问题。</p>
+<p>Xdebug 2不会有增加的内存使用这个问题，因为它永远不会将此信息存储在内存中。相反，它将只被写入磁盘。这意味着您需要查看磁盘使用情况。</p>
 <p>此设置可以有四个不同的值。对于每个值，示出了不同量的信息。下面你将看到每个值提供什么信息。另请参见功能堆栈跟踪的几个截图的介绍。</p>
 <table>
 <thead>
 <tr>
-<th>显示的值</th>
-<th>参数信息</th>
+<th>值</th>
+<th>显示参数信息</th>
 </tr>
 </thead>
 <tbody>
@@ -1550,7 +1666,7 @@
 </tr>
 <tr>
 <td>2</td>
-<td>元素的类型和数量，带有完整信息的工具提示1。1在CLI版本的PHP中，它不会有工具提示，也不会在输出文件中。</td>
+<td>元素的类型和数量，带有完整信息的工具提示1。在CLI版本的PHP它不会有工具提示，而不是在输出文件。</td>
 </tr>
 <tr>
 <td>3</td>
@@ -1558,7 +1674,7 @@
 </tr>
 <tr>
 <td>4</td>
-<td>完全变量内容和变量名。</td>
+<td>完全变量内容和变量名称。</td>
 </tr>
 <tr>
 <td>5</td>
@@ -1566,124 +1682,77 @@
 </tr>
 </tbody>
 </table>
-<h3 id="xdebug-collect-return"><a href="#xdebug-collect-return" class="headerlink" title="xdebug.collect_return"></a><strong>xdebug.collect_return</strong></h3><p>类型：布尔值，默认值：0</p>
-<p>此设置默认为0，控制Xdebug是否应将函数调用的返回值写入跟踪文件。</p>
-<p>对于计算机化的跟踪文件（xdebug.trace_format = 1），这只能从Xdebug 2.3起。</p>
-<h3 id="xdebug-show-mem-delta"><a href="#xdebug-show-mem-delta" class="headerlink" title="xdebug.show_mem_delta"></a><strong>xdebug.show_mem_delta</strong></h3><p>类型：整数，默认值：0</p>
-<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
-<h3 id="xdebug-trace-enable-trigger"><a href="#xdebug-trace-enable-trigger" class="headerlink" title="xdebug.trace_enable_trigger"></a><strong>xdebug.trace_enable_trigger</strong></h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.2中引入</p>
-<p>当此设置设置为1时，可以使用XDEBUG_TRACE GET / POST参数触发跟踪文件的生成，或者设置名为XDEBUG_TRACE的cookie。然后将跟踪数据写入定义的目录。为了防止Xdebug为每个请求生成跟踪文件，您需要将xdebug.auto_trace设置为0.对触发器本身的访问可以通过xdebug.trace_enable_trigger_value配置。</p>
-<h3 id="xdebug-trace-enable-trigger-value"><a href="#xdebug-trace-enable-trigger-value" class="headerlink" title="xdebug.trace_enable_trigger_value"></a><strong>xdebug.trace_enable_trigger_value</strong></h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.3中引入</p>
-<p>此设置可用于限制谁可以使用xdebug.trace_enable_trigger中概述的XDEBUG_TRACE功能。当从空字符串的默认值更改时，cookie，GET或POST参数的值需要使用此设置匹配共享机密集，以便生成跟踪文件。</p>
-<h3 id="xdebug-trace-format"><a href="#xdebug-trace-format" class="headerlink" title="xdebug.trace_format"></a><strong>xdebug.trace_format</strong></h3><p>类型：整数，默认值：0</p>
-<p>跟踪文件的格式。</p>
-<table>
-<thead>
-<tr>
-<th>值</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>显示一个人工可读的缩进跟踪文件，具有：时间索引，内存使用，内存增量（如果设置xdebug.show_mem_delta启用），级别，函数名称，函数参数（如果设置xdebug.collect_params启用），文件名和行 数。</td>
-</tr>
-<tr>
-<td>1</td>
-<td>写入具有两个不同记录的计算机可读格式。 有不同的记录用于输入堆栈帧，并留下堆栈帧。 下表列出了每种记录类型中的字段。 字段是制表符分隔的。</td>
-</tr>
-<tr>
-<td>2</td>
-<td>写入以（简单）HTML格式化的跟踪。</td>
-</tr>
-</tbody>
-</table>
-<h3 id="xdebug-trace-options"><a href="#xdebug-trace-options" class="headerlink" title="xdebug.trace_options"></a><strong>xdebug.trace_options</strong></h3><p>类型：整数，默认值：0</p>
-<p>当设置为’1’时，跟踪文件将被附加到，而不是在后续请求中被覆盖。</p>
-<h3 id="xdebug-trace-output-dir"><a href="#xdebug-trace-output-dir" class="headerlink" title="xdebug.trace_output_dir"></a><strong>xdebug.trace_output_dir</strong></h3><p>类型：字符串，默认值：/ tmp</p>
-<p>将写入跟踪文件的目录，确保PHP将运行的用户具有对该目录的写入权限。</p>
-<h3 id="xdebug-trace-output-name"><a href="#xdebug-trace-output-name" class="headerlink" title="xdebug.trace_output_name"></a><strong>xdebug.trace_output_name</strong></h3><p>类型：字符串，默认值：trace。％c</p>
-<p>此设置确定用于将跟踪转储到的文件的名称。 设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。 有几个格式说明符可以用于格式化文件名。 “.xt”扩展名总是自动添加。</p>
+<h3 id="xdebug-collect-vars"><a href="#xdebug-collect-vars" class="headerlink" title="xdebug.collect_vars"></a><strong>xdebug.collect_vars</strong></h3><p>类型：布尔值，默认值：0</p>
+<p>此设置告诉Xdebug收集有关在某个范围中使用哪些变量的信息。 这个分析可能很慢，因为Xdebug必须逆向工程PHP的操作码数组。 此设置不会记录不同变量具有的值，因为使用xdebug.collect_params。 仅当您希望使用xdebug_get_declared_vars（）时，才需要启用此设置。</p>
+<h3 id="xdebug-dump"><a href="#xdebug-dump" class="headerlink" title="xdebug.dump.*"></a><strong>xdebug.dump.*</strong></h3><p>类型：字符串，默认值：空</p>
+<p>*可以是COOKIE，FILES，GET，POST，REQUEST，SERVER，SESSION中的任何一个。 这七个设置控制当发生错误情况时来自超级溶剂的数据。</p>
+<p>每个php.ini设置可以包括一个逗号分隔的变量从这个超级全局转储，或*所有的。 请确保您在此设置中不添加空格。</p>
+<p>为了在发生错误时转储REMOTE_ADDR和REQUEST_METHOD，以及所有GET参数，请添加以下设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">xdebug.dump.SERVER = REMOTE_ADDR,REQUEST_METHOD</div><div class="line">xdebug.dump.GET = *</div></pre></td></tr></table></figure></p>
+<h3 id="xdebug-dump-globals"><a href="#xdebug-dump-globals" class="headerlink" title="xdebug.dump_globals"></a><strong>xdebug.dump_globals</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>控制是否应显示由xdebug.dump.*设置定义的超级元素的值。</p>
+<h3 id="xdebug-dump-once"><a href="#xdebug-dump-once" class="headerlink" title="xdebug.dump_once"></a><strong>xdebug.dump_once</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>控制是否应在所有错误情况（设置为0）或仅在第一个（设置为1）上转储超级元素的值。</p>
+<h3 id="xdebug-dump-undefined"><a href="#xdebug-dump-undefined" class="headerlink" title="xdebug.dump_undefined"></a><strong>xdebug.dump_undefined</strong></h3><p>类型：布尔值，默认值：0<br>如果要从超级元组转储未定义的值，您应该将此设置设置为1，否则将其设置为0。</p>
+<h3 id="xdebug-file-link-format"><a href="#xdebug-file-link-format" class="headerlink" title="xdebug.file_link_format"></a><strong>xdebug.file_link_format</strong></h3><p>类型：字符串，默认值：，在Xdebug&gt; 2.1中引入</p>
+<p>此设置确定在使用文件名的堆栈跟踪显示中进行的链接的格式。 这允许IDE设置一个链接协议，通过单击Xdebug在堆栈跟踪中显示的文件名，可以直接转到行和文件。 示例格式可能如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">myide://%f@%l</div></pre></td></tr></table></figure></p>
 <p>可能的格式说明符是：</p>
 <table>
 <thead>
 <tr>
-<th>指定符</th>
+<th>说明符</th>
 <th>含义</th>
-<th>示例格式</th>
-<th>示例文件名</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>%c</td>
-<td>crc32 of the current working directory</td>
-<td>trace.%c</td>
-<td>trace.1258863198.xt</td>
+<td>％f</td>
+<td>文件名</td>
 </tr>
 <tr>
-<td>%p</td>
-<td>pid</td>
-<td>trace.%p</td>
-<td>trace.5174.xt</td>
-</tr>
-<tr>
-<td>%r</td>
-<td>random number</td>
-<td>trace.%r</td>
-<td>trace.072db0.xt</td>
-</tr>
-<tr>
-<td>%s</td>
-<td>script name 这一个不可用于跟踪文件名。</td>
-<td>cachegrind.out.%s</td>
-<td>cachegrind.out._home_httpd_html_test_xdebug_test_php</td>
-</tr>
-<tr>
-<td>%t</td>
-<td>timestamp (seconds)</td>
-<td>trace.%t</td>
-<td>trace.1179434742.xt</td>
-</tr>
-<tr>
-<td>%u</td>
-<td>timestamp (microseconds)</td>
-<td>trace.%u</td>
-<td>trace.1179434749_642382.xt</td>
-</tr>
-<tr>
-<td>%H</td>
-<td>$_SERVER[‘HTTP_HOST’]</td>
-<td>trace.%H</td>
-<td>trace.kossu.xt</td>
-</tr>
-<tr>
-<td>%R</td>
-<td>$_SERVER[‘REQUEST_URI’]</td>
-<td>trace.%R</td>
-<td>trace._test_xdebug_test_php_var=1_var2=2.xt</td>
-</tr>
-<tr>
-<td>%U</td>
-<td>$_SERVER[‘UNIQUE_ID’] 版本2.2中的新功能。 这个由Apache mod_unique_id模块设置</td>
-<td>trace.%U</td>
-<td>trace.TRX4n38AAAEAAB9gBFkAAAAB.xt</td>
-</tr>
-<tr>
-<td>%S</td>
-<td>session_id (from $_COOKIE if set)</td>
-<td>trace.%S</td>
-<td>trace.c70c1ec2375af58f74b390bbdd2a679d.xt</td>
-</tr>
-<tr>
-<td>%%</td>
-<td>literal %</td>
-<td>trace.%%</td>
-<td>trace.%%.xt</td>
+<td>％l</td>
+<td>行号</td>
 </tr>
 </tbody>
 </table>
+<p>对于各种IDE / OSses，有一些关于如何使这项工作的指示：</p>
+<p>Linux上的Firefox</p>
+<ul>
+<li>打开about：config</li>
+<li>添加一个新的布尔设置“network.protocol-handler.expose.xdebug”并将其设置为“false”</li>
+<li>将以下内容添加到shell脚本〜/ bin / ff-xdebug.sh中：<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#! /bin/sh</span></div><div class="line">f=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut <span class="_">-d</span> @ <span class="_">-f</span> 1 | sed <span class="string">'s/xdebug:\/\///'</span>`</div><div class="line">l=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut <span class="_">-d</span> @ <span class="_">-f</span> 2`</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>添加（取决于你有komodo，vim vs netbeans）：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">komodo <span class="variable">$f</span> <span class="_">-l</span> <span class="variable">$l</span></div><div class="line">gvim --remote-tab +<span class="variable">$l</span> <span class="variable">$f</span></div><div class="line">netbeans <span class="string">"<span class="variable">$f</span>:<span class="variable">$l</span>"</span></div></pre></td></tr></table></figure></p>
+<ul>
+<li>使用chmod + x〜/ bin / ff-xdebug.sh来使脚本可执行</li>
+<li>将xdebug.file_link_format设置为xdebug：//％f @％l</li>
+</ul>
+<p>Windows和netbeans</p>
+<ul>
+<li>创建文件netbeans.bat并将其保存在您的路径（C：\ Windows）：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@echo off</div><div class="line">setlocal enableextensions enabledelayedexpansion</div><div class="line">set NETBEANS=%1</div><div class="line">set FILE=%~2</div><div class="line">%NETBEANS% --nosplash --console suppress --open &quot;%FILE:~19%&quot;</div><div class="line">nircmd win activate process netbeans.exe</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>注意：如果没有nircmd，请删除最后一行。</p>
+<ul>
+<li>将以下代码保存在netbeans protocol.reg中：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Windows Registry Editor Version 5.00</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans]</div><div class="line">&quot;URL Protocol&quot;=&quot;&quot;</div><div class="line">@=&quot;URL:Netbeans Protocol&quot;</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\DefaultIcon]</div><div class="line">@=&quot;\&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe,1\&quot;&quot;</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell]</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open]</div><div class="line"></div><div class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open\command]</div><div class="line">@=&quot;\&quot;C:\\Windows\\netbeans.bat\&quot; \&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe\&quot; \&quot;%1\&quot;&quot;</div></pre></td></tr></table></figure>
+<p>注意：确保更改Netbeans（两次）的路径以及netbeans.bat批处理文件（如果将其保存在C：\Windows 以外的其他位置）。</p>
+<p>Double click on the netbeans_protocol.reg file to import it into the registry.<br>Set the xdebug.file_link_format setting to</p>
+<ul>
+<li><p>双击netbeans protocol.reg文件将其导入到注册表中。</p>
+</li>
+<li><p>将xdebug.file_link_format设置设置为<code>xdebug.file_link_format = &quot;netbeans://open/?f=%f:%l&quot;</code></p>
+</li>
+</ul>
+<h3 id="xdebug-manual-url"><a href="#xdebug-manual-url" class="headerlink" title="xdebug.manual_url"></a><strong>xdebug.manual_url</strong></h3><p>类型：字符串，默认值：http：//www.php.net，在Xdebug &lt;2.2.1中引入</p>
+<p>这是从函数跟踪和错误消息到函数的手册页的链接的基本URL。建议将此设置设置为使用最近的镜像。</p>
+<h3 id="xdebug-show-exception-trace"><a href="#xdebug-show-exception-trace" class="headerlink" title="xdebug.show_exception_trace"></a><strong>xdebug.show_exception_trace</strong></h3><p>类型：整数，默认值：0</p>
+<p>当此设置设置为1时，每当引发异常时，即使此异常实际被捕获，Xdebug也将显示堆栈跟踪。</p>
+<h3 id="xdebug-show-local-vars"><a href="#xdebug-show-local-vars" class="headerlink" title="xdebug.show_local_vars"></a><strong>xdebug.show_local_vars</strong></h3><p>类型：整数，默认值：0</p>
+<p>当这个设置设置为某事！= 0 Xdebug的错误情况下生成的堆栈转储也将显示最顶层范围中的所有变量。请注意，这可能会生成大量的信息，因此默认情况下关闭。</p>
+<h3 id="xdebug-show-mem-delta"><a href="#xdebug-show-mem-delta" class="headerlink" title="xdebug.show_mem_delta"></a><strong>xdebug.show_mem_delta</strong></h3><p>类型：整数，默认值：0</p>
+<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
 <h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
 <p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
 <p>要禁用任何限制，请使用-1作为值。</p>
@@ -1696,44 +1765,208 @@
 <p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
 <p>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</p>
 <p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="string-xdebug-get-tracefile-name（）"><a href="#string-xdebug-get-tracefile-name（）" class="headerlink" title="string xdebug_get_tracefile_name（）"></a><strong>string xdebug_get_tracefile_name（）</strong></h3><p>返回函数跟踪文件的名称</p>
-<p>返回用于跟踪此脚本的输出的文件的名称。这在启用xdebug.auto_trace时非常有用。</p>
-<h3 id="string-xdebug-start-trace（-string-trace-file-，integer-options-）"><a href="#string-xdebug-start-trace（-string-trace-file-，integer-options-）" class="headerlink" title="string xdebug_start_trace（[string trace_file [，integer options]]）"></a><strong>string xdebug_start_trace（[string trace_file [，integer options]]）</strong></h3><p>启动新的函数跟踪</p>
-<p>启动跟踪从此点到trace_file参数中的文件的函数调用。如果未指定文件名，则跟踪文件将放置在由xdebug.trace_output_dir设置配置的目录中。</p>
-<p>如果文件名称作为第一个参数，则名称相对于当前工作目录。此当前工作目录可能与您预期的不同，因此，如果指定文件名，请使用绝对路径。使用PHP函数getcwd（）来找出当前工作目录是什么。</p>
-<p>跟踪文件的名称为“{trace_file} .xt”。如果启用了xdebug.auto_trace，则文件名的格式为“{filename} .xt”，其中“{filename}”部分取决于xdebug.trace_output_name设置。 options参数是一个位域;目前有三个选项：</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="array-xdebug-get-declared-vars（）"><a href="#array-xdebug-get-declared-vars（）" class="headerlink" title="array xdebug_get_declared_vars（）"></a><strong>array xdebug_get_declared_vars（）</strong></h3><p>返回声明的变量</p>
+<p>返回一个数组，其中每个元素是在当前范围中定义的变量名称。 需要启用xdebug.collect_vars设置。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</div><div class="line">        <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($a, $b)</span> </span>&#123;</div><div class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</div><div class="line">            &#125;</div><div class="line">            var_dump(xdebug_get_declared_vars());</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    strings::fix_strings(<span class="keyword">array</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>), <span class="keyword">array</span>(<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>));</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt; string &apos;a&apos; (length=1)</div><div class="line">  1 =&gt; string &apos;b&apos; (length=1)</div><div class="line">  2 =&gt; string &apos;item&apos; (length=4)</div></pre></td></tr></table></figure></p>
+<p>在5.1之前的PHP版本中，变量名“a”不在返回的数组中，因为它在调用函数xdebug_get_declared_vars（）的作用域中不使用。</p>
+<h3 id="array-xdebug-get-function-stack（）"><a href="#array-xdebug-get-function-stack（）" class="headerlink" title="array xdebug_get_function_stack（）"></a><strong>array xdebug_get_function_stack（）</strong></h3><p>返回有关堆栈的信息</p>
+<p>返回类似于此点的堆栈跟踪的数组。 示例脚本：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</div><div class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_string</span><span class="params">($a)</span></span></div><div class="line">        &#123;</div><div class="line">            var_dump(xdebug_get_function_stack());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($b)</span> </span>&#123;</div><div class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</div><div class="line">                <span class="keyword">$this</span>-&gt;fix_string($item);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    $s = <span class="keyword">new</span> strings();</div><div class="line">    $ret = $s-&gt;fix_strings(<span class="keyword">array</span>(<span class="string">'Derick'</span>));</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  0 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;&#123;main&#125;&apos; (length=6)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 0</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          empty</div><div class="line">  1 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;fix_strings&apos; (length=11)</div><div class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 18</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;b&apos; =&gt; string &apos;array (0 =&gt; &apos;Derick&apos;)&apos; (length=21)</div><div class="line">  2 =&gt;</div><div class="line">    array</div><div class="line">      &apos;function&apos; =&gt; string &apos;fix_string&apos; (length=10)</div><div class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</div><div class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</div><div class="line">      &apos;line&apos; =&gt; int 12</div><div class="line">      &apos;params&apos; =&gt;</div><div class="line">        array</div><div class="line">          &apos;a&apos; =&gt; string &apos;&apos;Derick&apos;&apos; (length=8)</div></pre></td></tr></table></figure></p>
+<h3 id="array-xdebug-get-monitored-functions（）"><a href="#array-xdebug-get-monitored-functions（）" class="headerlink" title="array xdebug_get_monitored_functions（）"></a><strong>array xdebug_get_monitored_functions（）</strong></h3><p>返回有关受监视函数的信息</p>
+<p>在2.4版本中引入</p>
+<p>返回一个结构，其中包含有关在脚本中执行受监视函数的位置的信息。 以下示例显示如何使用此和返回的信息：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">/* Start the function monitor for strrev and array_push: */</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</div><div class="line"></div><div class="line"><span class="comment">/* Run some code: */</span></div><div class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</div><div class="line"></div><div class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</div><div class="line"></div><div class="line">var_dump(xdebug_get_monitored_functions());</div><div class="line">xdebug_stop_function_monitor();</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">/tmp/monitor-example.php:10:</div><div class="line">array(2) &#123;</div><div class="line">  [0] =&gt;</div><div class="line">  array(3) &#123;</div><div class="line">    &apos;function&apos; =&gt;</div><div class="line">    string(6) &quot;strrev&quot;</div><div class="line">    &apos;filename&apos; =&gt;</div><div class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</div><div class="line">    &apos;lineno&apos; =&gt;</div><div class="line">    int(6)</div><div class="line">  &#125;</div><div class="line">  [1] =&gt;</div><div class="line">  array(3) &#123;</div><div class="line">    &apos;function&apos; =&gt;</div><div class="line">    string(6) &quot;strrev&quot;</div><div class="line">    &apos;filename&apos; =&gt;</div><div class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</div><div class="line">    &apos;lineno&apos; =&gt;</div><div class="line">    int(8)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="integer-xdebug-get-stack-depth（）"><a href="#integer-xdebug-get-stack-depth（）" class="headerlink" title="integer xdebug_get_stack_depth（）"></a><strong>integer xdebug_get_stack_depth（）</strong></h3><p>返回当前堆栈深度级别</p>
+<p>返回堆栈深度级别。 脚本的主体是级别0，每个包含和/或函数调用将向堆栈深度级别添加一个。</p>
+<h3 id="none-xdebug-print-function-stack-string-message-int-options"><a href="#none-xdebug-print-function-stack-string-message-int-options" class="headerlink" title="none xdebug_print_function_stack( [ string message [, int options ] ] )"></a><strong>none xdebug_print_function_stack( [ string message [, int options ] ] )</strong></h3><p>显示当前函数栈</p>
+<p>以类似于Xdebug在错误情况下显示的方式显示当前函数堆栈。</p>
+<p>“message”参数允许您使用自己的头部替换消息。 （在Xdebug 2.1中引入）。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $far, $out )</span></span></div><div class="line">&#123;</div><div class="line">    xdebug_print_function_stack( <span class="string">'Your own message'</span> );</div><div class="line">&#125;</div><div class="line">foo( <span class="number">42</span>, <span class="number">3141592654</span> );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>Returns:</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-9@2x.png" alt="img"></p>
+<p>位掩码“options”允许您配置一些额外的选项。 目前支持以下选项：</p>
 <ul>
-<li><p>XDEBUG_TRACE_APPEND（1）</p>
-<blockquote>
-<p>使追踪文件在追加模式而不是覆盖模式下打开</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_TRACE_COMPUTERIZED（2）</p>
-<blockquote>
-<p>创建具有1“xdebug.trace_format”下描述的格式的跟踪文件。</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_TRACE_HTML（4）</p>
-<blockquote>
-<p>将跟踪文件创建为HTML表</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_TRACE_NAKED_FILENAME（8）</p>
-<blockquote>
-<p>通常，Xdebug总是将“.xt”添加到文件名的末尾，该文件名作为第一个参数传递给此函数。 如果设置了XDEBUG_TRACE_NAKED_FILENAME标志，则不会添加“.xt”。 （Xdebug 2.3中的新功能）。</p>
+<li>XDEBUG_STACK_NO_DESC<blockquote>
+<p>如果设置了此选项，则打印的堆栈跟踪将不具有标题。 如果要从自己的错误处理程序打印堆栈跟踪，否则打印位置是从中调用xdebug_print_function_stack（）时，这是有用的。 （在Xdebug 2.3中引入）。</p>
 </blockquote>
 </li>
 </ul>
-<p>与Xdebug 1不同，Xdebug 2不会在内存中存储函数调用，但始终只写入磁盘以减轻对已用内存的压力。 设置xdebug.collect_includes，xdebug.collect_params和xdebug.collect_return影响什么信息记录到跟踪文件，设置xdebug.trace_format影响跟踪文件的格式。<br>从此函数返回Xdebug跟踪的完整路径和文件名。 这将是您传入的文件名（可能添加了“.xt”），或者如果没有传入文件名，则为自动生成的文件名。</p>
-<h3 id="string-xdebug-start-trace（）"><a href="#string-xdebug-start-trace（）" class="headerlink" title="string xdebug_start_trace（）"></a><strong>string xdebug_start_trace（）</strong></h3><p>停止当前函数轨迹</p>
-<p>停止跟踪函数调用并关闭跟踪文件。</p>
-<p>该函数返回写入跟踪的文件的文件名。</p>
+<h3 id="void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）"><a href="#void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）" class="headerlink" title="void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）"></a><strong>void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）</strong></h3><p>开始功能监控</p>
+<p>在2.4版本中引入</p>
+<p>此函数开始监视列表中给出的函数作为此函数的参数。 函数监视允许您找到代码中提供的作为参数的函数在哪里调用。 这可以用于跟踪使用旧的或不鼓励的函数的位置。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>您还可以向定义要监视的函数的数组添加类方法和静态方法。 例如，要捕获对DramModel :: canSee的静态调用和对Whisky-&gt; drink的动态调用，您将启动监视器：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_function_monitor( [ <span class="string">'DramModel::canSee'</span>, <span class="string">'Whisky-&gt;drink'</span>] );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>定义的函数区分大小写，并且不会捕获对静态方法的动态调用。</p>
+<h3 id="void-xdebug-stop-function-monitor（）"><a href="#void-xdebug-stop-function-monitor（）" class="headerlink" title="void xdebug_stop_function_monitor（）"></a><strong>void xdebug_stop_function_monitor（）</strong></h3><p>停止监视功能</p>
+<p>在2.4版本中引入</p>
+<p>此功能停止功能监视器。 为了获得受监视函数的列表，您需要使用xdebug_get_monitored_functions（）函数。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。&lt;/p&gt;
-&lt;p&gt;那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。&lt;br&gt;函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。&lt;/p&gt;
+      &lt;p&gt;当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。&lt;/p&gt;
+&lt;p&gt;Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Xdebug之远程调试</title>
+    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95/"/>
+    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之远程调试/</id>
+    <published>2016-10-22T12:30:00.000Z</published>
+    <updated>2016-11-29T02:32:38.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
+<a id="more"></a>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Xdebug的（远程）调试器允许您检查数据结构，交互式地浏览和调试您的代码。 正在使用的协议是打开的，称为DBGp。 此协议在Xdebug 2中实现，并替换不再支持的旧的GDB类协议。</p>
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Xdebug 2捆绑了一个用于DBGp协议的简单命令行客户端。 还有一些其他客户端实现（免费和商业）。 我不是任何这些的作者，所以请参考原作者的支持：</p>
+<ul>
+<li>Dev-PHP (IDE: Windows)</li>
+<li>Eclipse plugin (IDE).</li>
+<li>Emacs plugin (Editor Plugin).</li>
+<li>KDevelop (IDE: Linux (KDE); Open Source).</li>
+<li>ActiveState’s Komodo (IDE: Windows, Linux, Mac; Commercial).</li>
+<li>MacGDBP (Standalone client for Mac OS X; Free)</li>
+<li>NetBeans (IDE: Windows, Linux, Mac OS X and Solaris).</li>
+<li>Notepad++ plugin (Editor: Windows).</li>
+<li>WaterProof’s PHPEdit (IDE, from version 2.10: Windows; Commercial).</li>
+<li>PHPEclipse (Editor Plugin).</li>
+<li>Devsense’s PHP Tools for Visual Studio (MS Visual Studio Plugin; Commercial).</li>
+<li>JetBrain’s PhpStorm (IDE; Commercial).</li>
+<li>Protoeditor (Editor: Linux).</li>
+<li>pugdebug (Standalone client for Linux, Windows and Mac OS X; Open Source).</li>
+<li>VIM plugin (Editor Plugin).</li>
+<li>jcx software’s VS.Php (MS Visual Studio Plugin; Commercial).</li>
+<li>Xdebug Chrome App (Chrome Application; Open Source)</li>
+<li>XDebugClient (Standalone client for Windows).</li>
+</ul>
+<p>用于调试的简单命令行客户机与debugclient目录中的Xdebug捆绑在一起。</p>
+<h2 id="启动调试器"><a href="#启动调试器" class="headerlink" title="启动调试器"></a>启动调试器</h2><p>为了启用Xdebug的调试器，您需要在php.ini中进行一些配置设置。 这些设置为xdebug.remote_enable以启用调试器xdebug.remote_host和xdebug.remote_port来配置调试器应连接到的IP地址和端口。 还有一个xdebug.remote_connect_back设置，如果您的开发服务器与多个开发人员共享，则可以使用此设置。</p>
+<p>如果希望调试器在发生错误情况（PHP错误或异常）时启动会话，则还需要更改xdebug.remote_mode设置。 此设置的允许值为“req”（默认值），这使得调试器在脚本启动时启动会话，或者“jit”，当会话只应在错误时启动。</p>
+<p>完成所有这些设置后，Xdebug仍然不会在脚本运行时自动启动调试会话。 你需要激活Xdebug的调试器，你可以通过三种方式：</p>
+<p>1、当从命令行运行脚本时，您需要设置一个环境变量，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name&quot;</div><div class="line">php myscript.php</div></pre></td></tr></table></figure></p>
+<p>您还可以在此相同的环境变量中配置xdebug.remote_host，xdebug.remote_port，xdebug.remote_mode和xdebug.remote_handler，只要使用空格分隔值即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export XDEBUG_CONFIG=&quot;idekey=session_name remote_host=localhost profiler_enable=1&quot;</div></pre></td></tr></table></figure></p>
+<p>通过XDEBUG_CONFIG设置可以获得的所有设置也可以使用正常的php.ini设置进行设置。</p>
+<p>2、如果要调试通过Web浏览器启动的脚本，只需将XDEBUG_SESSION_START = session_name作为参数添加到URL。 而不是使用GET参数，您还可以将XDEBUG_SESSION_START设置为POST参数，或通过cookie。 请参阅下一节，了解调试会话如何在浏览器窗口中工作。</p>
+<p>3、通过Web服务器运行PHP时激活调试器的另一种方法是安装以下四个浏览器扩展之一。 它们中的每一个都允许您通过单击一个按钮来启用调试器。 当这些扩展是活动的，他们直接设置XDEBUG_SESSION cookie，而不是通过XDEBUG_SESSION_START进一步的HTTP调试会话中描述。 扩展名为：</p>
+<ul>
+<li><p>The easiest Xdebug</p>
+<blockquote>
+<p>这个扩展的Firefox是为了使IDE的调试更容易。 您可以在<a href="https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。" target="_blank" rel="external">https://addons.mozilla.org/en-US/firefox/addon/the-easiest-xdebug/找到扩展程序。</a></p>
+</blockquote>
+</li>
+<li><p>Xdebug Helper for Chrome</p>
+<blockquote>
+<p>Chrome的此扩展程序将帮助您通过一次点击启用/禁用调试和分析。 您可以在<a href="https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。" target="_blank" rel="external">https://chrome.google.com/extensions/detail/eadndfjplgieldjbigjakmdgkmoaaaoc找到扩展程序。</a></p>
+</blockquote>
+</li>
+<li><p>Xdebug Toggler for Safari</p>
+<blockquote>
+<p>Safari的这个扩展允许你从Safari中自动启动Xdebug调试。 你可以从Github <a href="https://github.com/benmatselby/xdebug-toggler获取它。" target="_blank" rel="external">https://github.com/benmatselby/xdebug-toggler获取它。</a></p>
+</blockquote>
+</li>
+<li><p>Xdebug launcher for Opera</p>
+<blockquote>
+<p>这个扩展的Opera允许您从Opera启动Xdebug会话。</p>
+</blockquote>
+</li>
+</ul>
+<p>在你开始你的脚本之前，你需要告诉你的客户端它可以接收调试连接，请参考具体客户端的文档如何做到这一点。 要使用捆绑的客户端，只需在编译和安装后启动它。 您可以通过运行“debugclient”启动它。</p>
+<p>当debugclient启动时，它将显示以下信息，然后等待，直到调试服务器启动连接：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Xdebug Simple DBGp client (0.10.0)</div><div class="line">Copyright 2002-2007 by Derick Rethans.</div><div class="line">- libedit support: enabled</div><div class="line"></div><div class="line">Waiting for debug server to connect.</div></pre></td></tr></table></figure></p>
+<p>在建立连接后，将显示调试服务器的输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Connect</div><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;iso-8859-1&quot;?&gt;</div><div class="line">&lt;init xmlns=&quot;urn:debugger_protocol_v1&quot;</div><div class="line">      xmlns:xdebug=&quot;http://xdebug.org/dbgp/xdebug&quot;</div><div class="line">      fileuri=&quot;file:///home/httpd/www.xdebug.org/html/docs/index.php&quot;</div><div class="line">      language=&quot;PHP&quot;</div><div class="line">      protocol_version=&quot;1.0&quot;</div><div class="line">      appid=&quot;13202&quot;</div><div class="line">      idekey=&quot;derick&quot;&gt;</div><div class="line">  &lt;engine version=&quot;2.0.0RC4-dev&quot;&gt;&lt;![CDATA[Xdebug]]&gt;&lt;/engine&gt;</div><div class="line">  &lt;author&gt;&lt;![CDATA[Derick Rethans]]&gt;&lt;/author&gt;</div><div class="line">  &lt;url&gt;&lt;![CDATA[http://xdebug.org]]&gt;&lt;/url&gt;</div><div class="line">  &lt;copyright&gt;&lt;![CDATA[Copyright (c) 2002-2007 by Derick Rethans]]&gt;&lt;/copyright&gt;</div><div class="line">&lt;/init&gt;</div><div class="line">(cmd)</div></pre></td></tr></table></figure></p>
+<p>现在，您可以使用DBGp文档页面中说明的命令集。 当脚本结束时，调试服务器与客户端断开连接，并且调试客户端在等待新连接时恢复。</p>
+<h2 id="通讯建立"><a href="#通讯建立" class="headerlink" title="通讯建立"></a>通讯建立</h2><h3 id="使用静态IP-单个开发者"><a href="#使用静态IP-单个开发者" class="headerlink" title="使用静态IP /单个开发者"></a>使用静态IP /单个开发者</h3><p>通过远程调试，嵌入在PHP中的Xdebug就像客户端，而IDE作为服务器。 以下动画显示了通信通道的设置：</p>
+<p><img src="https://xdebug.org/images/docs/dbgp-setup.gif" alt="img"></p>
+<ul>
+<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
+<li>IDE在IP 10.0.1.42上，因此xdebug.remote_host设置为10.0.1.42</li>
+<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
+<li>HTTP请求在运行IDE的计算机上启动</li>
+<li>Xdebug连接到10.0.1.42:9000</li>
+<li>调试运行，提供HTTP响应</li>
+</ul>
+<h3 id="与未知IP-多开发者"><a href="#与未知IP-多开发者" class="headerlink" title="与未知IP /多开发者"></a>与未知IP /多开发者</h3><p>如果使用xdebug.remote_connect_back，设置稍有不同：</p>
+<p><img src="https://xdebug.org/images/docs/dbgp-setup2.gif" alt="img"></p>
+<ul>
+<li>服务器的IP是10.0.1.2，HTTP在端口80上</li>
+<li>IDE处于未知IP，因此xdebug.remote_connect_back设置为1</li>
+<li>IDE侦听端口9000，因此xdebug.remote_port设置为9000</li>
+<li>发出HTTP请求后，Xdebug将从HTTP头中检测IP地址</li>
+<li>Xdebug连接到端口9000上检测到的IP（10.0.1.42）</li>
+<li>调试运行，提供HTTP响应</li>
+</ul>
+<h2 id="HTTP调试会话"><a href="#HTTP调试会话" class="headerlink" title="HTTP调试会话"></a>HTTP调试会话</h2><p>Xdebug包含通过浏览器启动时跟踪调试会话的功能：Cookie。 这是这样工作：</p>
+<ul>
+<li><p>当URL变量XDEBUG_SESSION_START = name附加到URL或通过具有相同名称的POST变量时，-Xdebug会发出名为“XDEBUG_SESSION”的cookie，并将值设置为XDEBUG_SESSION_START URL参数的值。 cookie的到期时间为1小时。 当连接到“idekey”属性中的debugclient时，DBGp协议也将此相同的值传递给init包。</p>
+</li>
+<li><p>当有一个GET（或POST）变量XDEBUG_SESSION_START或XDEBUG_SESSION cookie被设置时，Xdebug将尝试连接到一个调试客户端。</p>
+</li>
+<li><p>要停止调试会话（并销毁cookie），只需添加URL参数XDEBUG_SESSION_STOP即可。 Xdebug将不再尝试连接到调试客户端。</p>
+</li>
+</ul>
+<h2 id="多用户调试"><a href="#多用户调试" class="headerlink" title="多用户调试"></a>多用户调试</h2><p>Xdebug仅允许您在执行远程调试时指定一个IP地址与xdebug.remote_host连接。它不会自动连接回浏览器运行的计算机的IP地址，除非您使用xdebug.remote_connect_back。</p>
+<p>如果所有开发人员在同一（开发）服务器上的不同项目上工作，则可以通过Apache的.htaccess功能为每个目录设置xdebug.remote_host设置，方法是使用php_value xdebug.remote_host = 10.0.0.5。但是，对于多个开发人员在同一代码上工作的情况，.htaccess技巧不工作，因为代码所在的目录是相同的。</p>
+<p>有两个解决方案。首先，你可以使用DBGp代理。有关如何使用此代理的概述，请参阅多个用户调试中的文章。您可以在ActiveState的网站上下载代理作为python远程调试包的一部分。 Komodo FAQ中还有一些文档。</p>
+<p>其次，您可以使用Xdebug 2.1中引入的xdebug.remote_connect_back设置。</p>
+<h2 id="实施细则"><a href="#实施细则" class="headerlink" title="实施细则"></a>实施细则</h2><p>Xdebug的DBGp协议的context_names命令的实现不依赖于栈级别。 在每个调试器会话期间返回的值总是相同的，因此，可以安全地缓存。</p>
+<h2 id="相关的设置"><a href="#相关的设置" class="headerlink" title="相关的设置"></a>相关的设置</h2><h3 id="xdebug-extended-info"><a href="#xdebug-extended-info" class="headerlink" title="xdebug.extended_info"></a>xdebug.extended_info</h3><p>类型：整数，默认值：1</p>
+<p>控制Xdebug是否应该为PHP解析器强制执行’extended_info’模式;这允许Xdebug使用远程调试器执行文件/行断点。当跟踪或剖析脚本时，通常希望关闭此选项，因为PHP生成的oparrays将增加大约三分之一的大小减慢脚本。此设置不能在带有ini_set（）的脚本中设置，但只能在php.ini中设置。</p>
+<h3 id="xdebug-idekey"><a href="#xdebug-idekey" class="headerlink" title="xdebug.idekey"></a>xdebug.idekey</h3><p>类型：字符串，默认值：<em> complex </em></p>
+<p>控制哪个IDE密钥Xdebug应该传递到DBGp调试器处理程序。默认值基于环境设置。首先查询环境设置DBGP_IDEKEY，然后查询USER和最后一个USERNAME。默认值设置为找到的第一个环境变量。如果找不到，则设置为默认的“”。如果设置此设置，它始终覆盖环境变量。</p>
+<h3 id="xdebug-remote-addr-header"><a href="#xdebug-remote-addr-header" class="headerlink" title="xdebug.remote_addr_header"></a>xdebug.remote_addr_header</h3><p>类型：字符串，默认值：“”，在Xdebug&gt; 2.4中引入</p>
+<p>如果xdebug.remote_addr_header配置为非空字符串，那么该值将用作$ SERVER超全局数组中的键，以确定用于查找用于“连接回”的IP地址或主机名的头。此设置仅与xdebug.remote_connect_back结合使用，否则将被忽略。</p>
+<h3 id="xdebug-remote-autostart"><a href="#xdebug-remote-autostart" class="headerlink" title="xdebug.remote_autostart"></a>xdebug.remote_autostart</h3><p>类型：布尔值，默认值：0</p>
+<p>通常，您需要使用特定的HTTP GET / POST变量来启动远程调试（请参阅远程调试）。当此设置设置为1时，Xdebug将始终尝试启动远程调试会话并尝试连接到客户端，即使GET / POST / COOKIE变量不存在。</p>
+<h3 id="xdebug-remote-connect-back"><a href="#xdebug-remote-connect-back" class="headerlink" title="xdebug.remote_connect_back"></a>xdebug.remote_connect_back</h3><p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
+<p>如果启用，xdebug.remote_host设置将被忽略，Xdebug将尝试连接到发出HTTP请求的客户端。它检查$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量以找出要使用的IP地址。</p>
+<p>如果配置了xdebug.remote_addr_header，那么将在$_SERVER [‘HTTP_X_FORWARDED_FOR’]和$_SERVER [‘REMOTE_ADDR’]变量之前检查具有配置名称的$ SERVER变量。</p>
+<p>此设置不适用于通过CLI进行调试，因为$ SERVER标题变量在那里不可用。</p>
+<p>请注意，没有可用的过滤器，任何可以连接到Web服务器的人都能够启动调试会话，即使他们的地址与xdebug.remote_host不匹配。</p>
+<h3 id="xdebug-remote-cookie-expire-time"><a href="#xdebug-remote-cookie-expire-time" class="headerlink" title="xdebug.remote_cookie_expire_time"></a>xdebug.remote_cookie_expire_time</h3><p>类型：整数，默认值：3600，在Xdebug&gt; 2.1中引入</p>
+<p>此设置可用于增加（或减少）远程调试会话通过会话cookie保持活动的时间。</p>
+<h3 id="xdebug-remote-enable"><a href="#xdebug-remote-enable" class="headerlink" title="xdebug.remote_enable"></a>xdebug.remote_enable</h3><p>类型：布尔值，默认值：0</p>
+<p>此开关控制Xdebug是否应尝试联系正在侦听主机上的调试客户端，并使用设置xdebug.remote_host和xdebug.remote_port设置的端口。如果无法建立连接，脚本将继续，就像此设置为0。</p>
+<h3 id="xdebug-remote-handler"><a href="#xdebug-remote-handler" class="headerlink" title="xdebug.remote_handler"></a>xdebug.remote_handler</h3><p>类型：字符串，默认值：dbgp</p>
+<p>可以是“php3”选择旧的PHP 3式调试器输出，“gdb”启用GDB像调试器接口或’dbgp’ - 调试器协议。 DBGp协议是唯一支持的协议。</p>
+<p>注意：Xdebug 2.1和更高版本只支持’db​​gp’作为协议。</p>
+<h3 id="xdebug-remote-host"><a href="#xdebug-remote-host" class="headerlink" title="xdebug.remote_host"></a>xdebug.remote_host</h3><p>类型：字符串，默认值：localhost<br>选择运行调试客户端的主机，您可以使用主机名或IP地址。如果启用xdebug.remote_connect_back，将忽略此设置。</p>
+<h3 id="xdebug-remote-log"><a href="#xdebug-remote-log" class="headerlink" title="xdebug.remote_log"></a>xdebug.remote_log</h3><p>类型：字符串，默认值：</p>
+<p>如果设置为某个值，则将其用作所有远程调试器通信记录到的文件的文件名。 该文件始终以附加模式打开，因此默认情况下不会被覆盖。 没有可用的并发保护。 该文件的格式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Log opened at 2007-05-27 14:28:15</div><div class="line">-&gt; &lt;init xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/dbgp/x ... ight&gt;&lt;/init&gt;</div><div class="line"></div><div class="line">&lt;- step_into -i 1</div><div class="line">-&gt; &lt;response xmlns=&quot;urn:debugger_protocol_v1&quot; xmlns:xdebug=&quot;http://xdebug.org/db ... &gt;&lt;/response&gt;</div></pre></td></tr></table></figure></p>
+<h3 id="xdebug-remote-mode"><a href="#xdebug-remote-mode" class="headerlink" title="xdebug.remote_mode"></a>xdebug.remote_mode</h3><p>类型：字符串，默认值：req</p>
+<p>选择启动调试连接的时间。 此设置可以有两个不同的值：</p>
+<ul>
+<li><p>req</p>
+<blockquote>
+<p>一旦脚本启动，Xdebug将尝试连接到调试客户端。</p>
+</blockquote>
+</li>
+<li><p>jit</p>
+<blockquote>
+<p>Xdebug只会在出现错误情况时尝试连接到调试客户端。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="xdebug-remote-port"><a href="#xdebug-remote-port" class="headerlink" title="xdebug.remote_port"></a>xdebug.remote_port</h3><p>类型：整数，默认值：9000</p>
+<p>Xdebug尝试在远程主机上连接的端口。 端口9000是客户端和捆绑的debugclient的默认值。 由于许多客户端使用此端口号，最好保持此设置不变。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="bool-xdebug-break（）"><a href="#bool-xdebug-break（）" class="headerlink" title="bool xdebug_break（）"></a>bool xdebug_break（）</h3><p>向调试客户端发出断点。</p>
+<p>此函数使调试器在特定行上断开，就好像在此行上设置了正常的文件/行断点。</p>
+<p>over~</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。&lt;/p&gt;
     
     </summary>
     
@@ -1796,70 +2029,6 @@
     <summary type="html">
     
       &lt;p&gt;Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
-    
-    
-      <category term="Xdebug" scheme="https://weizhimiao.github.io/tags/Xdebug/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Xdebug之代码覆盖率分析</title>
-    <link href="https://weizhimiao.github.io/2016/10/22/Xdebug%E4%B9%8B%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/10/22/Xdebug之代码覆盖率分析/</id>
-    <published>2016-10-22T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:38.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。</p>
-<a id="more"></a>
-<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-coverage-enable"><a href="#xdebug-coverage-enable" class="headerlink" title="xdebug.coverage_enable"></a>xdebug.coverage_enable</h3><p>类型：boolean，默认值：1，在Xdebug&gt; = 2.2中引入</p>
-<p>如果此设置设置为0，则Xdebug不会设置内部结构以允许代码覆盖。 这加快了Xdebug相当有点，但当然，代码覆盖率分析将不工作。</p>
-<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="boolean-xdebug-code-coverage-started（）"><a href="#boolean-xdebug-code-coverage-started（）" class="headerlink" title="boolean xdebug_code_coverage_started（）"></a>boolean xdebug_code_coverage_started（）</h3><p>返回代码覆盖是否处于活动状态。</p>
-<p>返回代码覆盖是否已开始。</p>
-<p>Example:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    var_dump(xdebug_code_coverage_started());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<p>Returns:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">bool(false)</div><div class="line">bool(true)</div></pre></td></tr></table></figure>
-<h3 id="array-xdebug-get-code-coverage（）"><a href="#array-xdebug-get-code-coverage（）" class="headerlink" title="array xdebug_get_code_coverage（）"></a>array xdebug_get_code_coverage（）</h3><p>返回代码覆盖率信息</p>
-<p>返回一个结构，其中包含有关在脚本中执行哪些行（包括include文件）的信息。 以下示例显示了一个特定文件的代码覆盖率：</p>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    xdebug_start_code_coverage();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">a</span><span class="params">($a)</span> </span>&#123;</div><div class="line">        <span class="keyword">echo</span> $a * <span class="number">2.5</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">b</span><span class="params">($count)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $count; $i++) &#123;</div><div class="line">            a($i + <span class="number">0.17</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    b(<span class="number">6</span>);</div><div class="line">    b(<span class="number">10</span>);</div><div class="line"></div><div class="line">    var_dump(xdebug_get_code_coverage());</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">array</div><div class="line">  &apos;/home/httpd/html/test/xdebug/docs/xdebug_get_code_coverage.php&apos; =&gt;</div><div class="line">    array</div><div class="line">      5 =&gt; int 1</div><div class="line">      6 =&gt; int 1</div><div class="line">      7 =&gt; int 1</div><div class="line">      9 =&gt; int 1</div><div class="line">      10 =&gt; int 1</div><div class="line">      11 =&gt; int 1</div><div class="line">      12 =&gt; int 1</div><div class="line">      13 =&gt; int 1</div><div class="line">      15 =&gt; int 1</div><div class="line">      16 =&gt; int 1</div><div class="line">      18 =&gt; int 1</div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-start-code-coverage（-int-options-）"><a href="#void-xdebug-start-code-coverage（-int-options-）" class="headerlink" title="void xdebug_start_code_coverage（[int options]）"></a>void xdebug_start_code_coverage（[int options]）</h3><p>开始代码覆盖</p>
-<p>此函数开始收集代码覆盖的信息。 收集的信息包括一个二维数组，其主要索引为执行的文件名，辅助键为行号。 元素中的值表示行是否已执行或它是否具有不可达行。</p>
-<p>每行的返回值为：</p>
-<ul>
-<li><p>1：这行被执行</p>
-</li>
-<li><p>-1：此行未执行</p>
-</li>
-<li><p>-2：这行没有可执行代码就可以了</p>
-</li>
-</ul>
-<p>值-1仅在启用XDEBUG_CC_UNUSED时返回，并且仅当启用了XDEBUG_CC_UNUSED和XDEBUG_CC_DEAD_CODE时才返回值-2。</p>
-<p>此函数有两个选项，用作位字段：</p>
-<ul>
-<li><p>XDEBUG_CC_UNUSED</p>
-<blockquote>
-<p>启用代码扫描，以确定哪行有可执行代码。 如果没有这个选项，返回的数组将只包含实际执行的行。</p>
-</blockquote>
-</li>
-<li><p>XDEBUG_CC_DEAD_CODE</p>
-<blockquote>
-<p>启用分支分析以确定是否可以执行代码。<br>启用这些选项会使代码覆盖率显着降低。<br>您可以使用以下示例中所示的选项。</p>
-</blockquote>
-</li>
-</ul>
-<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">xdebug_start_code_coverage( XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE );</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<h3 id="void-xdebug-stop-code-coverage（-int-cleanup-true-）"><a href="#void-xdebug-stop-code-coverage（-int-cleanup-true-）" class="headerlink" title="void xdebug_stop_code_coverage（[int cleanup = true]）"></a>void xdebug_stop_code_coverage（[int cleanup = true]）</h3><p>停止代码覆盖</p>
-<p>此功能停止收集信息，内存中的信息将被销毁。 如果传递“false”作为参数，那么代码覆盖率信息不会被销毁，因此您可以再次使用xdebug_start_code_coverage（）函数恢复信息收集。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;代码覆盖率告诉您在请求期间已执行了哪些行的脚本（或一组脚本）。 有了这些信息，你可以找出你的单元测试有多好。&lt;/p&gt;
     
     </summary>
     
