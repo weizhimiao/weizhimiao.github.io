@@ -273,8 +273,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/06/Linux简介/" itemprop="url">
-                  Linux系统的简介和安装
+                <a class="post-title-link" href="/2016/10/06/Linux常用命令/" itemprop="url">
+                  Linux常用命令
                 </a>
               
             
@@ -317,8 +317,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/06/Linux简介/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux简介/" itemprop="commentsCount"></span>
+                <a href="/2016/10/06/Linux常用命令/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux常用命令/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -344,11 +344,26 @@
 
       
         
-          <h2 id="Linux简介"><a href="#Linux简介" class="headerlink" title="Linux简介"></a>Linux简介</h2><h3 id="Unix发展史"><a href="#Unix发展史" class="headerlink" title="Unix发展史"></a>Unix发展史</h3><p>1965年，美国麻省理工学院（MIT）、通用电气公司（GE）及AT&amp;T的贝尔实验室联合开发Multics工程计划，其目标是开发一种交互式的具有多道程序处理能力的分时操作系统，但因Multics追求的目标过于庞大复杂，项目进度远远落后于计划，最后贝尔实验室宣布退出。</p>
-<p>1969年，美国贝尔实验室的肯.汤普森在DEC PDP-7机器上开发出了UNIX系统</p>
-<p>1971年，肯.汤普森的同事丹尼斯.里奇发明了C语言；1973年，UNIX系统的绝大部分源代码用C语言重写，这为提高UNIX系统的可移植性打下基础</p>
+          <h2 id="Linux命令格式"><a href="#Linux命令格式" class="headerlink" title="Linux命令格式"></a>Linux命令格式</h2><p>格式：命令    [选项]    [参数]</p>
+<p>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#ls 	-list 	显示目录下内容</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>命令操作的对象（文件、目录、用户、进程）<br>Linux中以”.”开头的文件是隐藏文件</p>
+</blockquote>
+<p>提示符：[root@localhost src]#</p>
+<blockquote>
+<p>[当前登录用户@主机名 当前所在目录]#</p>
+<h1 id="超级用户"><a href="#超级用户" class="headerlink" title="超级用户"></a>超级用户</h1><p>$    普通用户</p>
+</blockquote>
+<p>当前所在目录：    用户家目录</p>
+<blockquote>
+<p>   管理员        /root<br>   普通用户        /home/用户名</p>
+</blockquote>
+<p><strong>tips：</strong></p>
+<blockquote>
+<p>ctrl +  c        强制终止<br>ctrl+l            清屏<br>ctrl+u        光标删除到行首<br>ctrl+a        光标移动到行首<br>ctrl+e        光标移动到行尾</p>
+</blockquote>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/06/Linux简介/#more" rel="contents">
+            <a class="btn" href="/2016/10/06/Linux常用命令/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -523,8 +538,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/06/Linux中的用户和用户组管理/" itemprop="url">
-                  Linux中的用户和用户组管理
+                <a class="post-title-link" href="/2016/10/06/Linux目录结构介绍/" itemprop="url">
+                  Linux目录结构介绍
                 </a>
               
             
@@ -567,8 +582,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/06/Linux中的用户和用户组管理/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux中的用户和用户组管理/" itemprop="commentsCount"></span>
+                <a href="/2016/10/06/Linux目录结构介绍/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux目录结构介绍/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -594,133 +609,9 @@
 
       
         
-          <p>用户账号的管理主要涉及到用户账号的添加、删除和修改。<br>添加用户账号就是在系统中创建一个新账号，然后为新账号分配用户号、用户组、主目录和登录Shell等。</p>
+          <p><img src="http://www.centoscn.com/uploads/allimg58981378314368.jpg" alt="Linux目录结构"></p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/06/Linux中的用户和用户组管理/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/06/Linux网络配置/" itemprop="url">
-                  Linux网络配置
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-06T22:30:00+08:00" content="2016-10-06">
-              2016-10-06
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index">
-                    <span itemprop="name">Linux</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/06/Linux网络配置/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux网络配置/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><img src="http://n.sinaimg.cn/games/3ece443e/20161007/ifconfig.png" alt="Linux网络配置"></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/06/Linux网络配置/#more" rel="contents">
+            <a class="btn" href="/2016/10/06/Linux目录结构介绍/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -898,8 +789,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/06/Linux常用命令/" itemprop="url">
-                  Linux常用命令
+                <a class="post-title-link" href="/2016/10/06/Linux中的用户和用户组管理/" itemprop="url">
+                  Linux中的用户和用户组管理
                 </a>
               
             
@@ -942,8 +833,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/06/Linux常用命令/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux常用命令/" itemprop="commentsCount"></span>
+                <a href="/2016/10/06/Linux中的用户和用户组管理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux中的用户和用户组管理/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -969,26 +860,135 @@
 
       
         
-          <h2 id="Linux命令格式"><a href="#Linux命令格式" class="headerlink" title="Linux命令格式"></a>Linux命令格式</h2><p>格式：命令    [选项]    [参数]</p>
-<p>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#ls 	-list 	显示目录下内容</div></pre></td></tr></table></figure></p>
-<blockquote>
-<p>命令操作的对象（文件、目录、用户、进程）<br>Linux中以”.”开头的文件是隐藏文件</p>
-</blockquote>
-<p>提示符：[root@localhost src]#</p>
-<blockquote>
-<p>[当前登录用户@主机名 当前所在目录]#</p>
-<h1 id="超级用户"><a href="#超级用户" class="headerlink" title="超级用户"></a>超级用户</h1><p>$    普通用户</p>
-</blockquote>
-<p>当前所在目录：    用户家目录</p>
-<blockquote>
-<p>   管理员        /root<br>   普通用户        /home/用户名</p>
-</blockquote>
-<p><strong>tips：</strong></p>
-<blockquote>
-<p>ctrl +  c        强制终止<br>ctrl+l            清屏<br>ctrl+u        光标删除到行首<br>ctrl+a        光标移动到行首<br>ctrl+e        光标移动到行尾</p>
-</blockquote>
+          <p>用户账号的管理主要涉及到用户账号的添加、删除和修改。<br>添加用户账号就是在系统中创建一个新账号，然后为新账号分配用户号、用户组、主目录和登录Shell等。</p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/06/Linux常用命令/#more" rel="contents">
+            <a class="btn" href="/2016/10/06/Linux中的用户和用户组管理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/06/Linux简介/" itemprop="url">
+                  Linux系统的简介和安装
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-06T22:30:00+08:00" content="2016-10-06">
+              2016-10-06
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/06/Linux简介/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux简介/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="Linux简介"><a href="#Linux简介" class="headerlink" title="Linux简介"></a>Linux简介</h2><h3 id="Unix发展史"><a href="#Unix发展史" class="headerlink" title="Unix发展史"></a>Unix发展史</h3><p>1965年，美国麻省理工学院（MIT）、通用电气公司（GE）及AT&amp;T的贝尔实验室联合开发Multics工程计划，其目标是开发一种交互式的具有多道程序处理能力的分时操作系统，但因Multics追求的目标过于庞大复杂，项目进度远远落后于计划，最后贝尔实验室宣布退出。</p>
+<p>1969年，美国贝尔实验室的肯.汤普森在DEC PDP-7机器上开发出了UNIX系统</p>
+<p>1971年，肯.汤普森的同事丹尼斯.里奇发明了C语言；1973年，UNIX系统的绝大部分源代码用C语言重写，这为提高UNIX系统的可移植性打下基础</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/06/Linux简介/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
