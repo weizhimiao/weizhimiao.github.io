@@ -543,11 +543,11 @@
   </entry>
   
   <entry>
-    <title>keepalived实现双机高可用</title>
+    <title>keepalived安装与配置</title>
     <link href="https://weizhimiao.github.io/2017/02/11/keepalived%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/"/>
     <id>https://weizhimiao.github.io/2017/02/11/keepalived安装配置/</id>
     <published>2017-02-11T12:30:00.000Z</published>
-    <updated>2017-02-12T03:21:09.000Z</updated>
+    <updated>2017-02-12T03:33:44.000Z</updated>
     
     <content type="html"><![CDATA[<p><a href="http://www.keepalived.org/download.html" target="_blank" rel="external">keepalived 源码包下载地址:http://www.keepalived.org/download.html</a></p>
 <h2 id="服务器内核要求"><a href="#服务器内核要求" class="headerlink" title="服务器内核要求"></a>服务器内核要求</h2><p>需要服务器内核支持：</p>
@@ -564,6 +564,7 @@
 </li>
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[root@hd-4 ipvsadm-1.24]# lsmod|grep ip_vs</div><div class="line">ip_vs 77569 0</div></pre></td></tr></table></figure>
+<a id="more"></a>
 <h3 id="安装-ipvs"><a href="#安装-ipvs" class="headerlink" title="安装 ipvs"></a>安装 ipvs</h3><blockquote>
 <p>Ipvs 具体实现是由 ipvsadm 这个程序来完成，因此判断一个系统是否具备 ipvs 功能，也可以查看 ipvsadm 程序是否被安装。查看 ipvsadm 程序最简单的办法就是在任意路径执行命令 ipvsadm。</p>
 </blockquote>
@@ -628,7 +629,21 @@
     
     <summary type="html">
     
-      &lt;p&gt;&lt;a href=&quot;http://www.keepalived.org/download.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;keepalived 源码包下载地址:http://www.keepalived.org/download.ht
+      &lt;p&gt;&lt;a href=&quot;http://www.keepalived.org/download.html&quot;&gt;keepalived 源码包下载地址:http://www.keepalived.org/download.html&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;服务器内核要求&quot;&gt;&lt;a href=&quot;#服务器内核要求&quot; class=&quot;headerlink&quot; title=&quot;服务器内核要求&quot;&gt;&lt;/a&gt;服务器内核要求&lt;/h2&gt;&lt;p&gt;需要服务器内核支持：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Kernel/User netlink socket&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;netlink是基于socket的通信机制，由于socket本身的双工性、突发性、不阻塞性等特点，能够很好地满足内核空间与用户空间小量数据的及时交互，因此在Linux 2.6内核开始被广泛使用，例如内核态的netfilter与用户态的iptables的数据交换就是通过netlink机制完成的。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;LinuxVirtualServer&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在大部分 linux 发行版中，ipvs 被默认安装。如果没有安装则需要安装。&lt;br&gt;检查当前加载的内核模块，看是否存在 ip_vs 模块。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;2&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;[root@hd-4 ipvsadm-1.24]# lsmod|grep ip_vs&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;ip_vs 77569 0&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
     
     </summary>
     
