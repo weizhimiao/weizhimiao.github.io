@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2017-02-12T04:09:36.000Z</updated>
+  <updated>2017-02-23T01:52:52.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -14,6 +14,215 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>PHP中常见的密码处理方式与建议</title>
+    <link href="https://weizhimiao.github.io/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/"/>
+    <id>https://weizhimiao.github.io/2017/02/22/PHP中常见的密码处理方式与建议/</id>
+    <published>2017-02-22T12:30:00.000Z</published>
+    <updated>2017-02-23T01:52:52.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>密码安全的重要性我们就不用再去强调，随着在线攻击的增多，如果我们对密码没有进行合适的处理或做防御措施，我们的应用就会肯定会收到来自各方的威胁和攻击。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170223/QQTuPian20170223093340.png" alt="password"></p>
+<p>所以作为开发者，我们需要对用户的密码做好预防措施。</p>
+<a id="more"></a>
+<h2 id="关于密码我们应该遵守的一些原则"><a href="#关于密码我们应该遵守的一些原则" class="headerlink" title="关于密码我们应该遵守的一些原则"></a>关于密码我们应该遵守的一些原则</h2><h3 id="绝对不能知道用户的密码"><a href="#绝对不能知道用户的密码" class="headerlink" title="绝对不能知道用户的密码"></a>绝对不能知道用户的密码</h3><ul>
+<li>我们绝对不能知道用户的密码，也不能有获取用户密码的方式。</li>
+<li><strong>知道的越少（包括我们开发者自己）越安全。</strong></li>
+</ul>
+<h3 id="绝对不去约束用户的密码"><a href="#绝对不去约束用户的密码" class="headerlink" title="绝对不去约束用户的密码"></a>绝对不去约束用户的密码</h3><ul>
+<li><p>最好不要去约束密码的长度、格式等。</p>
+</li>
+<li><p>如果要求密码符合一个特定的模式，其实对于那些不怀好意的人也提供了攻击的途径。</p>
+</li>
+<li><p>如果必须要约束的话，建议只限制最小长度。并把常用的密码或基于字典创建的密码加入黑名单，也是一个好主意。</p>
+</li>
+</ul>
+<h3 id="绝对不通过电子邮件发送用户的密码"><a href="#绝对不通过电子邮件发送用户的密码" class="headerlink" title="绝对不通过电子邮件发送用户的密码"></a>绝对不通过电子邮件发送用户的密码</h3><p>对于一个web应用来说，重置或修改密码时，我们应该在邮件里发送用于设定或修改密码的 <code>URL</code> 。而且这个<code>URL</code>中应该会包含一个唯一的令牌，这个令牌只能在设定或修改密码时使用一次。在设定或修改密码之后，我们就应该把这个令牌置为失效。</p>
+<h2 id="使用-bcrypt-计算用户密码的哈希值"><a href="#使用-bcrypt-计算用户密码的哈希值" class="headerlink" title="使用 bcrypt 计算用户密码的哈希值"></a>使用 <code>bcrypt</code> 计算用户密码的哈希值</h2><blockquote>
+<p>目前，通过大量的审查，最安全的哈希算法是 <code>bcrypt</code> 。</p>
+</blockquote>
+<p>首先，我们明确两个概念，哈希、加密。哈希和加密有什么区别？</p>
+<ul>
+<li><p>加密</p>
+<blockquote>
+<p>加密是双向算法，加密的数据之后通过解密还可以得到。</p>
+</blockquote>
+</li>
+<li><p>哈希</p>
+<blockquote>
+<p>哈希是单向算法，哈希后的数据不能再还原成原始值。<br>哈希算法的用途，</p>
+<ul>
+<li>验证数据的完整性（要求算法速度快）</li>
+<li>用户提高密码等需要单向验证的数据的安全性（要求安全性高，甚至故意要求时间慢）</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<p>一般我们在数据库中保存的应该是计算出来的密码的哈希值。这样即使我们的数据库泄露了，他们也只能看到这些无意义的密码的哈希值。</p>
+<p>哈希的算法有很多种，</p>
+<ul>
+<li><p><code>MD5</code></p>
+<blockquote>
+<p><code>MD5</code>即<code>Message-Digest Algorithm 5</code>（信息-摘要算法5），用于确保信息传输完整一致。是计算机广泛使用的杂凑算法之一（又译摘要算法、哈希算法），主流编程语言普遍已有<code>MD5</code>实现。将数据（如汉字）运算为另一固定长度值，是杂凑算法的基础原理，<code>MD5</code>的前身有<code>MD2</code>、<code>MD3</code>和<code>MD4</code>。</p>
+</blockquote>
+</li>
+<li><p><code>SHA1</code></p>
+<blockquote>
+<p>安全哈希算法（<code>Secure Hash Algorithm</code>）主要适用于数字签名标准 （<code>Digital Signature Standard DSS</code>）里面定义的数字签名算法（<code>Digital Signature Algorithm DSA</code>）。对于长度小于<code>2^64</code>位的消息，<code>SHA1</code>会产生一个<code>160</code>位的消息摘要。当接收到消息的时候，这个消息摘要可以用来验证数据的完整性。在传输的过程中，数据很可能会发生变化，那么这时候就会产生不同的消息摘要。 <code>SHA1</code>有如下特性：不可以从消息摘要中复原信息；两个不同的消息不会产生同样的消息摘要,(但会有<code>1x10 ^ 48</code>分之一的机率出现相同的消息摘要,一般使用时忽略)。</p>
+</blockquote>
+</li>
+<li><p><code>bcrypt</code></p>
+<blockquote>
+<p><code>bcrypt</code>是专门为密码存储而设计的算法，基于<code>Blowfish</code>加密算法变形而来，由<code>Niels Provos</code>和<code>David Mazières</code>发表于<code>1999</code>年的<code>USENIX</code>。　<code>bcrypt</code>最大的好处是有一个参数（<code>work factor</code>)，可用于调整计算强度，而且<code>work factor</code>是包括在输出的摘要中的。随着攻击者计算能力的提高，使用者可以逐步增大<code>work factor</code>，而且不会影响已有用户的登陆。　<code>bcrypt</code>经过了很多安全专家的仔细分析，使用在以安全著称的<code>OpenBSD</code>中，一般认为它比<code>PBKDF2</code>更能承受随着计算能力加强而带来的风险。<strong>bcrypt也有广泛的函数库支持，因此我们建议使用这种方式存储密码</strong>。</p>
+</blockquote>
+</li>
+<li><p><code>scrypt</code></p>
+<blockquote>
+<p>scrypt不仅计算所需时间长，而且占用的内存也多，使得并行计算多个摘要异常困难，因此利用<code>rainbow table</code>进行暴力攻击更加困难。<strong>scrypt没有在生产环境中大规模应用，并且缺乏仔细的审察和广泛的函数库支持</strong> 。但是，<code>scrypt</code>在算法层面只要没有破绽，它的安全性应该高于<code>PBKDF2</code>和<code>bcrypt</code>。</p>
+</blockquote>
+</li>
+</ul>
+<p>目前，通过大量的审查，最安全的哈希算法是 <code>bcrypt</code> 。与 <code>MD5</code> 和 <code>SHA1</code> 不同， <code>bcrypt</code> 算法会自动加盐，来防止潜在的彩虹表攻击。 <code>bcrypt</code> 算法会花费大量的时间反复处理数据，来生成安全的哈希值。在这个过程中，处理数据的次数叫工作因子（<code>work factor</code>）。工作因子的值越高，破解密码哈希值的时间会成指数倍增长。</p>
+<p><code>bcrypt</code> 算法永不过时，如果计算机的运算速度变快了，我们只需要提高工作因子即可。</p>
+<p>顺带说一下，任何情况下尽可能的不要使用 <code>md5</code> 算法，至少也要使用 SHA 系列的哈希算法。因为<code>md5</code>算法以目前计算机的计算能力来说显得比较简单，而 <code>md5</code> 的性能优势现在也已经完全可以忽略不计了。</p>
+<h2 id="密码哈希API"><a href="#密码哈希API" class="headerlink" title="密码哈希API"></a>密码哈希API</h2><p>上面我们说到 <code>bcrypt</code> 算法最安全，最适合对我们的密码进行哈希。 <code>PHP</code> 在 <code>PHP5.5.0+</code> 的版本中提供了原生的<code>密码哈希API</code>供我们使用，这个<code>密码哈希API</code>默认使用的就是 <code>bcrypt</code> 哈希算法，从而大大简化了我们计算密码哈希值和验证密码的操作。</p>
+<h3 id="PHP原生密码哈希API"><a href="#PHP原生密码哈希API" class="headerlink" title="PHP原生密码哈希API"></a>PHP原生密码哈希API</h3><p>密码哈希函数：</p>
+<ul>
+<li><p><code>password_get_info</code></p>
+<blockquote>
+<p>返回指定的哈希值的相关信息</p>
+</blockquote>
+</li>
+<li><p><code>password_hash</code></p>
+<blockquote>
+<p>创建密码的哈希（hash）</p>
+</blockquote>
+</li>
+<li><p><code>password_needs_rehash</code></p>
+<blockquote>
+<p>检查给定的哈希是否与给定的选项匹配</p>
+</blockquote>
+</li>
+<li><p><code>password_verify</code></p>
+<blockquote>
+<p>验证密码是否和哈希匹配</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="password-get-info"><a href="#password-get-info" class="headerlink" title="password_get_info"></a>password_get_info</h4><p>说明<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">array</span> password_get_info ( string $hash )</div></pre></td></tr></table></figure></p>
+<p>参数</p>
+<ul>
+<li><code>hash</code>, 一个由 password_hash() 创建的散列值。</li>
+</ul>
+<p>示例，<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">var_dump(password_get_info($hash));</div><div class="line"><span class="comment">// Example</span></div><div class="line"><span class="keyword">array</span>(<span class="number">3</span>) &#123;</div><div class="line">  [<span class="string">"algo"</span>]=&gt;</div><div class="line">  int(<span class="number">1</span>)</div><div class="line">  [<span class="string">"algoName"</span>]=&gt;</div><div class="line">  string(<span class="number">6</span>) <span class="string">"bcrypt"</span></div><div class="line">  [<span class="string">"options"</span>]=&gt;</div><div class="line">  <span class="keyword">array</span>(<span class="number">1</span>) &#123;</div><div class="line">    [<span class="string">"cost"</span>]=&gt;</div><div class="line">    int(<span class="number">10</span>)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<h4 id="password-hash"><a href="#password-hash" class="headerlink" title="password_hash"></a>password_hash</h4><p><strong>说明</strong><br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">string password_hash ( string $password , integer $algo [, <span class="keyword">array</span> $options ] )</div></pre></td></tr></table></figure></p>
+<p>password_hash() 使用足够强度的单向散列算法创建密码的哈希（hash）。 password_hash() 兼容 crypt()。 所以， crypt() 创建的密码哈希也可用于 password_hash()。</p>
+<p>当前支持的算法：</p>
+<ul>
+<li><p><code>PASSWORD_DEFAULT</code></p>
+<blockquote>
+<p>使用 <code>bcrypt</code> 算法 (PHP 5.5.0 默认)。 注意，该常量会随着 <code>PHP</code> 加入更新更高强度的算法而改变。 所以，使用此常量生成结果的长度将在未来有变化。 因此，数据库里储存结果的列可超过60个字符（最好是255个字符）。</p>
+</blockquote>
+</li>
+<li><p><code>PASSWORD_BCRYPT</code></p>
+<blockquote>
+<p>使用 <code>CRYPT_BLOWFISH</code> 算法创建哈希。 这会产生兼容使用 “<code>$2y$</code>“ 的 crypt()。 结果将会是 60 个字符的字符串， 或者在失败时返回 <code>FALSE。</code></p>
+</blockquote>
+</li>
+</ul>
+<p>支持的选项：</p>
+<ul>
+<li><p><code>salt</code> - 手动提供哈希密码的盐值（<code>salt</code>）。这将避免自动生成盐值（<code>salt</code>）。</p>
+<blockquote>
+<p>省略此值后，password_hash() 会为每个密码哈希自动生成随机的盐值。这种操作是有意的模式。</p>
+<p><strong>Warning 盐值（salt）选项从 PHP 7.0.0 开始被废弃（deprecated）了。 现在最好选择简单的使用默认产生的盐值。</strong></p>
+</blockquote>
+</li>
+<li><p><code>cost</code> - 代表算法使用的 <code>cost</code>。crypt() 页面上有 <code>cost</code> 值的例子。</p>
+<blockquote>
+<p>省略时，默认值是 10。 这个 <code>cost</code> 是个不错的底线，但也许可以根据自己硬件的情况，加大这个值。</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>参数</strong></p>
+<ul>
+<li><p><code>password</code>, 用户的密码。</p>
+<blockquote>
+<p> 使用 <code>PASSWORD_BCRYPT</code> 做算法，将使 <code>password</code> 参数最长为72个字符，超过会被截断。</p>
+</blockquote>
+</li>
+<li><p><code>algo</code>, 一个用来在散列密码时指示算法的密码算法常量。</p>
+</li>
+<li><p><code>options</code>, 一个包含有选项的关联数组。目前支持两个选项：</p>
+<ul>
+<li><code>salt</code>，在散列密码时加的盐（干扰字符串），</li>
+<li><code>cost</code>，用来指明算法递归的层数。这两个值的例子可在 crypt() 页面找到。<blockquote>
+<p>省略后，将使用随机盐值与默认 <code>cost</code>。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>示例</strong><br>示例1，使用默认算法哈希密码<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">/**</span></div><div class="line"> * 我们想要使用默认算法哈希密码</div><div class="line"> * 当前是 BCRYPT，并会产生 60 个字符的结果。</div><div class="line"> *</div><div class="line"> * 请注意，随时间推移，默认算法可能会有变化，</div><div class="line"> * 所以需要储存的空间能够超过 60 字（255字不错）</div><div class="line"> */</div><div class="line"><span class="keyword">echo</span> password_hash(<span class="string">"rasmuslerdorf"</span>, PASSWORD_DEFAULT).<span class="string">"\n"</span>;</div><div class="line"><span class="meta">?&gt;</span></div><div class="line"><span class="comment">// 输出类似于：</span></div><div class="line"><span class="comment">// $2y$10$.vGA1O9wmRjrwAVXD98HNOgsNpDczlqm3Jq7KnEd1rVAGv3Fykk1a</span></div></pre></td></tr></table></figure></p>
+<p>示例2，手动设置 <code>cost</code><br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">/**</span></div><div class="line"> * 在这个案例里，我们为 BCRYPT 增加 cost 到 12。</div><div class="line"> * 注意，我们已经切换到了，将始终产生 60 个字符。</div><div class="line"> */</div><div class="line">$options = [</div><div class="line">    <span class="string">'cost'</span> =&gt; <span class="number">12</span>,</div><div class="line">];</div><div class="line"><span class="keyword">echo</span> password_hash(<span class="string">"rasmuslerdorf"</span>, PASSWORD_BCRYPT, $options).<span class="string">"\n"</span>;</div><div class="line"><span class="meta">?&gt;</span></div><div class="line"><span class="comment">// 输出类似于：</span></div><div class="line"><span class="comment">// $2y$12$QjSH496pcT5CEbzjD/vtVeH03tfHKFy36d4J0Ltp3lRtee9HDxY3K</span></div></pre></td></tr></table></figure></p>
+<p>示例3，如何选择一个适合当前服务器的 cost</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">/**</span></div><div class="line"> * 这个例子对服务器做了基准测试（benchmark），检测服务器能承受多高的 cost</div><div class="line"> * 在不明显拖慢服务器的情况下可以设置最高的值</div><div class="line"> * 8-10 是个不错的底线，在服务器够快的情况下，越高越好。</div><div class="line"> * 以下代码目标为  ≤ 50 毫秒（milliseconds），</div><div class="line"> * 适合系统处理交互登录。</div><div class="line"> */</div><div class="line">$timeTarget = <span class="number">0.05</span>; <span class="comment">// 50 毫秒（milliseconds）</span></div><div class="line"></div><div class="line">$cost = <span class="number">8</span>;</div><div class="line"><span class="keyword">do</span> &#123;</div><div class="line">    $cost++;</div><div class="line">    $start = microtime(<span class="keyword">true</span>);</div><div class="line">    password_hash(<span class="string">"test"</span>, PASSWORD_BCRYPT, [<span class="string">"cost"</span> =&gt; $cost]);</div><div class="line">    $end = microtime(<span class="keyword">true</span>);</div><div class="line">&#125; <span class="keyword">while</span> (($end - $start) &lt; $timeTarget);</div><div class="line"></div><div class="line"><span class="keyword">echo</span> <span class="string">"Appropriate Cost Found: "</span> . $cost . <span class="string">"\n"</span>;</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<p>输出类似于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Appropriate Cost Found: 10</div></pre></td></tr></table></figure></p>
+<h4 id="password-needs-rehash"><a href="#password-needs-rehash" class="headerlink" title="password_needs_rehash"></a>password_needs_rehash</h4><p>说明<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">boolean password_needs_rehash ( string $hash , integer $algo [, <span class="keyword">array</span> $options ] )</div></pre></td></tr></table></figure></p>
+<p>参数</p>
+<ul>
+<li><code>hash</code>, 一个由 password_hash() 创建的散列值。</li>
+<li><code>algo</code>, 一个用来在散列密码时指示算法的密码算法常量。</li>
+<li><code>options</code>, 一个包含有选项的关联数组。目前支持两个选项：<ul>
+<li><code>salt</code>，在散列密码时加的盐（干扰字符串），</li>
+<li><code>cost</code>，用来指明算法递归的层数。这两个值的例子可在 crypt() 页面找到。</li>
+</ul>
+</li>
+</ul>
+<p>示例，<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">$password = <span class="string">'rasmuslerdorf'</span>;</div><div class="line">$hash = <span class="string">'$2y$10$YCFsG6elYca568hBi2pZ0.3LDL5wjgxct1N8w/oLR/jfHsiQwCqTS'</span>;</div><div class="line"></div><div class="line"><span class="comment">// cost 参数可随硬件的提升也不断提升</span></div><div class="line">$options = <span class="keyword">array</span>(<span class="string">'cost'</span> =&gt; <span class="number">11</span>);</div><div class="line"></div><div class="line"><span class="comment">// 使用纯文本密码 验证存储的散列</span></div><div class="line"><span class="keyword">if</span> (password_verify($password, $hash)) &#123;</div><div class="line">    <span class="comment">// 检查是否有更新的散列算法可用或 cost 是否已经改变</span></div><div class="line">    <span class="keyword">if</span> (password_needs_rehash($hash, PASSWORD_DEFAULT, $options)) &#123;</div><div class="line">        <span class="comment">// 如果是，请创建一个新的哈希值，并替换旧的哈希值</span></div><div class="line">        $newHash = password_hash($password, PASSWORD_DEFAULT, $options);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 用户登录验证完成</span></div><div class="line">    <span class="comment">// ...</span></div><div class="line">&#125;</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<h4 id="password-verify"><a href="#password-verify" class="headerlink" title="password_verify"></a>password_verify</h4><p>说明<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">boolean password_verify ( string $password , string $hash )</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注意 password_hash() 返回的哈希包含了算法、 cost 和盐值。 因此，所有需要的信息都包含内。使得验证函数不需要储存额外盐值等信息即可验证哈希。</p>
+</blockquote>
+<p>参数</p>
+<ul>
+<li><code>password</code>, 用户的密码。</li>
+<li><code>hash</code>, 一个由 password_hash() 创建的散列值。</li>
+</ul>
+<p>示例，<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">// 想知道以下字符从哪里来，可参见 password_hash() 的例子</span></div><div class="line">$hash = <span class="string">'$2y$07$BCryptRequires22Chrcte/VlQH0piJtjXl.0t1XkA8pw9dMXTpOq'</span>;</div><div class="line"></div><div class="line"><span class="keyword">if</span> (password_verify(<span class="string">'rasmuslerdorf'</span>, $hash)) &#123;</div><div class="line">    <span class="keyword">echo</span> <span class="string">'Password is valid!'</span>;</div><div class="line">&#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="keyword">echo</span> <span class="string">'Invalid password.'</span>;</div><div class="line">&#125;</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>以上例程会输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Password is valid!</div></pre></td></tr></table></figure></p>
+<h3 id="PHP5-50-之前的密码哈希-API"><a href="#PHP5-50-之前的密码哈希-API" class="headerlink" title="PHP5.50 之前的密码哈希 API"></a>PHP5.50 之前的密码哈希 API</h3><p>安东尼·费拉拉（PHP原生密码哈希 API的开发者）为PHP5.5.0 以下的版本也提供了 <code>ircmaxell/password-compat</code>组件（<a href="https://packagist.org/packages/ircmaxell/password-compat）。" target="_blank" rel="external">https://packagist.org/packages/ircmaxell/password-compat）。</a></p>
+<p>这个组件也实现了PHP密码哈希API中的所有函数，</p>
+<ul>
+<li><p><code>password_get_info</code></p>
+</li>
+<li><p><code>password_hash</code></p>
+</li>
+<li><p><code>password_needs_rehash</code></p>
+</li>
+<li><p><code>password_verify</code></p>
+</li>
+</ul>
+<p>我们可以直接使用 <code>Composer</code> 把这个组件添加到我们的应用中就行了。例如，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">composer require ircmaxell/password-compat</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;密码安全的重要性我们就不用再去强调，随着在线攻击的增多，如果我们对密码没有进行合适的处理或做防御措施，我们的应用就会肯定会收到来自各方的威胁和攻击。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20170223/QQTuPian20170223093340.png&quot; alt=&quot;password&quot;&gt;&lt;/p&gt;
+&lt;p&gt;所以作为开发者，我们需要对用户的密码做好预防措施。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="PHP" scheme="https://weizhimiao.github.io/categories/PHP/"/>
+    
+    
+      <category term="密码" scheme="https://weizhimiao.github.io/tags/%E5%AF%86%E7%A0%81/"/>
+    
+      <category term="哈希" scheme="https://weizhimiao.github.io/tags/%E5%93%88%E5%B8%8C/"/>
+    
+  </entry>
   
   <entry>
     <title>数据库设计中的范式理论小结</title>
@@ -2332,52 +2541,6 @@
     
     
       <category term="inotify" scheme="https://weizhimiao.github.io/tags/inotify/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Javascript中用instanceof运算符实现对象的安全创建</title>
-    <link href="https://weizhimiao.github.io/2016/10/27/Javascript%E4%B8%AD%E7%94%A8instanceof%E8%BF%90%E7%AE%97%E7%AC%A6%E5%AE%9E%E7%8E%B0%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AE%89%E5%85%A8%E5%88%9B%E5%BB%BA/"/>
-    <id>https://weizhimiao.github.io/2016/10/27/Javascript中用instanceof运算符实现对象的安全创建/</id>
-    <published>2016-10-27T12:30:00.000Z</published>
-    <updated>2016-11-29T02:32:39.000Z</updated>
-    
-    <content type="html"><![CDATA[<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Book = <span class="function"><span class="keyword">function</span>(<span class="params">title, time, type</span>)</span>&#123;</div><div class="line">  <span class="keyword">if</span>(<span class="keyword">this</span> <span class="keyword">instanceof</span> Book)&#123;</div><div class="line">    <span class="keyword">this</span>.title = title;</div><div class="line">    <span class="keyword">this</span>.time = time;</div><div class="line">    <span class="keyword">this</span>.type = type;</div><div class="line">  &#125; <span class="keyword">else</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Book(title, time, type);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<a id="more"></a>
-<h2 id="什么叫对象的安全创建"><a href="#什么叫对象的安全创建" class="headerlink" title="什么叫对象的安全创建"></a>什么叫对象的安全创建</h2><p>假设我们有以下一个类<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Book = <span class="function"><span class="keyword">function</span>(<span class="params">title, time, type</span>)</span>&#123;</div><div class="line">  <span class="keyword">this</span>.title = title;</div><div class="line">  <span class="keyword">this</span>.time = time;</div><div class="line">  <span class="keyword">this</span>.type = type;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>我们用下面代码去实例化一个Book<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> book = Book(<span class="string">'javascipt'</span>, <span class="string">'2010'</span>, <span class="string">'js'</span>);</div></pre></td></tr></table></figure></p>
-<p>当我们查看book对象时，会发现book对象 undefined<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(book);  <span class="comment">//undefined</span></div></pre></td></tr></table></figure></p>
-<p>为什么会出现这种情况呢？原因就是我们在实例化book对象没有用<code>new</code>关键词。我们再试一下<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> book = <span class="keyword">new</span> Book(<span class="string">'javascipt'</span>, <span class="string">'2010'</span>, <span class="string">'js'</span>);</div></pre></td></tr></table></figure></p>
-<p>查看<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(book);</div><div class="line"><span class="comment">//得到 Book &#123;title: "javascipt", time: "2010", type: "js"&#125;</span></div></pre></td></tr></table></figure></p>
-<p>那么又没有办法可以在我们没有用 <code>new</code> 关键词还能安全的创建对象，而不会出现 <code>undefined</code> 的情况。即，对象的安全创建。</p>
-<h2 id="对象的安全创建的实现"><a href="#对象的安全创建的实现" class="headerlink" title="对象的安全创建的实现"></a>对象的安全创建的实现</h2><p>首先，我们会用到 javascript 中的 instanceof 运算符。</p>
-<h3 id="instanceof"><a href="#instanceof" class="headerlink" title="instanceof"></a>instanceof</h3><blockquote>
-<p>instanceof 用来检测某个对象是否是某个类的实例。</p>
-</blockquote>
-<p>示例1：判断 foo 是否是 Foo 类的实例<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Foo</span>(<span class="params"></span>)</span>&#123;&#125;</div><div class="line"><span class="keyword">var</span> foo = <span class="keyword">new</span> Foo();</div><div class="line"><span class="built_in">console</span>.log(foo <span class="keyword">instanceof</span> Foo)  <span class="comment">//true</span></div></pre></td></tr></table></figure></p>
-<p>示例2：instanceof 在继承中关系中的用法(判断 foo 是否是 Foo 类的实例 , 并且是否是其父类型的实例)</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Aoo</span>(<span class="params"></span>)</span>&#123;&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Foo</span>(<span class="params"></span>)</span>&#123;&#125;</div><div class="line">Foo.prototype = <span class="keyword">new</span> Aoo();    <span class="comment">//JavaScript 原型继承</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> foo = <span class="keyword">new</span> Foo();</div><div class="line"><span class="built_in">console</span>.log(foo <span class="keyword">instanceof</span> Foo) <span class="comment">//true</span></div><div class="line"><span class="built_in">console</span>.log(foo <span class="keyword">instanceof</span> Aoo) <span class="comment">//true</span></div></pre></td></tr></table></figure>
-<p>Tips: instanceof 用来检测某个对象是否是某个类的实例。</p>
-<p>所以<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(Foo <span class="keyword">instanceof</span> Aoo)  <span class="comment">//false</span></div></pre></td></tr></table></figure></p>
-<p>但是<code>Foo.prototype</code> 继承了 <code>Aoo</code> ,所以<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(Foo.prototype <span class="keyword">instanceof</span> Aoo)  <span class="comment">//true</span></div></pre></td></tr></table></figure></p>
-<p><strong>希望我们不要弄混~</strong></p>
-<p>另，Javascript为我们提供的原生对象 Object，所有的对象都可以说成是Object的子类。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(instance instanceif <span class="built_in">Object</span>);  <span class="comment">//true</span></div></pre></td></tr></table></figure></p>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Book = <span class="function"><span class="keyword">function</span>(<span class="params">title, time, type</span>)</span>&#123;</div><div class="line">  <span class="keyword">if</span>(<span class="keyword">this</span> <span class="keyword">instanceof</span> Book)&#123;</div><div class="line">    <span class="keyword">this</span>.title = title;</div><div class="line">    <span class="keyword">this</span>.time = time;</div><div class="line">    <span class="keyword">this</span>.type = type;</div><div class="line">  &#125; <span class="keyword">else</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Book(title, time, type);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>测试</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> book = Book(<span class="string">'javascipt'</span>, <span class="string">'2010'</span>, <span class="string">'js'</span>);</div><div class="line"><span class="built_in">console</span>.log(book);</div><div class="line"><span class="comment">//得到：Book &#123;title: "javascipt", time: "2010", type: "js"&#125;</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> book1 = <span class="keyword">new</span> Book(<span class="string">'javascipt_1'</span>, <span class="string">'2010'</span>, <span class="string">'js'</span>);</div><div class="line"><span class="built_in">console</span>.log(book1)</div><div class="line"><span class="comment">//得到：Book &#123;title: "javascipt_1", time: "2010", type: "js"&#125;</span></div></pre></td></tr></table></figure>
-<p>over~</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;2&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;3&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;4&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;5&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;6&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;7&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;8&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;9&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;var&lt;/span&gt; Book = &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt;(&lt;span class=&quot;params&quot;&gt;title, time, type&lt;/span&gt;)&lt;/span&gt;&amp;#123;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;  &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;instanceof&lt;/span&gt; Book)&amp;#123;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.title = title;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.time = time;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;this&lt;/span&gt;.type = type;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;  &amp;#125; &lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt;&amp;#123;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;new&lt;/span&gt; Book(title, time, type);&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;  &amp;#125;&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;&amp;#125;&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-    
-    </summary>
-    
-      <category term="JavaScript" scheme="https://weizhimiao.github.io/categories/JavaScript/"/>
-    
-    
-      <category term="instanceof" scheme="https://weizhimiao.github.io/tags/instanceof/"/>
     
   </entry>
   
