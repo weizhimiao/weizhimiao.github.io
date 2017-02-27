@@ -67,7 +67,7 @@
 <meta property="og:site_name" content="行云流水">
 <meta property="og:description" content="ElasticSearch是由Shay Banon发起的一个开源搜索服务器项目。由于其分布式特性和实时搜索能力，成为当前搜索和数据分析解决方案领域的重要成员。">
 <meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161006/ElasticSearch.png">
-<meta property="og:updated_time" content="2016-11-29T02:32:38.000Z">
+<meta property="og:updated_time" content="2017-02-27T10:02:00.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ElasticSearch整理">
 <meta name="twitter:description" content="ElasticSearch是由Shay Banon发起的一个开源搜索服务器项目。由于其分布式特性和实时搜索能力，成为当前搜索和数据分析解决方案领域的重要成员。">
@@ -391,7 +391,7 @@
 <blockquote>
 <p>-d 表示将进程放入后台运行</p>
 </blockquote>
-<p>或者通过nohup命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># nohup /usr/local/elasticsearch/bin/elasticsearch &gt; nohup</div></pre></td></tr></table></figure></p>
+<p>或者通过nohup命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># nohup /usr/local/elasticsearch/bin/elasticsearch &gt; nohup</div></pre></td></tr></table></figure></p>
 <p>将elasticsearch设置成开机自启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># echo &quot;nohup /usr/local/elasticsearch/bin/elasticsearch &gt; nohup&quot; &gt; /etc/rc.local</div></pre></td></tr></table></figure></p>
 <p>确认elasticsearch的9200端口已监听，说明elasticsearch已成功运行</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># netstat -anp |grep :9200</div><div class="line">tcp        0      0 :::9200                     :::*                        LISTEN      3362/java</div></pre></td></tr></table></figure>

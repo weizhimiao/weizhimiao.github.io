@@ -67,7 +67,7 @@
 <meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png">
 <meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/slabNaCunFenPeiYuanLi.png">
 <meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png">
-<meta property="og:updated_time" content="2016-11-29T02:32:39.000Z">
+<meta property="og:updated_time" content="2017-02-27T06:45:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入了解Memcached">
 <meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png">
@@ -360,7 +360,7 @@
 <p>当Memecached使用的内存数大于设置的内存数之后，为了腾出空间来存放新的数据项，Memcached采用的是LRU算法(最近最少使用算法)来淘汰旧的数据项。</p>
 <p>数据淘汰流程：</p>
 <ul>
-<li>1、当Memcached第一次申请内存失败时，就开始算法进行淘汰数据。</li>
+<li>1、当Memcached第一次申请内存失败时，就开始算法进行淘汰数据。</li>
 <li>2、首先从数据项列表（item_list）尾部开始遍历。</li>
 <li>3、在列表中查找一个引用计数器（refcount）为0的item，把此item占用的内存释放掉。</li>
 <li>4、再次申请内存，如果失败的话，继续进行淘汰算法。</li>
