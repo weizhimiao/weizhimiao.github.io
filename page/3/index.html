@@ -3357,8 +3357,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/Xdebug之PHP脚本剖析/" itemprop="url">
-                  Xdebug之PHP脚本剖析
+                <a class="post-title-link" href="/2016/10/27/Javascript中用instanceof运算符实现对象的安全创建/" itemprop="url">
+                  Javascript中用instanceof运算符实现对象的安全创建
                 </a>
               
             
@@ -3371,8 +3371,132 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
-              2016-10-22
+            <time itemprop="dateCreated" datetime="2016-10-27T20:30:00+08:00" content="2016-10-27">
+              2016-10-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/JavaScript/" itemprop="url" rel="index">
+                    <span itemprop="name">JavaScript</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/27/Javascript中用instanceof运算符实现对象的安全创建/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/27/Javascript中用instanceof运算符实现对象的安全创建/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Book = <span class="function"><span class="keyword">function</span>(<span class="params">title, time, type</span>)</span>&#123;</div><div class="line">  <span class="keyword">if</span>(<span class="keyword">this</span> <span class="keyword">instanceof</span> Book)&#123;</div><div class="line">    <span class="keyword">this</span>.title = title;</div><div class="line">    <span class="keyword">this</span>.time = time;</div><div class="line">    <span class="keyword">this</span>.type = type;</div><div class="line">  &#125; <span class="keyword">else</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Book(title, time, type);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/27/Javascript中用instanceof运算符实现对象的安全创建/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/23/PHP根据文件头检测文件类型/" itemprop="url">
+                  PHP根据文件头检测文件类型
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-23T18:30:00+08:00" content="2016-10-23">
+              2016-10-23
             </time>
           </span>
 
@@ -3401,8 +3525,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之PHP脚本剖析/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之PHP脚本剖析/" itemprop="commentsCount"></span>
+                <a href="/2016/10/23/PHP根据文件头检测文件类型/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/23/PHP根据文件头检测文件类型/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -3428,9 +3552,9 @@
 
       
         
-          <p>Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。</p>
+          <p>文件签名一般都在文件的头部，如果你用十六进制方式查看文件，你就可以看到文件的一些签名信息。如用uestudio以十六进制方式查看zip格式的文件，其文件内容头部有50 4B 03 04这样的十六进制信息。同理jpg文件状况有FF D8 FF E0 xx xx 4A 46这样的十六进制信息，其实这此十六进制都是表示一些特殊字条。</p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之PHP脚本剖析/#more" rel="contents">
+            <a class="btn" href="/2016/10/23/PHP根据文件头检测文件类型/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -3730,6 +3854,632 @@
             
               
                 
+                <a class="post-title-link" href="/2016/10/22/Xdebug之变量显示功能/" itemprop="url">
+                  Xdebug之变量显示功能
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
+              2016-10-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/22/Xdebug之变量显示功能/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之变量显示功能/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/22/Xdebug之变量显示功能/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/22/Xdebug之常见问题/" itemprop="url">
+                  Xdebug之常见问题
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
+              2016-10-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/22/Xdebug之常见问题/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之常见问题/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <ul>
+<li><p>xdebug的使用</p>
+</li>
+<li><p>xdebug的编译安装</p>
+</li>
+</ul>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/22/Xdebug之常见问题/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/22/Xdebug之PHP脚本剖析/" itemprop="url">
+                  Xdebug之PHP脚本剖析
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
+              2016-10-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/22/Xdebug之PHP脚本剖析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之PHP脚本剖析/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/22/Xdebug之PHP脚本剖析/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/22/Xdebug之堆栈跟踪/" itemprop="url">
+                  Xdebug之变量显示功能
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
+              2016-10-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/22/Xdebug之堆栈跟踪/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之堆栈跟踪/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
+<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/22/Xdebug之堆栈跟踪/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/22/Xdebug之远程调试/" itemprop="url">
+                  Xdebug之远程调试
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
+              2016-10-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/22/Xdebug之远程调试/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之远程调试/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/22/Xdebug之远程调试/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/10/22/PHP程序调试之Xdebug/" itemprop="url">
                   PHP程序调试之Xdebug
                 </a>
@@ -3833,794 +4583,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/21/apache上运行PHP的几种方式汇总/" itemprop="url">
-                  apache上运行PHP的几种方式汇总
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-21T22:40:00+08:00" content="2016-10-21">
-              2016-10-21
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Apache/" itemprop="url" rel="index">
-                    <span itemprop="name">Apache</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/21/apache上运行PHP的几种方式汇总/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/21/apache上运行PHP的几种方式汇总/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>之前也有整理过一篇 「apache中PHP的几种支持模式」的blog，但是感觉还是比较混乱，很多问题没有理清楚，一些方式也没有整理到。所以今天通过这篇blog再整理一下。</p>
-<ul>
-<li><p>Using proxy_fcgi and php-fpm (for apache 2.4)</p>
-</li>
-<li><p>Using php with fastcgi (for 2.2 and older)</p>
-</li>
-<li><p>Using php with fcgid (for 2.2 and older)</p>
-</li>
-<li><p>Using mod_php as a DSO with a threaded mpm (2.0 and newer)</p>
-</li>
-<li><p>Using mod_php as a DSO (deprecated)</p>
-</li>
-</ul>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/21/apache上运行PHP的几种方式汇总/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/" itemprop="url">
-                  httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-20T22:40:00+08:00" content="2016-10-20">
-              2016-10-20
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>内容</p>
-<ul>
-<li>apache httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP<ul>
-<li>php-fpm</li>
-<li>apache httpd 2.4<ul>
-<li>TCP套接字（IP和端口）方法</li>
-<li>unix域套接字（UDS）方法</li>
-<li>通过代理程序处理</li>
-<li>先睹为快<ul>
-<li>一个简单的例子</li>
-<li>一个更灵活的例子</li>
-</ul>
-</li>
-<li>性能和陷阱</li>
-<li>警告</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/19/PHP常见设计模式之策略模式/" itemprop="url">
-                  PHP常见设计模式之策略模式
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-19T22:40:00+08:00" content="2016-10-19">
-              2016-10-19
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/19/PHP常见设计模式之策略模式/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/19/PHP常见设计模式之策略模式/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>策略模式允许类的使用者为这个类根据需要注入不同的依赖。通常情况下，这些依赖表现为对象、闭包或者回调方式，他们完成类所必要的要求以执行预期行为。</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/19/PHP常见设计模式之策略模式/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/18/PHP常见设计模式之观察者模式/" itemprop="url">
-                  PHP常见设计模式之观察者模式
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-18T22:40:00+08:00" content="2016-10-18">
-              2016-10-18
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/18/PHP常见设计模式之观察者模式/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/18/PHP常见设计模式之观察者模式/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>观察者模式类似于javascript的事件。其核心在于允许我们的应用程序注册一个回调，当某个特定的事件发生时便会触发它。在javascript中，这些事件由单机（onclick）、页面加载（onload）、或者鼠标移动（onmousevoer）等动作组成。</p>
-<p>观察者设计模式能够是我们更便利地创建查看目标对象状态的对象，并且提供与核心对象非耦合的指定功能性。</p>
-<p>观察者设计模式使用场景（插件系统、缓存系统）</p>
-<ul>
-<li>对一个对象状态的更新，需要其他对象同步更新，而且其他对象的数量动态可变。<br>-</li>
-<li>对象仅需要将自己的更新通知给其他对象而不需要知道其他对象的细节。</li>
-</ul>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/18/PHP常见设计模式之观察者模式/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/18/PHP中is_function函数汇总/" itemprop="url">
-                  PHP中is_func函数汇总
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-18T18:30:00+08:00" content="2016-10-18">
-              2016-10-18
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/18/PHP中is_function函数汇总/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/18/PHP中is_function函数汇总/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><img src="http://n.sinaimg.cn/games/3ece443e/20161018/is_func.png" alt="PHP中is_func函数汇总"></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/18/PHP中is_function函数汇总/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/14/PHP常见设计模式之工厂模式/" itemprop="url">
-                  PHP常见设计模式之工厂模式
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-14T21:00:00+08:00" content="2016-10-14">
-              2016-10-14
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/14/PHP常见设计模式之工厂模式/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/14/PHP常见设计模式之工厂模式/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="什么是工厂模式"><a href="#什么是工厂模式" class="headerlink" title="什么是工厂模式"></a>什么是工厂模式</h2><p>工厂模式是我们最常用的实例化对象模式了，顾名思义工厂设计模式，就是用于制造对象的一种设计模式，是一种用来代替new操作的一种模式。</p>
-<p>其的最大价值在于它可以将多个对象设置封装成单一、简单的方法调用。</p>
-<p>对外提供获取某个对象的新实例的接口，同时使调用代码避免确定实际实例化基类的步骤。</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/14/PHP常见设计模式之工厂模式/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -4661,7 +4628,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">86</span>
+              <span class="site-state-item-count">92</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -4678,7 +4645,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-count">72</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

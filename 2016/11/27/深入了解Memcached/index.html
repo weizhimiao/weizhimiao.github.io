@@ -67,7 +67,7 @@
 <meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png">
 <meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/slabNaCunFenPeiYuanLi.png">
 <meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png">
-<meta property="og:updated_time" content="2017-02-28T01:13:34.000Z">
+<meta property="og:updated_time" content="2017-02-27T06:45:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入了解Memcached">
 <meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png">
@@ -370,7 +370,7 @@
 <p>当Memecached使用的内存数大于设置的内存数之后，为了腾出空间来存放新的数据项，Memcached采用的是LRU算法(最近最少使用算法)来淘汰旧的数据项。</p>
 <p>数据淘汰流程：</p>
 <ul>
-<li>1、当Memcached第一次申请内存失败时，就开始算法进行淘汰数据。</li>
+<li>1、当Memcached第一次申请内存失败时，就开始算法进行淘汰数据。</li>
 <li>2、首先从数据项列表（item_list）尾部开始遍历。</li>
 <li>3、在列表中查找一个引用计数器（refcount）为0的item，把此item占用的内存释放掉。</li>
 <li>4、再次申请内存，如果失败的话，继续进行淘汰算法。</li>
@@ -525,7 +525,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">86</span>
+              <span class="site-state-item-count">92</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -542,7 +542,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-count">72</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

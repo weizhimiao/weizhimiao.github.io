@@ -3357,6 +3357,789 @@
             
               
                 
+                <a class="post-title-link" href="/2016/10/21/apache上运行PHP的几种方式汇总/" itemprop="url">
+                  apache上运行PHP的几种方式汇总
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-21T22:40:00+08:00" content="2016-10-21">
+              2016-10-21
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Apache/" itemprop="url" rel="index">
+                    <span itemprop="name">Apache</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/21/apache上运行PHP的几种方式汇总/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/21/apache上运行PHP的几种方式汇总/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>之前也有整理过一篇 「apache中PHP的几种支持模式」的blog，但是感觉还是比较混乱，很多问题没有理清楚，一些方式也没有整理到。所以今天通过这篇blog再整理一下。</p>
+<ul>
+<li><p>Using proxy_fcgi and php-fpm (for apache 2.4)</p>
+</li>
+<li><p>Using php with fastcgi (for 2.2 and older)</p>
+</li>
+<li><p>Using php with fcgid (for 2.2 and older)</p>
+</li>
+<li><p>Using mod_php as a DSO with a threaded mpm (2.0 and newer)</p>
+</li>
+<li><p>Using mod_php as a DSO (deprecated)</p>
+</li>
+</ul>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/21/apache上运行PHP的几种方式汇总/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/" itemprop="url">
+                  httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-20T22:40:00+08:00" content="2016-10-20">
+              2016-10-20
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>内容</p>
+<ul>
+<li>apache httpd 2.4.x上使用mod_proxy_fcgi和php-fpm实现高性能PHP<ul>
+<li>php-fpm</li>
+<li>apache httpd 2.4<ul>
+<li>TCP套接字（IP和端口）方法</li>
+<li>unix域套接字（UDS）方法</li>
+<li>通过代理程序处理</li>
+<li>先睹为快<ul>
+<li>一个简单的例子</li>
+<li>一个更灵活的例子</li>
+</ul>
+</li>
+<li>性能和陷阱</li>
+<li>警告</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/20/High-performance PHP on apache httpd 2.4.x using mod_proxy_fcgi and php-fpm/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/19/PHP常见设计模式之策略模式/" itemprop="url">
+                  PHP常见设计模式之策略模式
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-19T22:40:00+08:00" content="2016-10-19">
+              2016-10-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/19/PHP常见设计模式之策略模式/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/19/PHP常见设计模式之策略模式/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>策略模式允许类的使用者为这个类根据需要注入不同的依赖。通常情况下，这些依赖表现为对象、闭包或者回调方式，他们完成类所必要的要求以执行预期行为。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/19/PHP常见设计模式之策略模式/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/18/PHP常见设计模式之观察者模式/" itemprop="url">
+                  PHP常见设计模式之观察者模式
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-18T22:40:00+08:00" content="2016-10-18">
+              2016-10-18
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/18/PHP常见设计模式之观察者模式/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/18/PHP常见设计模式之观察者模式/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>观察者模式类似于javascript的事件。其核心在于允许我们的应用程序注册一个回调，当某个特定的事件发生时便会触发它。在javascript中，这些事件由单机（onclick）、页面加载（onload）、或者鼠标移动（onmousevoer）等动作组成。</p>
+<p>观察者设计模式能够是我们更便利地创建查看目标对象状态的对象，并且提供与核心对象非耦合的指定功能性。</p>
+<p>观察者设计模式使用场景（插件系统、缓存系统）</p>
+<ul>
+<li>对一个对象状态的更新，需要其他对象同步更新，而且其他对象的数量动态可变。<br>-</li>
+<li>对象仅需要将自己的更新通知给其他对象而不需要知道其他对象的细节。</li>
+</ul>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/18/PHP常见设计模式之观察者模式/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/18/PHP中is_function函数汇总/" itemprop="url">
+                  PHP中is_func函数汇总
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-18T18:30:00+08:00" content="2016-10-18">
+              2016-10-18
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/18/PHP中is_function函数汇总/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/18/PHP中is_function函数汇总/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><img src="http://n.sinaimg.cn/games/3ece443e/20161018/is_func.png" alt="PHP中is_func函数汇总"></p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/18/PHP中is_function函数汇总/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/14/PHP常见设计模式之工厂模式/" itemprop="url">
+                  PHP常见设计模式之工厂模式
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-14T21:00:00+08:00" content="2016-10-14">
+              2016-10-14
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/14/PHP常见设计模式之工厂模式/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/14/PHP常见设计模式之工厂模式/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="什么是工厂模式"><a href="#什么是工厂模式" class="headerlink" title="什么是工厂模式"></a>什么是工厂模式</h2><p>工厂模式是我们最常用的实例化对象模式了，顾名思义工厂设计模式，就是用于制造对象的一种设计模式，是一种用来代替new操作的一种模式。</p>
+<p>其的最大价值在于它可以将多个对象设置封装成单一、简单的方法调用。</p>
+<p>对外提供获取某个对象的新实例的接口，同时使调用代码避免确定实际实例化基类的步骤。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/14/PHP常见设计模式之工厂模式/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/10/14/PHP常见设计模式之注册表模式/" itemprop="url">
                   PHP常见设计模式之注册表模式
                 </a>
@@ -3855,808 +4638,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/12/PHP的MVC设计与实现/" itemprop="url">
-                  PHP魔术方法小结
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-12T22:30:00+08:00" content="2016-10-12">
-              2016-10-12
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/12/PHP的MVC设计与实现/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/12/PHP的MVC设计与实现/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>MVC模式，即模型-试图-控制器模式，是将应用程序划分成不同层次的一种方式。</p>
-<p>即，</p>
-<table>
-<thead>
-<tr>
-<th>C</th>
-<th>Control</th>
-<th>控制器层</th>
-<th>负责业务逻辑的处理。根据用户的请求确定用户可以做什么。之后，调用模型执行操作获得数据。最后调用视图将操作结果呈现给用户。</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>M</td>
-<td>Model</td>
-<td>模型层</td>
-<td>负责加工处理数据 返回结果。</td>
-</tr>
-<tr>
-<td>V</td>
-<td>View</td>
-<td>视图层</td>
-<td>负责接收信息和显示信息。</td>
-</tr>
-</tbody>
-</table>
-<p>一个典型MVC应用程序流程图</p>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161013/mvcYingYongChengXuLiuChengTu.png" alt="典型MVC应用程序流程图"></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/12/PHP的MVC设计与实现/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/12/PHP扩展与应用库(PEAR)/" itemprop="url">
-                  PHP扩展与应用库(PEAR)
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-12T20:30:00+08:00" content="2016-10-12">
-              2016-10-12
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/12/PHP扩展与应用库(PEAR)/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/12/PHP扩展与应用库(PEAR)/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>PEAR（the PHP Extension and Application Repository），PHP扩展与应用库。它是一个PHP扩展及应用的一个代码仓库。所有的扩展均以PHP代码的形式出现，功能强大，安装简单，甚至可以改改就用。使用的时候，要在代码中进行Include才能够使用。</p>
-<p>官网：</p>
-<p><a href="http://pear.php.net">http://pear.php.net</a></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/12/PHP扩展与应用库(PEAR)/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/08/Linux常用工具命令之rsync/" itemprop="url">
-                  Linux常用工具命令之rsync
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-08T22:30:00+08:00" content="2016-10-08">
-              2016-10-08
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index">
-                    <span itemprop="name">Linux</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/08/Linux常用工具命令之rsync/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/08/Linux常用工具命令之rsync/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>rsync命令是一个远程数据同步工具，可通过LAN/WAN快速同步多台主机间的文件。<br>rsync使用所谓的“rsync算法”来使本地和远程两个主机之间的文件达到同步，这个算法只传送两个文件的不同部分，而不是每次都整份传送，因此速度相当快。<br>rsync是一个功能非常强大的工具，其命令也有很多功能特色选项，我们下面就对它的选项一一进行分析说明。</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/08/Linux常用工具命令之rsync/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/07/PHP输出缓冲区/" itemprop="url">
-                  PHP输出缓冲区
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-07T21:30:00+08:00" content="2016-10-07">
-              2016-10-07
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/07/PHP输出缓冲区/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/07/PHP输出缓冲区/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="什么是缓冲区"><a href="#什么是缓冲区" class="headerlink" title="什么是缓冲区?"></a>什么是缓冲区?</h2><p>简单而言,缓冲区的作用就是,把输入或者输出的内容先放进内存,而不显示或者读取.</p>
-<p>其实缓冲区最本质的作用就是,协调高速CPU和相对缓慢的IO设备(磁盘等)的运作.</p>
-<h2 id="PHP在执行的时候-在什么地方有用到缓冲区"><a href="#PHP在执行的时候-在什么地方有用到缓冲区" class="headerlink" title="PHP在执行的时候,在什么地方有用到缓冲区?"></a>PHP在执行的时候,在什么地方有用到缓冲区?</h2><p>想要了解PHP的缓冲区,就要知道执行PHP的时候,缓冲区被设置到了什么地方.</p>
-<p>当执行PHP的时候,如果碰到了echo print_r之类的会输出数据的代码,PHP就会将要输出的数据放到PHP自身的缓冲区,等待输出.</p>
-<p>当PHP自身的缓冲区接到指令,指示要输出缓冲区的内容时,将会把缓冲区内的数据输出到apache上, apache接受到PHP输出的数据,然后再把该数据存在到apache自身的缓冲区内,等到输出。</p>
-<p>当apache接受到指令,只是要输出缓冲区的内容时, 将会把缓冲区的内容输出,返回到浏览器.</p>
-<p>由此可见,PHP要输出数据的时候,将会经过两个缓冲区(先是自身的,然后是apache的),再返回到浏览器.</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/07/PHP输出缓冲区/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/07/PHP项目权限控制实现小结/" itemprop="url">
-                  PHP项目权限控制实现小结
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-07T20:00:00+08:00" content="2016-10-07">
-              2016-10-07
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/07/PHP项目权限控制实现小结/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/07/PHP项目权限控制实现小结/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>RBAC，Role Based Access Control,基于角色的访问控制。实体关系如下：</p>
-<p><img src="http://n.sinaimg.cn/games/3ece443e/20161007/RBACShiTiGuanXi.png" alt="RBAC实体关系"></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/07/PHP项目权限控制实现小结/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/10/06/Linux常用命令/" itemprop="url">
-                  Linux常用命令
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-06T22:30:00+08:00" content="2016-10-06">
-              2016-10-06
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index">
-                    <span itemprop="name">Linux</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/06/Linux常用命令/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux常用命令/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="Linux命令格式"><a href="#Linux命令格式" class="headerlink" title="Linux命令格式"></a>Linux命令格式</h2><p>格式：命令    [选项]    [参数]</p>
-<p>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#ls 	-list 	显示目录下内容</div></pre></td></tr></table></figure></p>
-<blockquote>
-<p>命令操作的对象（文件、目录、用户、进程）<br>Linux中以”.”开头的文件是隐藏文件</p>
-</blockquote>
-<p>提示符：[root@localhost src]#</p>
-<blockquote>
-<p>[当前登录用户@主机名 当前所在目录]#</p>
-<h1 id="超级用户"><a href="#超级用户" class="headerlink" title="超级用户"></a>超级用户</h1><p>$    普通用户</p>
-</blockquote>
-<p>当前所在目录：    用户家目录</p>
-<blockquote>
-<p>   管理员        /root<br>   普通用户        /home/用户名</p>
-</blockquote>
-<p><strong>tips：</strong></p>
-<blockquote>
-<p>ctrl +  c        强制终止<br>ctrl+l            清屏<br>ctrl+u        光标删除到行首<br>ctrl+a        光标移动到行首<br>ctrl+e        光标移动到行尾</p>
-</blockquote>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/06/Linux常用命令/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -4697,7 +4683,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">86</span>
+              <span class="site-state-item-count">92</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -4714,7 +4700,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-count">72</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

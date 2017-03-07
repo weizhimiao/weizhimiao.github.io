@@ -3357,6 +3357,505 @@
             
               
                 
+                <a class="post-title-link" href="/2016/09/29/memcache高速缓存的工作原理及应用小结/" itemprop="url">
+                  memcache高速缓存工作原理及应用
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-29T18:30:00+08:00" content="2016-09-29">
+              2016-09-29
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/29/memcache高速缓存的工作原理及应用小结/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/29/memcache高速缓存的工作原理及应用小结/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Memcached,是高性能的分布式内存缓存服务器，主要功能就是通过缓存数据库的查询，减少对数据库的访问次数，来提高动态web应用的速度和可扩展性。</p>
+<p>memcached 是以守护程序方法运行于一个或多个服务器中，随时接受客户端的连接操作，客户端可以由各种语言编写，目前一致的客户端api包括 Perl / PHP / Python / Java / C# / C 等等。客户端在与 memcached 服务建立连接之后，接下来的事情就是存取对象了， 每个被存取的对象都有一个唯一的标识符 key，存取操作均通过这个 key进行，保存到 memcached 中的对象实际上是放置内存中的，并不是保存在平时的 cache 文件中的，这也是为什么 memcached 能够如此高效快速的原因。</p>
+<p>注意，这些对象并不是持久的， 服务停止之后， 里边的数据就会丢失。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20160929/MemcacheYingYongMoXing.png?1" alt="Memcached应用模型"></p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/29/memcache高速缓存的工作原理及应用小结/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/28/Linux服务和进程管理/" itemprop="url">
+                  linux服务和进程管理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-28T18:30:00+08:00" content="2016-09-28">
+              2016-09-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/28/Linux服务和进程管理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/28/Linux服务和进程管理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><img src="http://n.sinaimg.cn/games/3ece443e/20160929/LinuxFuWuHeJinChengGuanLi.png?1" alt="Linux服务和进程管理"></p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/28/Linux服务和进程管理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/27/Nginx运行状态监控/" itemprop="url">
+                  Nginx运行状态监控
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-27T22:30:00+08:00" content="2016-09-27">
+              2016-09-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Nginx/" itemprop="url" rel="index">
+                    <span itemprop="name">Nginx</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/27/Nginx运行状态监控/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Nginx运行状态监控/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Nginx可以通过stub_status模块来查看服务器的状态信息。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/27/Nginx运行状态监控/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/27/PHP-FPM运行状态监控/" itemprop="url">
+                  PHP-FPM运行状态监控
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-27T21:30:00+08:00" content="2016-09-27">
+              2016-09-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/27/PHP-FPM运行状态监控/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/PHP-FPM运行状态监控/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>PHP-FPM内置了一个运行状态页，开启后便可查看PHP-FPM的详细运行状态，可以给我们在优化PHP-FPM时带来帮助。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/27/PHP-FPM运行状态监控/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/09/27/Redis数据类型与操作/" itemprop="url">
                   Redis数据类型与操作
                 </a>
@@ -3438,6 +3937,277 @@
 </ul>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/09/27/Redis数据类型与操作/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/27/Redis安装与管理/" itemprop="url">
+                  Redis安装与管理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-27T20:30:00+08:00" content="2016-09-27">
+              2016-09-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/27/Redis安装与管理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis安装与管理/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>redis是一个key-value存储系统。<br>和Memcached类似，它支持存储的value类型相对更多，<br>包括string(字符串)、list(链表)、set(集合)和zset(有序集合)。<br>这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都是原子性的。</p>
+<p>在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。<br>区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。</p>
+<p>Redis 是一个高性能的key-value数据库。<br> redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。<br>它提供了Python，Ruby，Erlang，PHP客户端，使用很方便。</p>
+<ul>
+<li><p>Memcache</p>
+<blockquote>
+<p>内存缓存服务，缓存数据保存在内存中，一旦断电重启，数据将丢失</p>
+</blockquote>
+</li>
+<li><p>mangoDB</p>
+<blockquote>
+<p>开源免费的NOSQL 数据库，提供数据持久化服务，以文档的形式提供数据组织方式，而不是表</p>
+</blockquote>
+</li>
+<li><p>Redis</p>
+<blockquote>
+<p>开源免费的 NOSQL数据库，提供数据持久化服务，即能实现内存缓存服务，也能提供数据结构服务取代MySQL 自建索引用来弥补关系型数据的不足</p>
+</blockquote>
+</li>
+</ul>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/27/Redis安装与管理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/09/27/Redis高级应用/" itemprop="url">
+                  Redis高级应用
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-27T20:30:00+08:00" content="2016-09-27">
+              2016-09-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/27/Redis高级应用/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/27/Redis高级应用/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <ul>
+<li>给redis服务器设置密码</li>
+<li>持久化</li>
+<li>主从备份</li>
+</ul>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/27/Redis高级应用/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -3839,818 +4609,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/25/nginx安装/" itemprop="url">
-                  Nginx安装
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-25T21:30:00+08:00" content="2016-09-25">
-              2016-09-25
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Nginx/" itemprop="url" rel="index">
-                    <span itemprop="name">Nginx</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/25/nginx安装/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/25/nginx安装/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><img src="http://n.sinaimg.cn/games/3ece443e/20160925/nginx_log.png" alt="nginx"></p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/25/nginx安装/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/25/MySQL安装编译/" itemprop="url">
-                  MySQL编译安装
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-25T20:30:00+08:00" content="2016-09-25">
-              2016-09-25
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/25/MySQL安装编译/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/25/MySQL安装编译/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><img src="http://n.sinaimg.cn/games/3ece443e/20160925/mysql_log.png" alt="MySQL"><br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/25/MySQL安装编译/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/22/PHP中InstanceOf运算符/" itemprop="url">
-                  instanceof运算符的运用
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-22T21:30:00+08:00" content="2016-09-22">
-              2016-09-22
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/22/PHP中InstanceOf运算符/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/22/PHP中InstanceOf运算符/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>在PHP5中，通过方法传递变量的类型有不确定性。我们很难判断，一些操作是否可以运行。<br>使用instanceof运算符，可以判断当前实例是否可以有这样的一个形态。当前实例使用 instanceof与当前类，父类（向上无限追溯），已经实现的接口比较时，返回真。</p>
-<p>代码格式：实例名 instanceof 类名</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/22/PHP中InstanceOf运算符/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/21/GIT使用小结/" itemprop="url">
-                  GIT使用小结
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-21T23:30:00+08:00" content="2016-09-21">
-              2016-09-21
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/软件工程/" itemprop="url" rel="index">
-                    <span itemprop="name">软件工程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/21/GIT使用小结/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/21/GIT使用小结/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>在使用之前先明确两个概念。</p>
-<ul>
-<li><p>工作区（working directory）</p>
-<blockquote>
-<p>我们创建的文件夹</p>
-</blockquote>
-</li>
-<li><p>版本库（Repository）</p>
-<blockquote>
-<p>一个工作区中隐藏的目录（.git）这个目录不算工作区<br>版本库</p>
-<ul>
-<li>stage，暂存区</li>
-<li>master，分支</li>
-</ul>
-<p>日常我们进行git add操作，是将文件修改添加到了暂存区，而进行git commit操作，则是将暂存区中的修改提交至当前分支。</p>
-</blockquote>
-</li>
-</ul>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/21/GIT使用小结/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/20/Mac下包管理工具homebrew/" itemprop="url">
-                  Mac下包管理工具homebrew
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-20T23:30:00+08:00" content="2016-09-20">
-              2016-09-20
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Mac/" itemprop="url" rel="index">
-                    <span itemprop="name">Mac</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/20/Mac下包管理工具homebrew/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/20/Mac下包管理工具homebrew/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="Homebrew"><a href="#Homebrew" class="headerlink" title="Homebrew"></a>Homebrew</h2><p>homebrew,一个在Mac OS上的软件包管理工具。是一款有Ruby开发的智能包管理系统.</p>
-<p><a href="http://brew.sh" target="_blank" rel="external">官网地址</a></p>
-<ul>
-<li><p>安装：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/usr/bin/ruby <span class="_">-e</span> <span class="string">"<span class="variable">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)</span>"</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>功能：</p>
-<blockquote>
-<p>软件包管理。homebrew会将套件安装到独立目录，并将文件软连接链接到/usr/local</p>
-</blockquote>
-</li>
-<li><p>命令格式</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">$ brew -h</div><div class="line">Example usage:</div><div class="line">  brew search [TEXT|/REGEX/]</div><div class="line">  brew (info|home|options) [FORMULA...]</div><div class="line">  brew install FORMULA...</div><div class="line">  brew update</div><div class="line">  brew upgrade [FORMULA...]</div><div class="line">  brew uninstall FORMULA...</div><div class="line">  brew list [FORMULA...]</div><div class="line">Troubleshooting:</div><div class="line">  brew config</div><div class="line">  brew doctor</div><div class="line">  brew install -vd FORMULA</div><div class="line">Brewing:</div><div class="line">  brew create [URL [--no-fetch]]</div><div class="line">  brew edit [FORMULA...]</div><div class="line">  https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/Formula-Cookbook.md</div><div class="line">Further help:</div><div class="line">  man brew</div><div class="line">  brew help [COMMAND]</div><div class="line">  brew home</div></pre></td></tr></table></figure>
-</li>
-<li><p>示例</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ brew install wget</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="brew-cask"><a href="#brew-cask" class="headerlink" title="brew-cask"></a>brew-cask</h2><p>brew-cask,是一套建立在homebrew之上的Mac软件安装命令行工具。其与brew的区别是，后者侧重与软件套件和软件环境的配置安装。</p>
-<p><a href="http://caskrom.github.io" target="_blank" rel="external">官网</a></p>
-<ul>
-<li><p>安装：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ brew install brew-cask</div></pre></td></tr></table></figure>
-</li>
-<li><p>命令格式</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">$ brew cask -h</div><div class="line">brew-cask provides a friendly homebrew-style CLI workflow for the</div><div class="line">administration of macOS applications distributed as binaries.</div><div class="line">Commands:</div><div class="line">    audit                  verifies installability of Casks</div><div class="line">    cat                    dump raw source of the given Cask to the standard output</div><div class="line">    cleanup                cleans up cached downloads and tracker symlinks</div><div class="line">    create                 creates the given Cask and opens it in an editor</div><div class="line">    doctor                 checks for configuration issues</div><div class="line">    edit                   edits the given Cask</div><div class="line">    fetch                  downloads remote application files to local cache</div><div class="line">    home                   opens the homepage of the given Cask</div><div class="line">    info                   displays information about the given Cask</div><div class="line">    install                installs the given Cask</div><div class="line">    list                   with no args, lists installed Casks; given installed Casks, lists staged files</div><div class="line">    search                 searches all known Casks</div><div class="line">    style                  checks Cask style using RuboCop</div><div class="line">    uninstall              uninstalls the given Cask</div><div class="line">    update                 a synonym for &apos;brew update&apos;</div><div class="line">    zap                    zaps all files associated with the given Cask</div><div class="line">See also &quot;man brew-cask&quot;</div></pre></td></tr></table></figure>
-</li>
-<li><p>示例</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ brew cask install iterm2</div></pre></td></tr></table></figure>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/19/Schema数据类型优化/" itemprop="url">
-                  Schema数据类型优化
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-19T18:30:00+08:00" content="2016-09-19">
-              2016-09-19
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index">
-                    <span itemprop="name">MySQL</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/19/Schema数据类型优化/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/19/Schema数据类型优化/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>良好的数据路逻辑设计和物理设计是高性能的基石，所以要打造一个高性能的数据库服务，在Schema设计之初就应该需要权衡各种因素。</p>
-<h2 id="选择最优化的数据类型"><a href="#选择最优化的数据类型" class="headerlink" title="选择最优化的数据类型"></a>选择最优化的数据类型</h2><p>数据库支持的数据类型非常多，选择一个正确的数据类型对于获得高性能至关重要。</p>
-<p>选择合适数据类型的几个原则：</p>
-<ol>
-<li><p>更小的通常更好<br>一般情况下，应该尽量使用可以正确数据类型的最小数据类型。但也要确保没有低估需要存储的范围。</p>
-</li>
-<li><p>简单就好<br>简单的数据类型的操作通常需要更少的CPU周期。例如，</p>
-</li>
-</ol>
-<ul>
-<li>整型比字符串操作代价更低</li>
-<li>使用MySQL内建的数据类型（比如，date、time、datetime），比用字符串更快</li>
-<li>使用整型存储一个IP地址，比用一个字符串更好</li>
-</ul>
-<ol>
-<li>尽量避免使用NULL<br>因为如果在查询中包含有NULL的列，对MySQL来说更难优化。所以通常情况下，最好指定列为 NOT NULL。</li>
-</ol>
-<p><strong>TIPS：</strong><br>datetime和timstamp列都可以存储相同类型的数据（时间和日期，都可以精确到秒），然而timestamp实际只使用datetime一般的存储空间。但另一方面，timestamp允许的时间范围要小的多。</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/19/Schema数据类型优化/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -4691,7 +4654,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">86</span>
+              <span class="site-state-item-count">92</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -4708,7 +4671,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">67</span>
+                <span class="site-state-item-count">72</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
