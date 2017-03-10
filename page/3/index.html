@@ -208,7 +208,7 @@
       
         <li class="menu-item menu-item-search">
           
-            <a href="javascript:;" class="st-search-show-outputs">
+            <a href="javascript:;" class="popup-trigger">
           
             
               <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
@@ -223,19 +223,12 @@
   
     <div class="site-search">
       
-  <form class="site-search-form">
-  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
-</form>
-
-<script type="text/javascript">
-  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
-    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
-    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
-  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
-
-  _st('install', '5esyb9coehH1NCtAqKqX','2.0.0');
-</script>
-
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
 
 
     </div>
@@ -524,131 +517,6 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/Xdebug之函数轨迹跟踪/" itemprop="url">
-                  Xdebug之函数轨迹跟踪
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
-              2016-10-22
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index">
-                    <span itemprop="name">PHP</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之函数轨迹跟踪/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之函数轨迹跟踪/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-            
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。</p>
-<p>那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。<br>函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之函数轨迹跟踪/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
                 <a class="post-title-link" href="/2016/10/22/Xdebug之变量显示功能/" itemprop="url">
                   Xdebug之变量显示功能
                 </a>
@@ -773,8 +641,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/Xdebug之远程调试/" itemprop="url">
-                  Xdebug之远程调试
+                <a class="post-title-link" href="/2016/10/22/Xdebug之堆栈跟踪/" itemprop="url">
+                  Xdebug之变量显示功能
                 </a>
               
             
@@ -817,8 +685,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之远程调试/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之远程调试/" itemprop="commentsCount"></span>
+                <a href="/2016/10/22/Xdebug之堆栈跟踪/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之堆栈跟踪/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -844,9 +712,10 @@
 
       
         
-          <p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
+          <p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
+<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之远程调试/#more" rel="contents">
+            <a class="btn" href="/2016/10/22/Xdebug之堆栈跟踪/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1026,8 +895,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/22/Xdebug之堆栈跟踪/" itemprop="url">
-                  Xdebug之变量显示功能
+                <a class="post-title-link" href="/2016/10/22/Xdebug之远程调试/" itemprop="url">
+                  Xdebug之远程调试
                 </a>
               
             
@@ -1070,8 +939,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/10/22/Xdebug之堆栈跟踪/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之堆栈跟踪/" itemprop="commentsCount"></span>
+                <a href="/2016/10/22/Xdebug之远程调试/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之远程调试/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -1097,10 +966,9 @@
 
       
         
-          <p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
-<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
+          <p>Xdebug为与运行PHP脚本交互的调试器客户端提供了一个接口。 本节介绍如何设置PHP和Xdebug来允许这一点，并介绍一些客户端。</p>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/10/22/Xdebug之堆栈跟踪/#more" rel="contents">
+            <a class="btn" href="/2016/10/22/Xdebug之远程调试/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1225,6 +1093,131 @@
           <p>Xdebug内置分析器允许您在脚本中找到瓶颈，并使用外部工具（如KCacheGrind或WinCacheGrind）可视化这些瓶颈。</p>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/10/22/Xdebug之PHP脚本剖析/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/22/Xdebug之函数轨迹跟踪/" itemprop="url">
+                  Xdebug之函数轨迹跟踪
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-22T20:30:00+08:00" content="2016-10-22">
+              2016-10-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index">
+                    <span itemprop="name">PHP</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/22/Xdebug之函数轨迹跟踪/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/22/Xdebug之函数轨迹跟踪/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+            
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>Xdebug允许您记录所有函数调用，包括参数和返回值到不同格式的文件。</p>
+<p>那些所谓的“函数跟踪”可以帮助当你是新的一个应用程序，或当你试图找出当你的应用程序运行时究竟是怎么回事。<br>函数跟踪还可以选择显示传递给函数和方法的变量的值，以及返回值。 在默认跟踪中，这两个元素不可用。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/10/22/Xdebug之函数轨迹跟踪/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1774,6 +1767,135 @@
 
   
   
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
 
   
   <script type="text/x-mathjax-config">
