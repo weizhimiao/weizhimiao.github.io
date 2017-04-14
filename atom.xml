@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2017-03-09T08:57:13.000Z</updated>
+  <updated>2017-04-14T05:51:16.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -14,6 +14,173 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>浅谈Web客户端追踪</title>
+    <link href="https://weizhimiao.github.io/2017/03/29/%E6%B5%85%E8%B0%88Web%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%BD%E8%B8%AA/"/>
+    <id>https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/</id>
+    <published>2017-03-29T12:30:00.000Z</published>
+    <updated>2017-04-14T05:51:16.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。</p>
+<a id="more"></a>
+<h2 id="Web客户端追踪技术概述"><a href="#Web客户端追踪技术概述" class="headerlink" title="Web客户端追踪技术概述"></a>Web客户端追踪技术概述</h2><p>Web客户端追踪，主要是指用户使用客户端（通常是指浏览器）访问Web网站时，Web服务器通过一系列手段对用户客户端进行标记和识别，进而关联和分析用户行为的技术。</p>
+<p>实际上，只要通过Web进入互联网的海洋，Web客户端追踪几乎无时不刻不在发生。</p>
+<p>当你网购时，即便没有登录，关掉浏览器后购物车的物品也不会消失；当你访问其他新闻、娱乐网站时，弹出的广告往往都是近期浏览购物网站的类似商品；稍有意识的用户可能会不定时清空浏览器缓存、使用“无痕浏览”、“隐私保护模式”等，然而仍然不能阻止类似广告的洗脑。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/CCC2C265-F4A1-4D0E-AEE7-3DAC87997A54.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/4809C3B6-4DAD-49A8-9AE5-3B59C15E44A7.png" alt="img"></center>
+
+<p>现实世界可通过体貌特征、身份证件、生物特征（如指纹信息）等手段对用户进行唯一性识别，Web世界主要通过Cookies、客户端指纹等技术进行识别。</p>
+<h2 id="典型追踪技术"><a href="#典型追踪技术" class="headerlink" title="典型追踪技术"></a>典型追踪技术</h2><h3 id="1-Cookie追踪"><a href="#1-Cookie追踪" class="headerlink" title="1. Cookie追踪"></a>1. Cookie追踪</h3><h4 id="1-Cookie简介"><a href="#1-Cookie简介" class="headerlink" title="1)  Cookie简介"></a>1)  Cookie简介</h4><p>Cookie，中文翻译为小甜饼，有时也用复数形式Cookies，在Web世界中其实际上是用户浏览网站时，网站存储在用户浏览器上的一段信息，并在服务器和浏览器之间传递，用户与辨别用户身份和维持状态。</p>
+<p>通常是以cookies:user@domain格式命名的，user是你的本地用户名，domain是所访问的网站的域名。在现有Windows系统中，一般存放位置在</p>
+<p><code>C:\Users\user\AppData\Local\Microsoft\Windows\TemporaryInternet Files\</code>文件夹下。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/90ADED7C-F517-4460-AAF4-4052AF293B63.png" alt="img"></center>
+
+
+<p>以添加购物车为例，Cookies的大致利用过程可表示为：</p>
+<ul>
+<li>①、用户第一次访问购物网站：</li>
+</ul>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/5FD30CF8-5A10-454A-924A-0E51431A95FB.png" alt="img"></center>
+
+<ul>
+<li>②、用户第二次访问网站：</li>
+</ul>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/1F01FC18-7FAB-4DE7-88DF-4BCBDE1F5979.png" alt="img"></center>
+
+<ul>
+<li>③、浏览器查看Cookies如下：</li>
+</ul>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/909A1F2B-3584-49CA-9446-8BD5E9685565.png" alt="img"></center>
+
+
+<h4 id="2-Evercookie"><a href="#2-Evercookie" class="headerlink" title="2)  Evercookie"></a>2)  Evercookie</h4><p>用户可以通过清空浏览器缓存等方式，清除已保存的Cookie，Evercookie将Cookie通过多种机制保存到系统多个地方，如果用户删除其中某几处的Cookie， Evercookie仍然可以恢复Cookie，如果开启本地共享对象(Local Shared Objects)，Evercookie甚至可以跨浏览器传播（详见参考地址[1]）。</p>
+<p>主要的存储机制如下图，开源地址：</p>
+<p><a href="https://github.com/samyk/evercookie" target="_blank" rel="external">https://github.com/samyk/evercookie</a></p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/3D9E61BC-FFE2-4FDF-8755-2BC7F293ABD4.png" alt="img"></center>
+
+<h4 id="3-Cookie同步"><a href="#3-Cookie同步" class="headerlink" title="3)  Cookie同步"></a>3)  Cookie同步</h4><p>Cookie同步是指用户访问某A网站时，该网站通过页面跳转等方式将用户的Cookie发送到B网站，使得B网站获取到用户在A网站的用户隐私信息，然后通过Ad Network等一系列平台进行有效的广告推送服务。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/81117524-6CBE-4EBF-B2E8-F6CFDED2C069.png" alt="img"></center>
+
+<p>研究人员通过访问了Alexa排名前1500网站，发现两个追踪者进行Cookie同步以后，可以把数据完全共享，就像是一个追踪者一样。（详见参考地址[2]）</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/13E3C6AC-ACC4-4D12-B33E-F14FF233F9D7.png" alt="img"></center>
+
+<p>Cookie越来越受限制，不少安全工具甚至是浏览器都允许或者引导关闭追踪Cookie，浏览器指纹追踪渐渐成为了Web追踪的重要技术手段。</p>
+<h3 id="2-浏览器指纹"><a href="#2-浏览器指纹" class="headerlink" title="2. 浏览器指纹"></a>2. 浏览器指纹</h3><p>类似人的外貌和指纹，Web客户端（这里主要指浏览器）也有多种“外貌”信息和“指纹”信息，将这些信息综合分析计算后，可对客户端唯一性识别，进而追踪、了解网民行为和隐私数据。</p>
+<h4 id="1-基本指纹"><a href="#1-基本指纹" class="headerlink" title="1)  基本指纹"></a>1)  基本指纹</h4><p>基本指纹是任何浏览器都具有的特征标识，比如硬件类型（Apple）、操作系统（Mac OS）、用户代理（Useragent）、系统字体、语言、屏幕分辨率、浏览器插件 (Flash,Silverlight, Java, etc)、浏览器扩展、浏览器设置(Do-Not-Track, etc)、时区差（BrowserGMT Offset）等众多信息。</p>
+<p>可以在该网址进行查看测试，<a href="https://www.whatismybrowser.com/" target="_blank" rel="external">https://www.whatismybrowser.com/</a></p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/761F97FB-C31C-49ED-91F9-0361F0DF4A26.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/BE609BB4-53EE-4115-BA93-40CD9C243972.png" alt="img"></center>
+
+<h4 id="2-高级指纹"><a href="#2-高级指纹" class="headerlink" title="2)  高级指纹"></a>2)  高级指纹</h4><p>基本指纹就像是人的外貌特征，外貌可以用男女、身高、体重之分，然而这些特征不能对某个人进行唯一性标识。基于HTML5的诸多高级指纹对此提供了新思路。</p>
+<ul>
+<li>①、Canvas指纹</li>
+</ul>
+<p>Canvas（画布），是HTML5中一种动态绘图的标签，可以使用其生成高级图片，官网有众多绘画事例，如下图。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/AAC806FA-2B19-4735-932F-80D47366E009.png" alt="img"></center>
+
+<p>2014年9月，ProPublica报道：新型的Canvas指纹追踪正在被用到“上到白宫，下到YouPorn”等众多网站，众多重要网站都部署了Canvas指纹追踪。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/4EFB75A4-9BF9-4E43-A9B4-D0F17BC3984D.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/BD836DFD-178E-446F-A71F-C2DF37A2DD15.png" alt="img"></center>
+
+<p>利用Canvas进行追踪的过程大致如下：</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/B8554485-29B1-4B8A-89AB-8550371CE09A.png" alt="img"></center>
+
+<p>基于Canvas绘制特定内容的图片，使用canvas.toDataURL()方法获得图片内容的base64编码（对于PNG格式的图片，以块(chunk)划分，最后一块是32位CRC校验）作为唯一性标识，如下图。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/1BDA6AFA-B37C-400E-AE2F-71B13F76E4F9.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/7B8514B0-881B-4880-B297-918CB3B72A4C.png" alt="img"></center>
+
+<p><strong><em>Canvas指纹的原理大致如下：</em></strong></p>
+<p>相同的HTML5Canvas元素绘制操作，在不同操作系统、不同浏览器上，产生的图片内容不完全相同。</p>
+<p>在图片格式上，不同浏览器使用了不同的图形处理引擎、不同的图片导出选项、不同的默认压缩级别等。</p>
+<p>在像素级别来看，操作系统各自使用了不同的设置和算法来进行抗锯齿和子像素渲染操作。即使相同的绘图操作，产生的图片数据的CRC检验也不相同。</p>
+<p>在线测试地址：</p>
+<p><a href="https://www.browserleaks.com/canvas" target="_blank" rel="external">https://www.browserleaks.com/canvas</a></p>
+<p>可查看浏览器的Canvas唯一性字符串。</p>
+<ul>
+<li>②、AudioContext指纹</li>
+</ul>
+<p>HTML5提供给JavaScript编程用的AudioAPI则让开发者有能力在代码中直接操作原始的音频流数据，对其进行任意生成、加工、再造，诸如提高音色，改变音调，音频分割等多种操作，甚至可称为网页版的Adobe Audition。</p>
+<p><strong><em>AudioContext指纹原理大致如下：</em></strong></p>
+<p>方法一：生成音频信息流(三角波)，对其进行FFT变换，计算SHA值作为指纹，音频输出到音频设备之前进行清除，用户毫无察觉。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/38DBB916-AAF4-42E1-B7B4-11A3F9DC3F39.png" alt="img"></center>
+
+
+<p>方法二：生成音频信息流（正弦波），进行动态压缩处理，计算MD5值。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/038BF410-893D-4D20-B62A-24FECB62A794.png" alt="img"></center>
+
+
+<p>AudioContext指纹基本原理：<br>主机或浏览器硬件或软件的细微差别，导致音频信号的处理上的差异，相同器上的同款浏览器产生相同的音频输出，不同机器或不同浏览器产生的音频输出会存在差异。</p>
+<p>从上可以看出AudioContext和Canvas指纹原理很类似，都是利用硬件或软件的差异，前者生成音频，后者生成图片，然后计算得到不同哈希值来作为标识。</p>
+<p>音频指纹测试地址：<a href="https://audiofingerprint.openwpm.com/" target="_blank" rel="external">https://audiofingerprint.openwpm.com/</a></p>
+<h4 id="3-硬件指纹"><a href="#3-硬件指纹" class="headerlink" title="3)  硬件指纹"></a>3)  硬件指纹</h4><p>硬件指纹主要通过检测硬件模块获取信息，作为对基于软件的指纹的补充，主要的硬件模块有：GPU’sclock frequency、Camera、Speakers/Microphone、Motion sensors、GPS、Battery等。</p>
+<p>更多细节请参考：<a href="https://arxiv.org/pdf/1503.01408v3.pdf" target="_blank" rel="external">https://arxiv.org/pdf/1503.01408v3.pdf</a></p>
+<h4 id="4-综合指纹"><a href="#4-综合指纹" class="headerlink" title="4)  综合指纹"></a>4)  综合指纹</h4><p>Web世界的指纹碰撞不可避免，将上述基本指纹和高级指纹综合起来，计算哈希值作为综合指纹，可以大大降低碰撞率。</p>
+<p>测试地址：<a href="https://panopticlick.eff.org/" target="_blank" rel="external">https://panopticlick.eff.org/</a></p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/2959BA38-D4E7-4E17-BDE4-3A562ABB1D21.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/C748D9A2-26B7-4205-9A39-652AE9DAD763.png" alt="img"></center>
+
+<h3 id="3-跨浏览器指纹"><a href="#3-跨浏览器指纹" class="headerlink" title="3. 跨浏览器指纹"></a>3. 跨浏览器指纹</h3><p>上述指纹都是基于浏览器进行的，同一台电脑的不同浏览器具有不同的指纹信息。</p>
+<p>这样造成的结果是，当同一用户使用同一台电脑的不同浏览器时，服务方收集到的浏览器指纹信息不同，无法将该用户进行唯一性识别，进而无法有效分析改用户的的行为。</p>
+<p>近期有学者研究了一种跨浏览器的浏览器指纹，其依赖于浏览器与操作系统和硬件底层进行交互进而分析计算出指纹，这种指纹对于同一台电脑的不同浏览器也是相同的。</p>
+<p>更多技术细节请参考：</p>
+<p><a href="http://yinzhicao.org/TrackingFree/crossbrowsertracking_NDSS17.pdf" target="_blank" rel="external">http://yinzhicao.org/TrackingFree/crossbrowsertracking_NDSS17.pdf</a></p>
+<h3 id="4-WebRTC"><a href="#4-WebRTC" class="headerlink" title="4. WebRTC"></a>4. WebRTC</h3><p>WebRTC（网页实时通信，Web Real Time Communication），是一个支持网页浏览器进行实时语音对话或视频对话的API，功能是让浏览器实时获取和交换视频、音频和数据。基于WebRTC可以实现浏览器上，通过Javascript就可以达到实时通讯的能力。</p>
+<p>基于WebRTC的实时通讯功能，可以获取客户端的IP地址，包括本地内网地址和公网地址。其原理是利用到RTCPeerConnection的API，大致函数如下：</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/369C0E01-4122-4B75-BCAA-00C6026C1378.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/701F38B8-C7A0-49AE-8676-6053F8F0EF4D.png" alt="img"></center>
+
+
+<p>利用WebRTC能做的事情还远不止这些，比如使用其探测扫描内网信息，进行语音、视频交流，更多技术细节请参考：</p>
+<p><a href="http://net.ipcalf.com" target="_blank" rel="external">http://net.ipcalf.com</a></p>
+<p><a href="https://diafygi.github.io/webrtc-ips/" target="_blank" rel="external">https://diafygi.github.io/webrtc-ips/</a></p>
+<h2 id="防客户端追踪措施"><a href="#防客户端追踪措施" class="headerlink" title="防客户端追踪措施"></a>防客户端追踪措施</h2><h3 id="1-浏览器设置"><a href="#1-浏览器设置" class="headerlink" title="1. 浏览器设置"></a>1. 浏览器设置</h3><ul>
+<li><p>①、使用隐身模式，目前主流的浏览器都支持该模式。</p>
+</li>
+<li><p>②、禁用Cookie和JavaScript（此项可能导致页面显示不正常，慎用）</p>
+</li>
+<li><p>③、禁用WebRTC，如Firefox浏览器：打开about:config，找到media.peerconnection.enabled的项，设置成 false</p>
+</li>
+<li><p>④、禁用Geolocation，Firefox浏览器：打开about:config，找到geo.enabled的值，设置其值为 false。Chrome 点击设置（Settings），从显示高级设置（Show advanced settings）上，找到隐私（Privacy）并且点击内容设置（Content settings），在窗口里找到定位（Location）并设置选项不允许任何网站追踪你的物理位置（Do not allow any site to track your physical location）</p>
+</li>
+<li><p>⑤、限制API访问文件资源时序信息，恶意网站会通过检测浏览器缓存的时序信息，包括访问和忽略第三方网站的资源，来判断使用者是否访问过第三方网站。Firefox浏览器：打开about:config，将dom.enable_resource_timing, dom.enable_user_timing 和dom.performance.enable_user_timing_logging设置为 false，来阻止这些 API 运行。</p>
+</li>
+</ul>
+<h3 id="2-插件"><a href="#2-插件" class="headerlink" title="2. 插件"></a>2. 插件</h3><p>推荐几个较好的插件来阻止第三方广告追踪和广告：<br>Ghostery，官网地址：<br><a href="https://www.ghostery.com/try-us/download-browser-extension" target="_blank" rel="external">https://www.ghostery.com/try-us/download-browser-extension</a></p>
+<p>Privacy Badger，官网地址：<br><a href="https://www.eff.org/privacybadger/" target="_blank" rel="external">https://www.eff.org/privacybadger/</a></p>
+<p>uMatrix（仅Chrome和FireFox）：<br><a href="https://addons.mozilla.org/en-us/firefox/addon/umatrix/" target="_blank" rel="external">https://addons.mozilla.org/en-us/firefox/addon/umatrix/</a></p>
+<p>NoScript（仅FireFox）：<br><a href="https://addons.mozilla.org/en-US/firefox/addon/noscript/#" target="_blank" rel="external">https://addons.mozilla.org/en-US/firefox/addon/noscript/#</a></p>
+<p>Chameleon（仅Chrome）：<br><a href="https://github.com/ghostwords/chameleon" target="_blank" rel="external">https://github.com/ghostwords/chameleon</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] <a href="http://samy.pl/evercookie/" target="_blank" rel="external">http://samy.pl/evercookie/</a></p>
+<p>[2] <a href="http://freedom-to-tinker.com/2014/08/07/the-hidden-perils-of-cookie-syncing/" target="_blank" rel="external">http://freedom-to-tinker.com/2014/08/07/the-hidden-perils-of-cookie-syncing/</a></p>
+<p>[3] <a href="https://securehomes.esat.kuleuven.be/~gacar/persistent/index.html" target="_blank" rel="external">https://securehomes.esat.kuleuven.be/~gacar/persistent/index.html</a></p>
+<p>[4] <a href="http://cseweb.ucsd.edu/~hovav/papers/ms12.html" target="_blank" rel="external">http://cseweb.ucsd.edu/~hovav/papers/ms12.html</a></p>
+<p>[5] <a href="https://arxiv.org/pdf/1503.01408v3.pdf" target="_blank" rel="external">https://arxiv.org/pdf/1503.01408v3.pdf</a></p>
+<p>[6] <a href="https://eprint.iacr.org/2015/616.pdf" target="_blank" rel="external">https://eprint.iacr.org/2015/616.pdf</a></p>
+<blockquote>
+<p>作者：ArkTeam/Wellee</p>
+<p>来源：FreeBuf</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Web" scheme="https://weizhimiao.github.io/categories/Web/"/>
+    
+    
+      <category term="客户端追踪" scheme="https://weizhimiao.github.io/tags/%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%BD%E8%B8%AA/"/>
+    
+  </entry>
   
   <entry>
     <title>PHP中常见的密码处理方式与建议</title>
@@ -2471,76 +2638,6 @@
     
     
       <category term="shell" scheme="https://weizhimiao.github.io/tags/shell/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux中通过inotify-tools实现监控文件变化</title>
-    <link href="https://weizhimiao.github.io/2016/10/29/Linux%E4%B8%AD%E9%80%9A%E8%BF%87inotify-tools%E5%AE%9E%E7%8E%B0%E7%9B%91%E6%8E%A7%E6%96%87%E4%BB%B6%E5%8F%98%E5%8C%96/"/>
-    <id>https://weizhimiao.github.io/2016/10/29/Linux中通过inotify-tools实现监控文件变化/</id>
-    <published>2016-10-29T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>inotify-tools 是一个用C语言库，一个为Linux提供简单inotify接口的命令行程序。这些程序可以用于监视文件系统事件并执行相应操作。这些程序是用C语言来写的，除了需要Linux内核的inotify支持外，没有其他的依赖。inotify-tools 3.14是目前最新版本，其于2010年3月7日发布。</p>
-<p>那么什么inotify又是什么？</p>
-<p>inotify，它是Linux在内核 2.6.13 (June 18, 2005)版本中引入的一个新功能，它为用户态监视文件系统的变化提供了强大的支持，允许监控程序打开一个独立文件描述符，并针对事件集监控一个或者多个文件，例如打开、关闭、移动/重命名、删除、创建或者改变属性。</p>
-<p>官方站点地址：<a href="http://inotify-tools.sourceforge.net/" target="_blank" rel="external">http://inotify-tools.sourceforge.net/</a><br>Github地址：<a href="https://github.com/rvoicilas/inotify-tools" target="_blank" rel="external">https://github.com/rvoicilas/inotify-tools</a></p>
-<a id="more"></a>
-<h2 id="inotify安装"><a href="#inotify安装" class="headerlink" title="inotify安装"></a>inotify安装</h2><h3 id="inotify支持检测"><a href="#inotify支持检测" class="headerlink" title="inotify支持检测"></a>inotify支持检测</h3><p>只有在内核 2.6.13 (June 18, 2005)以上的Linux版本中才支持inotify-tools。</p>
-<p>查看当前系统是否支持inotify， 可用通过 uname -a 查看你的内核版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">uname -a</div><div class="line">Linux localhost.localdomain 2.6.32-279.el6.i686 #1 SMP Fri Jun 22 10:59:55 UTC 2012 i686 i686 i386 GNU/Linux</div></pre></td></tr></table></figure></p>
-<p>或<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cat /proc/version</div><div class="line">Linux version 2.6.32-279.el6.i686 (mockbuild@c6b9.bsys.dev.centos.org) (gcc version 4.4.6 20120305 (Red Hat 4.4.6-4) (GCC) ) #1 SMP Fri Jun 22 10:59:55 UTC 2012</div></pre></td></tr></table></figure></p>
-<p>或者查看<code>/proc/sys/fs/inotify/</code>，如果看到显示 max_queued_events max_user_instances max_user_watches 则说明支持inotify<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">ls /proc/sys/fs/inotify/</div><div class="line">max_queued_events  max_user_instances  max_user_watches</div></pre></td></tr></table></figure></p>
-<h3 id="inotify-tools安装"><a href="#inotify-tools安装" class="headerlink" title="inotify-tools安装"></a>inotify-tools安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">#wget --no-check-certificate https://github.com/downloads/rvoicilas/inotify-tools/inotify-tools-3.14.tar.gz</div><div class="line">#tar zxvf inotify-tools-3.14.tar.gz</div><div class="line">#cd inotify-tools-3.14</div><div class="line">#./configure</div><div class="line">#make</div><div class="line">#make install</div></pre></td></tr></table></figure>
-<p>注：源码包安装需要编译，需要系统已经安装过C编译器</p>
-<p>在系统下执行man inotify 、 man inotifywait、man inotifywatch即可得到相应的帮助信息，如果看到信息 则表示安装完成.</p>
-<h2 id="inotify-tools使用"><a href="#inotify-tools使用" class="headerlink" title="inotify-tools使用"></a>inotify-tools使用</h2><h3 id="inotify-的默认内核参数详解"><a href="#inotify-的默认内核参数详解" class="headerlink" title="inotify 的默认内核参数详解"></a>inotify 的默认内核参数详解</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">/proc/sys/fs/inotify/max_queued_events</div><div class="line">    默认值: 16384</div><div class="line">    该文件中的值为调用inotify_init时分配给inotify instance中可排队的event的数目的最大值，超出这个值得事件被丢弃，但会触发IN_Q_OVERFLOW事件</div><div class="line">/proc/sys/fs/inotify/max_user_instances</div><div class="line">    默认值: 128</div><div class="line">    指定了每一个real user ID可创建的inotify instatnces的数量上限</div><div class="line">/proc/sys/fs/inotify/max_user_watches</div><div class="line">    默认值: 8192</div><div class="line">    指定了每个inotify instance相关联的watches的上限，也就是每一个inotify实例可监控的最大目录数。如果监控的文件数目巨大，需要根据实际情况适当增加此值得大小。</div><div class="line"></div><div class="line">注意:</div><div class="line">    max_queued_events 是 Inotify 管理的队列的最大长度，文件系统变化越频繁，这个值就应该越大！如果你在日志中看到Event Queue Overflow，说明max_queued_events太小需要调整参数后再次使用</div></pre></td></tr></table></figure>
-<p>优化参数配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo 104857600 &gt; /proc/sys/fs/inotify/max_user_watches</div></pre></td></tr></table></figure></p>
-<p>inotify-tools 工具包中包含了两个命令</p>
-<ul>
-<li>inotifywait</li>
-<li>inotifywatch</li>
-</ul>
-<h3 id="inotifywait"><a href="#inotifywait" class="headerlink" title="inotifywait"></a>inotifywait</h3><blockquote>
-<p>inotifywait 仅执行阻塞，等待 inotify 事件，你可以使用它来监控任何一组文件和目录，或监控整个目录树（目录、子目录、子目录的子目录等等），并且可以结合 shell 脚本，更好的使用 inotifywait。</p>
-</blockquote>
-<p>命令格式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">inotifywait [-hcmrq] [-e &lt;event&gt; ] [-t &lt;seconds&gt; ] [--format &lt;fmt&gt; ] [--timefmt &lt;fmt&gt; ] &lt;file&gt; [ ... ]</div></pre></td></tr></table></figure></p>
-<p>选项参数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">-h|--help     	显示帮助信息</div><div class="line">@&lt;file&gt;       	排除不需要监视的文件，可以是相对路径，也可以是绝对路径</div><div class="line">--exclude &lt;pattern&gt;</div><div class="line">                正则匹配需要排除的文件，大小写敏感</div><div class="line">--excludei &lt;pattern&gt;</div><div class="line">                正则匹配需要排除的文件，忽略大小写。</div><div class="line">-m|--monitor  	接收到一个事情而不退出，无限期地执行。默认行为是接收到一个事情后立即退出</div><div class="line">-d|--daemon   	跟--monitor一样，除了是在后台运行，需要指定--outfile把事情输出到一个文件。也意味着使用了--syslog</div><div class="line">-r|--recursive	监视一个目录下的所有子目录</div><div class="line">--fromfile &lt;file&gt;</div><div class="line">                从文件读取需要监视的文件或排除的文件，一个文件一行，排除的文件以@开头</div><div class="line">-o|--outfile &lt;file&gt;</div><div class="line">                输出事件到文件.</div><div class="line">-s|--syslog   	输出错误信息到系统日志</div><div class="line">-q|--quiet    	不输出详细信息，只输出事件</div><div class="line">-qq           	除了致命错误，不会输出任何信息</div><div class="line">--timefmt &lt;fmt&gt;	指定时间格式，用于�format选项中的%T格式</div><div class="line">-c|--csv      	输出csv格式。</div><div class="line">-t|--timeout &lt;seconds&gt;</div><div class="line">                设置超时时间，如果为0，则无限期地执行下去。</div><div class="line">-e|--event &lt;event1&gt; [ -e|--event &lt;event2&gt; ... ]</div><div class="line">                指定监听的时间，如果省略，则侦听所有事件。</div><div class="line">--format &lt;fmt&gt;	指定输出格式</div><div class="line">     %w 表示发生事件的目录</div><div class="line">     %f 表示发生事件的文件</div><div class="line">     %e 表示发生的事件</div><div class="line">     %Xe 事件以“X”分隔</div><div class="line">     %T 使用由--timefmt定义的时间格式</div></pre></td></tr></table></figure></p>
-<p>可监听的事件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">access		    文件或者目录被读</div><div class="line">modify		    文件或目录被写入</div><div class="line">attrib		    文件或者目录属性被更改</div><div class="line">close_write	  文件或目录关闭，在写模式下打开后</div><div class="line">close_nowrite	文件或目录关闭，在只读模式打开后</div><div class="line">close		      文件或目录关闭，而不管是读/写模式</div><div class="line">open		      文件或目录被打开</div><div class="line">moved_to	    文件或者目录移动到监视目录</div><div class="line">moved_from	  文件或者目录移出监视目录</div><div class="line">move		      文件或目录移出或者移入目录</div><div class="line">create		    文件或目录被创建在监视目录</div><div class="line">delete		    文件或者目录被删除在监视目录</div><div class="line">delete_self	  文件或目录移除，之后不再监听此文件或目录</div><div class="line">unmount		    文件系统取消挂载，之后不再监听此文件系统</div></pre></td></tr></table></figure></p>
-<p>示例1、监控<code>/data</code>目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">inotifywait -rmq /data</div></pre></td></tr></table></figure></p>
-<p>我们在另一个终端中想该目录中写入一个文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &quot;test&quot; &gt;&gt; /data/newfile</div></pre></td></tr></table></figure></p>
-<p>这个时候我们就会在前一个终端中看到如下信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># inotifywait -rmq /data</div><div class="line">/data/ CREATE newfile</div><div class="line">/data/ OPEN newfile</div><div class="line">/data/ MODIFY newfile</div><div class="line">/data/ CLOSE_WRITE,CLOSE newfile</div></pre></td></tr></table></figure></p>
-<p>如上所示，我们监控的了对于newfile文件的 CREATE、OPEN、MODIFY、CLOSE_WRITE、CLOSE等事件。</p>
-<p>示例2、实时监控对<code>/etc/passwd</code> 文件的修改、删除和权限相关时间，并且按照指定格式输出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># inotifywait -mrq --timefmt &apos;%d/%m/%y %H:%M&apos; --format  &apos;%T %w%f %e&apos; --event modify,delete,attrib  /etc/passwd</div></pre></td></tr></table></figure></p>
-<p>这是我们在另一终端创建一个新用户<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># useradd testuser</div></pre></td></tr></table></figure></p>
-<p>这时在前一个终端中就会监控到一个ATTRIB 事件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># inotifywait -mrq --timefmt &apos;%d/%m/%y %H:%M&apos; --format  &apos;%T %w%f %e&apos; --event modify,delete,attrib  /etc/passwd</div><div class="line">29/10/16 16:59 /etc/passwd ATTRIB</div></pre></td></tr></table></figure></p>
-<p>示例3、实现对 /data/web 目录进行监控，监控文件删除，修改，创建和权限相关事件，并且要求将监控信息写入/var/log/web_watch.log。要求日志条目要清晰明了，能突显文件路径、事件名和时间。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"># cat web_watch.sh</div><div class="line">#!/bin/bash</div><div class="line">inotifywait -mrq --timefmt &apos;%y/%m/%d %H:%M&apos; --format  &apos;%T %w%f %e&apos; --event delete,modify,create,attrib  /data/web | while read  date time file event</div><div class="line">  do</div><div class="line">      case $event in</div><div class="line">          MODIFY|CREATE|MOVE|MODIFY,ISDIR|CREATE,ISDIR|MODIFY,ISDIR)</div><div class="line">                  echo $event&apos;-&apos;$file&apos;-&apos;$date&apos;-&apos;$time &gt;&gt; /var/log/web_watch.log</div><div class="line">              ;;</div><div class="line"></div><div class="line">          MOVED_FROM|MOVED_FROM,ISDIR|DELETE|DELETE,ISDIR)</div><div class="line">                  echo $event&apos;-&apos;$file&apos;-&apos;$date&apos;-&apos;$time /var/log/web_watch.log</div><div class="line">              ;;</div><div class="line">      esac</div><div class="line">  done</div></pre></td></tr></table></figure>
-<p>运行脚本后，在另一个终端操作后，查看<code>/var/log/web_watch.log</code>日志<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># cat /var/log/web_watch.log</div><div class="line">CREATE-/data/web/a-14/06/27-16:21</div><div class="line">CREATE-/data/web/aa-14/06/27-16:21</div><div class="line">CREATE-/data/web/aaaa-14/06/27-16:24</div><div class="line">CREATE-/data/web/aaaaa-14/06/27-16:24</div></pre></td></tr></table></figure></p>
-<p>更多的使用方式，请查看 inotifywatch man page</p>
-<h3 id="inotifywatch"><a href="#inotifywatch" class="headerlink" title="inotifywatch"></a>inotifywatch</h3><blockquote>
-<p>inotifywatch 用来收集关于被监视的文件系统的统计数据，包括每个 inotify 事件发生多少次。</p>
-</blockquote>
-<p>命令格式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">inotifywatch  [-hvzrqf]  [-e  &lt;event&gt;  ] [-t &lt;seconds&gt; ] [-a &lt;event&gt; ] [-d &lt;event&gt; ] &lt;file&gt; [ ... ]</div></pre></td></tr></table></figure></p>
-<p>选项参数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">-h|--help    	            显示帮助信息</div><div class="line">-v|--verbose 	            详细信息</div><div class="line">@&lt;file&gt;       	          排除不需要监视的文件，可以是相对路径，也可以是绝对路径</div><div class="line">--fromfile &lt;file&gt;         从文件读取需要监视的文件或排除的文件，一个文件一行，排除的文件以@开头</div><div class="line">--exclude &lt;pattern&gt;       正则匹配需要排除的文件，大小写敏感</div><div class="line">--excludei &lt;pattern&gt;      正则匹配需要排除的文件，忽略大小写。</div><div class="line">-z|--zero                 输出表格的行和列，即使元素为空</div><div class="line">-r|--recursive	          监视一个目录下的所有子目录</div><div class="line">-t|--timeout &lt;seconds&gt;</div><div class="line">                          设置超时时间，如果为0，则无限期地执行下去。</div><div class="line">-e|--event &lt;event1&gt; [ -e|--event &lt;event2&gt; ... ]</div><div class="line">                          指定监听的时间，如果省略，则侦听所有事件。</div><div class="line">-a|--ascending &lt;event&gt;    以指定事件升序排列</div><div class="line">-d|--descending &lt;event&gt;   以指定事件降序排列</div></pre></td></tr></table></figure></p>
-<p>示例1、统计/data目录所在文件系统发生的事件次数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">inotifywatch -v -e create,modify,delete -t 30 -r /data</div></pre></td></tr></table></figure></p>
-<p>然后在另一终端中进行一些操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># echo &quot;test&quot; &gt;&gt; /data/newfile1</div><div class="line">...</div><div class="line"># rm /data/newfile</div><div class="line">rm：是否删除普通文件 &quot;/data/newfile&quot;？y</div><div class="line"># rm /data/newfile1</div><div class="line">rm：是否删除普通文件 &quot;/data/newfile1&quot;？y</div></pre></td></tr></table></figure></p>
-<p>30秒后，前一个终端会生成如下报告<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"># inotifywatch -v -e create,modify,delete -t 30 -r /data</div><div class="line">Establishing watches...</div><div class="line">Setting up watch(es) on /data</div><div class="line">OK, /data is now being watched.</div><div class="line">Total of 1 watches.</div><div class="line">Finished establishing watches, now collecting statistics.</div><div class="line">Will listen for events for 30 seconds.</div><div class="line">total  modify  create  delete  filename</div><div class="line">11     8       1       2       /data/</div></pre></td></tr></table></figure></p>
-<p>更多的使用方式，请查看 inotifywatch man page</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;inotify-tools 是一个用C语言库，一个为Linux提供简单inotify接口的命令行程序。这些程序可以用于监视文件系统事件并执行相应操作。这些程序是用C语言来写的，除了需要Linux内核的inotify支持外，没有其他的依赖。inotify-tools 3.14是目前最新版本，其于2010年3月7日发布。&lt;/p&gt;
-&lt;p&gt;那么什么inotify又是什么？&lt;/p&gt;
-&lt;p&gt;inotify，它是Linux在内核 2.6.13 (June 18, 2005)版本中引入的一个新功能，它为用户态监视文件系统的变化提供了强大的支持，允许监控程序打开一个独立文件描述符，并针对事件集监控一个或者多个文件，例如打开、关闭、移动/重命名、删除、创建或者改变属性。&lt;/p&gt;
-&lt;p&gt;官方站点地址：&lt;a href=&quot;http://inotify-tools.sourceforge.net/&quot;&gt;http://inotify-tools.sourceforge.net/&lt;/a&gt;&lt;br&gt;Github地址：&lt;a href=&quot;https://github.com/rvoicilas/inotify-tools&quot;&gt;https://github.com/rvoicilas/inotify-tools&lt;/a&gt;&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
-    
-    
-      <category term="inotify" scheme="https://weizhimiao.github.io/tags/inotify/"/>
     
   </entry>
   
