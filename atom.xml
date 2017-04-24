@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2017-04-14T05:54:52.000Z</updated>
+  <updated>2017-04-24T02:39:27.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -14,6 +14,361 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>利用ELK搭建自己的日志分析系统</title>
+    <link href="https://weizhimiao.github.io/2017/04/23/%E5%88%A9%E7%94%A8ELK%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/"/>
+    <id>https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/</id>
+    <published>2017-04-23T12:30:00.000Z</published>
+    <updated>2017-04-24T02:39:27.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。<br>目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、Apache 的 Chukwa<br>Cloudera 的 Fluentd、还有ELK 等等。</p>
+<a id="more"></a>
+<h2 id="ELK简介"><a href="#ELK简介" class="headerlink" title="ELK简介"></a>ELK简介</h2><p>ELK不是一款软件，是三个软件产品的首字母缩写，Elasticsearch，Logstash 和 Kibana。这三款软件都是开源的，现在归于 Elastic.co 公司。</p>
+<center><br><img src="https://www.ibm.com/developerworks/cn/opensource/os-cn-elk/img001.png" alt="ELK协议栈"><br></center>
+
+<h3 id="Elasticsearch"><a href="#Elasticsearch" class="headerlink" title="Elasticsearch"></a>Elasticsearch</h3><p>Elasticsearch 是一个实时的分布式搜索和分析引擎，它可以用于全文搜索，结构化搜索以及分析。它是一个建立在全文搜索引擎 Apache Lucene 基础上的搜索引擎，使用 Java 语言编写。作为ELK协议栈的核心，它用于集中存储数据。目前，最新最新的版本是 5.3。</p>
+<p>特点：</p>
+<ul>
+<li>实时（准实时）</li>
+<li>分布式</li>
+<li>面向文档</li>
+<li>高可用性，易扩展，支持集群（Cluster）、分片和复制（Shards 和 Replicas）。</li>
+<li>接口友好（RESTful）</li>
+</ul>
+<h3 id="Logstash"><a href="#Logstash" class="headerlink" title="Logstash"></a>Logstash</h3><p>Logstash 是一个具有实时渠道能力的数据收集引擎。使用 JRuby 语言编写。其作者是世界著名的运维工程师乔丹西塞 (JordanSissel)。目前最新的版本是 5.3。</p>
+<p>特点</p>
+<ul>
+<li>几乎可以访问任何数据</li>
+<li>可以和多种外部应用结合</li>
+<li>支持弹性扩展</li>
+</ul>
+<center><br><img src="https://static-www.elastic.co/assets/blt8a9ac25aedbd9ca7/logstash-img1.png?q=414" alt="logstash"><br></center>
+
+<p>组成部分</p>
+<ul>
+<li>INPUTS, 从各种地方获取各种数据数据</li>
+<li>FILTERS, 过滤处理获取到的数据</li>
+<li>OUTPUTS, 将处理完的数据输出到指定地方（消息队列，或者 ElasticSearch中）</li>
+</ul>
+<h3 id="Kibana"><a href="#Kibana" class="headerlink" title="Kibana"></a>Kibana</h3><p>Kibana 是一款基于 Apache 开源协议，使用 JavaScript 语言编写，为 Elasticsearch 提供分析和可视化的 Web 平台。它可以在 Elasticsearch 的索引中查找，交互数据，并生成各种维度的表图。目前最新的版本是 5.3。</p>
+<h2 id="ELK-日志分析系统的搭建"><a href="#ELK-日志分析系统的搭建" class="headerlink" title="ELK 日志分析系统的搭建"></a>ELK 日志分析系统的搭建</h2><h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><h4 id="服务器配置："><a href="#服务器配置：" class="headerlink" title="服务器配置："></a>服务器配置：</h4><ul>
+<li>系统：CentOS 7.3 64</li>
+<li>配置：CPU：2核 内存：4G</li>
+<li>实例<ul>
+<li>10.47.45.66(内)</li>
+<li>10.30.70.120(内)</li>
+<li>10.47.45.32(内)</li>
+</ul>
+</li>
+</ul>
+<h4 id="用到的软件或文件"><a href="#用到的软件或文件" class="headerlink" title="用到的软件或文件"></a>用到的软件或文件</h4><ul>
+<li>JDK 8 （jdk-8u131-linux-x64.tar.gz）</li>
+<li>elasticsearch(<a href="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.zip" target="_blank" rel="external">https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.zip</a>)</li>
+<li>kibana(<a href="https://artifacts.elastic.co/downloads/kibana/kibana-5.3.0-linux-x86_64.tar.gz" target="_blank" rel="external">https://artifacts.elastic.co/downloads/kibana/kibana-5.3.0-linux-x86_64.tar.gz</a>)</li>
+<li>x-pack (<a href="https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.3.0ll.zip" target="_blank" rel="external">https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.3.0ll.zip</a>)</li>
+<li>logstash(<a href="https://artifacts.elastic.co/downloads/logstash/logstash-5.3.0.zip" target="_blank" rel="external">https://artifacts.elastic.co/downloads/logstash/logstash-5.3.0.zip</a>)</li>
+<li>Nginx</li>
+<li>metricbeat(<a href="https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-5.3.1-x86_64.rpm" target="_blank" rel="external">https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-5.3.1-x86_64.rpm</a>)</li>
+</ul>
+<h4 id="规划"><a href="#规划" class="headerlink" title="规划"></a>规划</h4><center><br><img src="http://wx4.sinaimg.cn/mw690/8e242e12ly1fevtki0lwkj20xc0gota6.jpg" alt="ELK日志系统架构图"><br></center>
+
+<blockquote>
+<p>这里将会用三台服务器来模拟一个简单的集群环境</p>
+</blockquote>
+<p>ElasticSearch集群</p>
+<ul>
+<li>服务器节点<ul>
+<li>【主节点】10.47.45.66(内)</li>
+<li>【数据节点】10.30.70.120(内)</li>
+<li>【数据节点】10.47.45.32(内)</li>
+</ul>
+</li>
+<li>将要安装的软件或插件<ul>
+<li>ElasticSearch</li>
+<li>ElasticSearch x-pack插件</li>
+</ul>
+</li>
+</ul>
+<p>Kibana</p>
+<ul>
+<li>服务器节点<ul>
+<li>10.47.45.66(内)</li>
+</ul>
+</li>
+<li>将要安装的软件或插件<ul>
+<li>Nginx（提供前端代理）</li>
+<li>Kibana（提供Kibana UI）</li>
+<li>Kibana x-pack插件</li>
+</ul>
+</li>
+</ul>
+<p>Logstash</p>
+<ul>
+<li>服务器节点<ul>
+<li>10.47.45.32(内)</li>
+</ul>
+</li>
+<li>将要安装的软件或插件<ul>
+<li>Apache(模拟产生访问日志)</li>
+<li>Logstash</li>
+<li>beats</li>
+</ul>
+</li>
+</ul>
+<h3 id="具体安装与配置过程"><a href="#具体安装与配置过程" class="headerlink" title="具体安装与配置过程"></a>具体安装与配置过程</h3><ol>
+<li>JDK（所有节点）的安装与配置</li>
+<li>ElasticSearch 的安装与配置</li>
+<li>Kibana 的安装与配置</li>
+<li>Nginx 的安装与配置</li>
+<li>Logstash 的安装与配置</li>
+<li>Apache、beats 的安装与配置</li>
+<li>验证</li>
+</ol>
+<h4 id="JDK-8-的安装与配置"><a href="#JDK-8-的安装与配置" class="headerlink" title="JDK 8 的安装与配置"></a>JDK 8 的安装与配置</h4><blockquote>
+<p>安装范围：所有节点</p>
+</blockquote>
+<p>Elasticsearch 5.3对Java的版本至少是 Java 8.<br>查看当前的Java 版本,及 JAVA_HOME 环境变量的设置：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">java -version</div><div class="line"><span class="built_in">echo</span> <span class="variable">$JAVA_HOME</span></div></pre></td></tr></table></figure></p>
+<p>如果没有安装，或版本不满足，则需要安装并配置</p>
+<p>下载解压<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">wget http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz?AuthParam=1492857236_f012353e60ed757db930682d071feefc -O jdk-8u131-linux-x64.tar.gz</div><div class="line">tar -zxf jdk-8u131-linux-x64.tar.gz</div><div class="line">mv jdk1.8.0_131 /usr/<span class="built_in">local</span>/</div></pre></td></tr></table></figure></p>
+<p>配置环境变量<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vi /etc/bashrc</div></pre></td></tr></table></figure></p>
+<p>在文件底部追加下面两行<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">export</span> JAVA_HOME=/usr/<span class="built_in">local</span>/jdk1.8.0_131</div><div class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:<span class="variable">$JAVA_HOME</span>/bin</div></pre></td></tr></table></figure></p>
+<p>加载，使之生效<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">source</span> /etc/bashrc</div></pre></td></tr></table></figure></p>
+<p>测试<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">java -version</div><div class="line">java version <span class="string">"1.8.0_131"</span></div><div class="line">Java(TM) SE Runtime Environment (build 1.8.0_131-b11)</div><div class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.131-b11, mixed mode)</div><div class="line"></div><div class="line"><span class="built_in">echo</span> <span class="variable">$JAVA_HOME</span></div><div class="line">/usr/<span class="built_in">local</span>/jdk1.8.0_131</div></pre></td></tr></table></figure></p>
+<h4 id="ElasticSearch-的安装与配置"><a href="#ElasticSearch-的安装与配置" class="headerlink" title="ElasticSearch 的安装与配置"></a>ElasticSearch 的安装与配置</h4><blockquote>
+<p>在三台ElasticSearch节点上分别安装，并按照节点的类型，分别修改相应配置</p>
+</blockquote>
+<h5 id="下载并解压-Elasticsearch"><a href="#下载并解压-Elasticsearch" class="headerlink" title="下载并解压 Elasticsearch"></a>下载并解压 Elasticsearch</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.zip</div><div class="line">unzip elasticsearch-5.3.0.zip</div><div class="line">mv elasticsearch-5.3.0 /usr/<span class="built_in">local</span>/</div></pre></td></tr></table></figure>
+<p>Elasticsearch 的目录结构如下：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line">.</div><div class="line">├── bin</div><div class="line">│   ├── elasticsearch</div><div class="line">│   ├── elasticsearch.bat</div><div class="line">│   ├── elasticsearch.in.bat</div><div class="line">│   ├── elasticsearch.in.sh</div><div class="line">│   ├── elasticsearch-keystore</div><div class="line">│   ├── elasticsearch-keystore.bat</div><div class="line">│   ├── elasticsearch-plugin</div><div class="line">│   ├── elasticsearch-plugin.bat</div><div class="line">│   ├── elasticsearch-service.bat</div><div class="line">│   ├── elasticsearch-service-mgr.exe</div><div class="line">│   ├── elasticsearch-service-x64.exe</div><div class="line">│   ├── elasticsearch-service-x86.exe</div><div class="line">│   ├── elasticsearch-systemd-pre-exec</div><div class="line">│   ├── elasticsearch-translog</div><div class="line">│   └── elasticsearch-translog.bat</div><div class="line">├── config</div><div class="line">│   ├── elasticsearch.yml</div><div class="line">│   ├── jvm.options</div><div class="line">│   └── <span class="built_in">log</span>4j2.properties</div><div class="line">├── lib</div><div class="line">│   ├── elasticsearch-5.3.0.jar</div><div class="line">│   ├── HdrHistogram-2.1.6.jar</div><div class="line">│   ├── hppc-0.7.1.jar</div><div class="line">│   ├── jackson-core-2.8.6.jar</div><div class="line">│   ├── jackson-dataformat-cbor-2.8.6.jar</div><div class="line">│   ├── jackson-dataformat-smile-2.8.6.jar</div><div class="line">│   ├── jackson-dataformat-yaml-2.8.6.jar</div><div class="line">│   ├── java-version-checker-5.3.0.jar</div><div class="line">│   ├── jna-4.2.2.jar</div><div class="line">│   ├── joda-time-2.9.5.jar</div><div class="line">│   ├── jopt-simple-5.0.2.jar</div><div class="line">│   ├── jts-1.13.jar</div><div class="line">│   ├── <span class="built_in">log</span>4j-1.2-api-2.7.jar</div><div class="line">│   ├── <span class="built_in">log</span>4j-api-2.7.jar</div><div class="line">│   ├── <span class="built_in">log</span>4j-core-2.7.jar</div><div class="line">│   ├── lucene-analyzers-common-6.4.1.jar</div><div class="line">│   ├── lucene-backward-codecs-6.4.1.jar</div><div class="line">│   ├── lucene-core-6.4.1.jar</div><div class="line">│   ├── lucene-grouping-6.4.1.jar</div><div class="line">│   ├── lucene-highlighter-6.4.1.jar</div><div class="line">│   ├── lucene-join-6.4.1.jar</div><div class="line">│   ├── lucene-memory-6.4.1.jar</div><div class="line">│   ├── lucene-misc-6.4.1.jar</div><div class="line">│   ├── lucene-queries-6.4.1.jar</div><div class="line">│   ├── lucene-queryparser-6.4.1.jar</div><div class="line">│   ├── lucene-sandbox-6.4.1.jar</div><div class="line">│   ├── lucene-spatial3d-6.4.1.jar</div><div class="line">│   ├── lucene-spatial-6.4.1.jar</div><div class="line">│   ├── lucene-spatial-extras-6.4.1.jar</div><div class="line">│   ├── lucene-suggest-6.4.1.jar</div><div class="line">│   ├── securesm-1.1.jar</div><div class="line">│   ├── snakeyaml-1.15.jar</div><div class="line">│   ├── spatial4j-0.6.jar</div><div class="line">│   └── t-digest-3.0.jar</div><div class="line">├── LICENSE.txt</div><div class="line">├── modules</div><div class="line">│   ├── aggs-matrix-stats</div><div class="line">│   ├── ingest-common</div><div class="line">│   ├── lang-expression</div><div class="line">│   ├── lang-groovy</div><div class="line">│   ├── lang-mustache</div><div class="line">│   ├── lang-painless</div><div class="line">│   ├── percolator</div><div class="line">│   ├── reindex</div><div class="line">│   ├── transport-netty3</div><div class="line">│   └── transport-netty4</div><div class="line">├── NOTICE.txt</div><div class="line">├── plugins</div><div class="line">└── README.textile</div></pre></td></tr></table></figure></p>
+<h5 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h5><p>ElasticSearch默认有三个配置文件：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">config/</div><div class="line">├── elasticsearch.yml <span class="comment"># 基本配置</span></div><div class="line">├── jvm.options       <span class="comment"># java虚拟机的相关配置</span></div><div class="line">└── <span class="built_in">log</span>4j2.properties <span class="comment"># 日志相关配置</span></div></pre></td></tr></table></figure></p>
+<p>elasticsearch了配置文件示例<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># ======================== Elasticsearch Configuration =========================</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># <span class="doctag">NOTE:</span> Elasticsearch comes with reasonable defaults for most settings.</span></div><div class="line"><span class="comment">#       Before you set out to tweak and tune the configuration, make sure you</span></div><div class="line"><span class="comment">#       understand what are you trying to accomplish and the consequences.</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># The primary way of configuring a node is via this file. This template lists</span></div><div class="line"><span class="comment"># the most important settings you may want to configure for a production cluster.</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Please consult the documentation for further information on configuration options:</span></div><div class="line"><span class="comment"># https://www.elastic.co/guide/en/elasticsearch/reference/index.html</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># ---------------------------------- Cluster -----------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Use a descriptive name for your cluster:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#cluster.name: my-application</span></div><div class="line">cluster.name: zhimiao-app</div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># ------------------------------------ Node ------------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Use a descriptive name for the node:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#node.name: node-1</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Add custom attributes to the node:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#node.attr.rack: r1</span></div><div class="line"><span class="comment">#</span></div><div class="line"></div><div class="line">node.master: <span class="literal">false</span></div><div class="line"></div><div class="line">node.data: <span class="literal">true</span></div><div class="line"></div><div class="line"><span class="comment"># ----------------------------------- Paths ------------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Path to directory where to store the data (separate multiple locations by comma):</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#path.data: /path/to/data</span></div><div class="line">path.data: /data/elasticData</div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Path to log files:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#path.logs: /path/to/logs</span></div><div class="line">path.logs: /data/logs</div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># ----------------------------------- Memory -----------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Lock the memory on startup:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#bootstrap.memory_lock: true</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Make sure that the heap size is set to about half the memory available</span></div><div class="line"><span class="comment"># on the system and that the owner of the process is allowed to use this</span></div><div class="line"><span class="comment"># limit.</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Elasticsearch performs poorly when the system is swapping the memory.</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># ---------------------------------- Network -----------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Set the bind address to a specific IP (IPv4 or IPv6):</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#network.host: 192.168.0.1</span></div><div class="line">network.host: <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Set a custom port for HTTP:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#http.port: 9200</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># For more information, consult the network module documentation.</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># --------------------------------- Discovery ----------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Pass an initial list of hosts to perform discovery when new node is started:</span></div><div class="line"><span class="comment"># The default list of hosts is ["127.0.0.1", "[::1]"]</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#discovery.zen.ping.unicast.hosts: ["host1", "host2"]</span></div><div class="line">discovery.zen.ping.unicast.hosts: [<span class="string">"10.47.45.66"</span>, <span class="string">"10.30.70.120"</span>,<span class="string">"10.47.45.32"</span>]</div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Prevent the "split brain" by configuring the majority of nodes (total number of master-eligible nodes / 2 + 1):</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#discovery.zen.minimum_master_nodes: 3</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># For more information, consult the zen discovery module documentation.</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># ---------------------------------- Gateway -----------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Block initial recovery after a full cluster restart until N nodes are started:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#gateway.recover_after_nodes: 3</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># For more information, consult the gateway module documentation.</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># ---------------------------------- Various -----------------------------------</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment"># Require explicit names when deleting indices:</span></div><div class="line"><span class="comment">#</span></div><div class="line"><span class="comment">#action.destructive_requires_name: true</span></div></pre></td></tr></table></figure></p>
+<p>关于配置的几点简单说明</p>
+<ul>
+<li>cluster.name ，集群的名称标识将会被用于群集的自动发现。如果在同一个网络上的正在运行多个群集，则需要确保该集群的所有节点上使用的是相同的名称。</li>
+<li>node.master ，允许此节点可以作为主节点（默认启用）。</li>
+<li>node.data ， 允许此节点可以用来存储数据（默认启用）。</li>
+<li>path.data ， 索引数据存储的路径，可以配置多个位置</li>
+<li>path.logs ， 日志文件路径</li>
+<li>discovery.zen.ping.unicast.hosts ， 集群的初始清单</li>
+</ul>
+<p>ElasticSearch 集群角色规划</p>
+<ul>
+<li><p>如果想让这个节点只能作为ElasticSearch集群的主节点，而不存储数据，则应该这样配置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">node.master: <span class="literal">true</span></div><div class="line">node.data: <span class="literal">false</span></div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+<li><p>如果希望这个节点只作为数据节点，而不会成为主节点，则应该这样配置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">node.master: <span class="literal">false</span></div><div class="line">node.data: <span class="literal">true</span></div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+<li><p>如果希望这个节点既不是不是主节点，又不是数据节点，而是充当“搜索负载平衡器”（取从节点的数据，聚集结果等），则可以这样配置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">node.master: <span class="literal">false</span></div><div class="line">node.data: <span class="literal">false</span></div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h5 id="安装x-pack插件"><a href="#安装x-pack插件" class="headerlink" title="安装x-pack插件"></a>安装x-pack插件</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">$ sudo /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch-plugin  install x-pack</div><div class="line"> [=================================================] 100%  </div><div class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</div><div class="line">@     WARNING: plugin requires additional permissions     @</div><div class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</div><div class="line">* java.lang.RuntimePermission accessClassInPackage.com.sun.activation.registries</div><div class="line">* java.lang.RuntimePermission getClassLoader</div><div class="line">* java.lang.RuntimePermission <span class="built_in">set</span>ContextClassLoader</div><div class="line">* java.lang.RuntimePermission <span class="built_in">set</span>Factory</div><div class="line">* java.security.SecurityPermission createPolicy.JavaPolicy</div><div class="line">* java.security.SecurityPermission getPolicy</div><div class="line">* java.security.SecurityPermission putProviderProperty.BC</div><div class="line">* java.security.SecurityPermission <span class="built_in">set</span>Policy</div><div class="line">* java.util.PropertyPermission * <span class="built_in">read</span>,write</div><div class="line">* java.util.PropertyPermission sun.nio.ch.bugLevel write</div><div class="line">* javax.net.ssl.SSLPermission <span class="built_in">set</span>HostnameVerifier</div><div class="line">See http://docs.oracle.com/javase/8/docs/technotes/guides/security/permissions.html</div><div class="line"><span class="keyword">for</span> descriptions of what these permissions allow and the associated risks.</div><div class="line"></div><div class="line">Continue with installation? [y/N]y</div><div class="line">-&gt; Installed x-pack</div></pre></td></tr></table></figure>
+<p>x-pack插件的安装需要在线下载安装包，所以对于网络环境比较差或者一些离线的服务器，可以离线下载 x-pack 安装包，来手动指定。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">$ wget  https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.3.0ll.zip</div><div class="line"></div><div class="line">$ sudo /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch-plugin  install file:///home/datanode/x-pack-5.3.0.zip</div><div class="line">-&gt; Downloading file:///root/x-pack-5.3.0.zip</div><div class="line">[=================================================] 100%  </div><div class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</div><div class="line">@     WARNING: plugin requires additional permissions     @</div><div class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</div><div class="line">* java.lang.RuntimePermission accessClassInPackage.com.sun.activation.registries</div><div class="line">* java.lang.RuntimePermission getClassLoader</div><div class="line">* java.lang.RuntimePermission <span class="built_in">set</span>ContextClassLoader</div><div class="line">* java.lang.RuntimePermission <span class="built_in">set</span>Factory</div><div class="line">* java.security.SecurityPermission createPolicy.JavaPolicy</div><div class="line">* java.security.SecurityPermission getPolicy</div><div class="line">* java.security.SecurityPermission putProviderProperty.BC</div><div class="line">* java.security.SecurityPermission <span class="built_in">set</span>Policy</div><div class="line">* java.util.PropertyPermission * <span class="built_in">read</span>,write</div><div class="line">* java.util.PropertyPermission sun.nio.ch.bugLevel write</div><div class="line">* javax.net.ssl.SSLPermission <span class="built_in">set</span>HostnameVerifier</div><div class="line">See http://docs.oracle.com/javase/8/docs/technotes/guides/security/permissions.html</div><div class="line"><span class="keyword">for</span> descriptions of what these permissions allow and the associated risks.</div><div class="line"></div><div class="line">Continue with installation? [y/N]y</div><div class="line">-&gt; Installed x-pack</div></pre></td></tr></table></figure>
+<h5 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch <span class="_">-d</span></div></pre></td></tr></table></figure>
+<h5 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h5><ol>
+<li><p>查看端口</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">$ netstat -tlun</div><div class="line">Active Internet connections (only servers)</div><div class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State      </div><div class="line">tcp        0      0 127.0.0.1:9200          0.0.0.0:*               LISTEN     </div><div class="line">tcp        0      0 127.0.0.1:9300          0.0.0.0:*               LISTEN     </div><div class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     </div><div class="line">udp        0      0 47.90.15.84:123         0.0.0.0:*                          </div><div class="line">udp        0      0 10.27.46.180:123        0.0.0.0:*                          </div><div class="line">udp        0      0 127.0.0.1:123           0.0.0.0:*                          </div><div class="line">udp        0      0 0.0.0.0:123             0.0.0.0:*                          </div><div class="line">udp6       0      0 :::123                  :::*</div></pre></td></tr></table></figure>
+</li>
+<li><p>使用REST API</p>
+<blockquote>
+<p>由于我们已经安装x-pack，所以在使用 REST API 进行请求的时候需要加上认证信息。默认：</p>
+<ul>
+<li>用户名为：<code>elastic</code></li>
+</ul>
+<ul>
+<li>密码为：<code>changeme</code></li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">$ curl http://localhost:9200 -u elastic</div><div class="line">&#123;</div><div class="line">  <span class="string">"name"</span> : <span class="string">"E0QjUN9"</span>,</div><div class="line">  <span class="string">"cluster_name"</span> : <span class="string">"elasticsearch"</span>,</div><div class="line">  <span class="string">"cluster_uuid"</span> : <span class="string">"oSsjMVpETViMkzUCf110Cw"</span>,</div><div class="line">  <span class="string">"version"</span> : &#123;</div><div class="line">    <span class="string">"number"</span> : <span class="string">"5.3.0"</span>,</div><div class="line">    <span class="string">"build_hash"</span> : <span class="string">"3adb13b"</span>,</div><div class="line">    <span class="string">"build_date"</span> : <span class="string">"2017-03-23T03:31:50.652Z"</span>,</div><div class="line">    <span class="string">"build_snapshot"</span> : <span class="literal">false</span>,</div><div class="line">    <span class="string">"lucene_version"</span> : <span class="string">"6.4.1"</span></div><div class="line">  &#125;,</div><div class="line">  <span class="string">"tagline"</span> : <span class="string">"You Know, for Search"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="ElasticSearch的简单管理"><a href="#ElasticSearch的简单管理" class="headerlink" title="ElasticSearch的简单管理"></a>ElasticSearch的简单管理</h5><p>启动<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch  <span class="_">-d</span></div></pre></td></tr></table></figure></p>
+<p>设置开机自启动<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">echo</span> <span class="string">"/usr/local/elasticsearch-5.3.0/bin/elasticsearch -d"</span> &gt; /etc/rc.local</div></pre></td></tr></table></figure></p>
+<p>如何关闭elasticsearch</p>
+<ul>
+<li>方法一：如果节点与控制台相连并且当前elasticsearch是使用-f选项运行，则只需要按下Ctrl+C组合键即可</li>
+<li>方法二：通过发送TERM信号来终止服务器进程 kill -9 进程ID</li>
+<li>方法三：使用REST API</li>
+</ul>
+<p>前两种就不说了，简单说一下第三种，</p>
+<ul>
+<li><p>关闭整个集群</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -XPOST http://localhost:9200/_cluster/nodes/_shutdown -u elastic</div></pre></td></tr></table></figure>
+</li>
+<li><p>关闭单个节点</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -XPOST  http://127.0.0.1:9200/_cluster/nodes/2ens0yuEQ12G6ct1UDpihQ/_shutdown -u elastic</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<blockquote>
+<p>2ens0yuEQ12G6ct1UDpihQ ，为要关闭的节点标志符<br>-<br>查看节点标志符，可以从elasticsearch日志中或者通过REST API中获得<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">curl http://localhost:9200/_nodes/?pretty -u elastic</div><div class="line">&#123;</div><div class="line">  <span class="string">"cluster_name"</span> : <span class="string">"elasticsearch"</span>,</div><div class="line">  <span class="string">"nodes"</span> : &#123;</div><div class="line">    <span class="string">"13QfvIdATEurGAhVAlO6tQ"</span> : &#123;</div><div class="line">      <span class="string">"name"</span> : <span class="string">"Edwin Jarvis"</span>,</div><div class="line">      ...</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h5 id="安装或者启动时可能会遇到的问题列表："><a href="#安装或者启动时可能会遇到的问题列表：" class="headerlink" title="安装或者启动时可能会遇到的问题列表："></a>安装或者启动时可能会遇到的问题列表：</h5><ol>
+<li>can not run elasticsearch as root</li>
+</ol>
+<p>解决：新建一个专门运行和管理ElasticSearch 的用户。切换到该用户下重新运行。</p>
+<ol>
+<li>max file descriptors [65535] for elasticsearch process is too low, increase to at least [65536]</li>
+</ol>
+<p>解决：切换到root用户，编辑limits.conf 添加类似如下内容<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vi /etc/security/limits.conf</div></pre></td></tr></table></figure></p>
+<p>修改文件末尾如下内容:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">* soft nofile 655350</div><div class="line">* hard nofile 655350</div></pre></td></tr></table></figure></p>
+<p>然后切换回用户，使用<code>ulimit -a</code> 查看是否已经更改(对应的是<code>open file</code> 选项)</p>
+<ol>
+<li>max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]</li>
+</ol>
+<p>解决：切换到root用户修改配置sysctl.conf<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vi /etc/sysctl.conf</div></pre></td></tr></table></figure></p>
+<p>添加下面配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vm.max_map_count=655300</div></pre></td></tr></table></figure></p>
+<p>并执行命令：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sysctl -p</div></pre></td></tr></table></figure></p>
+<p>然后，切换回用户，重新运行 ElasticSearch</p>
+<h4 id="Kibana-的安装与配置"><a href="#Kibana-的安装与配置" class="headerlink" title="Kibana 的安装与配置"></a>Kibana 的安装与配置</h4><h5 id="下载并解压-Kibana"><a href="#下载并解压-Kibana" class="headerlink" title="下载并解压 Kibana"></a>下载并解压 Kibana</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ wget https://artifacts.elastic.co/downloads/kibana/kibana-5.3.0-linux-x86_64.tar.gz</div><div class="line">$ tar -zxf kibana-5.3.0-linux-x86_64.tar.gz</div><div class="line">sudo mv kibana-5.3.0-linux-x86_64 /usr/<span class="built_in">local</span>/</div></pre></td></tr></table></figure>
+<h5 id="安装-x-pack-插件"><a href="#安装-x-pack-插件" class="headerlink" title="安装 x-pack 插件"></a>安装 x-pack 插件</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ bin/kibana-plugin  install x-pack</div></pre></td></tr></table></figure>
+<p>离线安装</p>
+<p>同ElasticSearch 的x-pack插件一样，在安装时需要在线下载安装包，所以对于网络环境比较差或者一些离线的服务器，也需要离线下载 x-pack 安装包，来手动指定。</p>
+<blockquote>
+<p>Elasticsearch，Kibana和Logstash的插件都包含在同一个zip文件中,即 之前下载过的 x-pack-5.3.0ll.zip</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo /usr/<span class="built_in">local</span>/kibana-5.3.0-linux-x86_64/bin/kibana-plugin  install file:///home/datanode/x-pack-5.3.0.zip</div></pre></td></tr></table></figure>
+<blockquote>
+<p>安装过程可能会比较长（请耐心等待）…</p>
+</blockquote>
+<h5 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ <span class="built_in">cd</span> /usr/<span class="built_in">local</span>/kibana-5.3.0-linux-x86_64</div><div class="line">$ vi config/kibana.yml</div></pre></td></tr></table></figure>
+<p>kibana.yml 示例<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Kibana is served by a back end server. This setting specifies the port to use.</span></div><div class="line"><span class="comment">#server.port: 5601</span></div><div class="line"></div><div class="line"><span class="comment"># Specifies the address to which the Kibana server will bind. IP addresses and host names are both valid values.</span></div><div class="line"><span class="comment"># The default is 'localhost', which usually means remote machines will not be able to connect.</span></div><div class="line"><span class="comment"># To allow connections from remote users, set this parameter to a non-loopback address.</span></div><div class="line"><span class="comment">#server.host: "127.0.0.1"</span></div><div class="line"></div><div class="line"><span class="comment"># Enables you to specify a path to mount Kibana at if you are running behind a proxy. This only affects</span></div><div class="line"><span class="comment"># the URLs generated by Kibana, your proxy is expected to remove the basePath value before forwarding requests</span></div><div class="line"><span class="comment"># to Kibana. This setting cannot end in a slash.</span></div><div class="line"><span class="comment">#server.basePath: ""</span></div><div class="line"></div><div class="line"><span class="comment"># The maximum payload size in bytes for incoming server requests.</span></div><div class="line"><span class="comment">#server.maxPayloadBytes: 1048576</span></div><div class="line"></div><div class="line"><span class="comment"># The Kibana server's name.  This is used for display purposes.</span></div><div class="line"><span class="comment">#server.name: "your-hostname"</span></div><div class="line"></div><div class="line"><span class="comment"># The URL of the Elasticsearch instance to use for all your queries.</span></div><div class="line">elasticsearch.url: <span class="string">"http://10.30.70.120:9200"</span></div><div class="line"></div><div class="line"><span class="comment"># When this setting's value is true Kibana uses the hostname specified in the server.host</span></div><div class="line"><span class="comment"># setting. When the value of this setting is false, Kibana uses the hostname of the host</span></div><div class="line"><span class="comment"># that connects to this Kibana instance.</span></div><div class="line"><span class="comment">#elasticsearch.preserveHost: true</span></div><div class="line"></div><div class="line"><span class="comment"># Kibana uses an index in Elasticsearch to store saved searches, visualizations and</span></div><div class="line"><span class="comment"># dashboards. Kibana creates a new index if the index doesn't already exist.</span></div><div class="line"><span class="comment">#kibana.index: ".kibana"</span></div><div class="line"></div><div class="line"><span class="comment"># The default application to load.</span></div><div class="line"><span class="comment">#kibana.defaultAppId: "discover"</span></div><div class="line"></div><div class="line"><span class="comment"># If your Elasticsearch is protected with basic authentication, these settings provide</span></div><div class="line"><span class="comment"># the username and password that the Kibana server uses to perform maintenance on the Kibana</span></div><div class="line"><span class="comment"># index at startup. Your Kibana users still need to authenticate with Elasticsearch, which</span></div><div class="line"><span class="comment"># is proxied through the Kibana server.</span></div><div class="line"><span class="comment">#elasticsearch.username: "user"</span></div><div class="line"><span class="comment">#elasticsearch.password: "pass"</span></div><div class="line"></div><div class="line"><span class="comment"># Enables SSL and paths to the PEM-format SSL certificate and SSL key files, respectively.</span></div><div class="line"><span class="comment"># These settings enable SSL for outgoing requests from the Kibana server to the browser.</span></div><div class="line"><span class="comment">#server.ssl.enabled: false</span></div><div class="line"><span class="comment">#server.ssl.certificate: /path/to/your/server.crt</span></div><div class="line"><span class="comment">#server.ssl.key: /path/to/your/server.key</span></div><div class="line"></div><div class="line"><span class="comment"># Optional settings that provide the paths to the PEM-format SSL certificate and key files.</span></div><div class="line"><span class="comment"># These files validate that your Elasticsearch backend uses the same key files.</span></div><div class="line"><span class="comment">#elasticsearch.ssl.certificate: /path/to/your/client.crt</span></div><div class="line"><span class="comment">#elasticsearch.ssl.key: /path/to/your/client.key</span></div><div class="line"></div><div class="line"><span class="comment"># Optional setting that enables you to specify a path to the PEM file for the certificate</span></div><div class="line"><span class="comment"># authority for your Elasticsearch instance.</span></div><div class="line"><span class="comment">#elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]</span></div><div class="line"></div><div class="line"><span class="comment"># To disregard the validity of SSL certificates, change this setting's value to 'none'.</span></div><div class="line"><span class="comment">#elasticsearch.ssl.verificationMode: full</span></div><div class="line"></div><div class="line"><span class="comment"># Time in milliseconds to wait for Elasticsearch to respond to pings. Defaults to the value of</span></div><div class="line"><span class="comment"># the elasticsearch.requestTimeout setting.</span></div><div class="line"><span class="comment">#elasticsearch.pingTimeout: 1500</span></div><div class="line"></div><div class="line"><span class="comment"># Time in milliseconds to wait for responses from the back end or Elasticsearch. This value</span></div><div class="line"><span class="comment"># must be a positive integer.</span></div><div class="line"><span class="comment">#elasticsearch.requestTimeout: 30000</span></div><div class="line"></div><div class="line"><span class="comment"># List of Kibana client-side headers to send to Elasticsearch. To send *no* client-side</span></div><div class="line"><span class="comment"># headers, set this value to [] (an empty list).</span></div><div class="line"><span class="comment">#elasticsearch.requestHeadersWhitelist: [ authorization ]</span></div><div class="line"></div><div class="line"><span class="comment"># Header names and values that are sent to Elasticsearch. Any custom headers cannot be overwritten</span></div><div class="line"><span class="comment"># by client-side headers, regardless of the elasticsearch.requestHeadersWhitelist configuration.</span></div><div class="line"><span class="comment">#elasticsearch.customHeaders: &#123;&#125;</span></div><div class="line"></div><div class="line"><span class="comment"># Time in milliseconds for Elasticsearch to wait for responses from shards. Set to 0 to disable.</span></div><div class="line"><span class="comment">#elasticsearch.shardTimeout: 0</span></div><div class="line"></div><div class="line"><span class="comment"># Time in milliseconds to wait for Elasticsearch at Kibana startup before retrying.</span></div><div class="line"><span class="comment">#elasticsearch.startupTimeout: 5000</span></div><div class="line"></div><div class="line"><span class="comment"># Specifies the path where Kibana creates the process ID file.</span></div><div class="line"><span class="comment">#pid.file: /var/run/kibana.pid</span></div><div class="line"></div><div class="line"><span class="comment"># Enables you specify a file where Kibana stores log output.</span></div><div class="line"><span class="comment">#logging.dest: stdout</span></div><div class="line"></div><div class="line"><span class="comment"># Set the value of this setting to true to suppress all logging output.</span></div><div class="line"><span class="comment">#logging.silent: false</span></div><div class="line"></div><div class="line"><span class="comment"># Set the value of this setting to true to suppress all logging output other than error messages.</span></div><div class="line"><span class="comment">#logging.quiet: false</span></div><div class="line"></div><div class="line"><span class="comment"># Set the value of this setting to true to log all events, including system usage information</span></div><div class="line"><span class="comment"># and all requests.</span></div><div class="line"><span class="comment">#logging.verbose: false</span></div><div class="line"></div><div class="line"><span class="comment"># Set the interval in milliseconds to sample system and process performance</span></div><div class="line"><span class="comment"># metrics. Minimum is 100ms. Defaults to 5000.</span></div><div class="line"><span class="comment">#ops.interval: 5000</span></div></pre></td></tr></table></figure></p>
+<p>配置文件简单说明</p>
+<ul>
+<li><p><code>server.host</code> , 配置Kibana服务器绑定地址。IP地址或者域名</p>
+<blockquote>
+<p>默认是 “localhost”。远程用户无法连接。如果需要通过网络进行直接访问，则需要将该参数设置为非环回地址。</p>
+<p>这里我将它设置为 “127.0.0.1”，即表示远程用户无法直接访问，需要通过之后安装配置的Nginx进行代理访问。</p>
+</blockquote>
+</li>
+<li><p><code>elasticsearch.url</code> , 指向 Elasticsearch 实例</p>
+</li>
+</ul>
+<h5 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ nohup /usr/<span class="built_in">local</span>/kibana-5.3.0-linux-x86_64/bin/kibana &amp;</div></pre></td></tr></table></figure>
+<p>查看是否已经运行<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ ps aux | grep kiba</div></pre></td></tr></table></figure></p>
+<p>或<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ netstat -tlun | grep 5601</div><div class="line">tcp        0      0 127.0.0.1:5601          0.0.0.0:*               LISTEN</div></pre></td></tr></table></figure></p>
+<h4 id="Nginx-的安装与配置"><a href="#Nginx-的安装与配置" class="headerlink" title="Nginx 的安装与配置"></a>Nginx 的安装与配置</h4><p>安装<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># yum install nginx -y</span></div></pre></td></tr></table></figure></p>
+<p>验证<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># nginx -t</span></div><div class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</div><div class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</div></pre></td></tr></table></figure></p>
+<p>添加配置<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># vi /etc/nginx/conf.d/kibana.conf</span></div></pre></td></tr></table></figure></p>
+<p>kibana.conf 示例<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">    listen 80;</div><div class="line">    server_name 47.90.15.84;</div><div class="line"></div><div class="line">    location / &#123;</div><div class="line">        proxy_pass http://127.0.0.1:5601;</div><div class="line">        proxy_http_version 1.1;</div><div class="line">        proxy_set_header Upgrade $http_upgrade;</div><div class="line">        proxy_set_header Connection 'upgrade';</div><div class="line">        proxy_set_header Host $host;</div><div class="line">        proxy_cache_bypass $http_upgrade;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>启动 Nginx<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># nginx</div></pre></td></tr></table></figure></p>
+<p>验证</p>
+<p>浏览器打开 <code>http://47.90.15.84</code>，能看到登录界面，则说明配置成功</p>
+<center><br><img src="http://wx1.sinaimg.cn/mw690/8e242e12ly1fevxyyb4rej21kw0zk0v4.jpg" alt="登录页面"><br></center>
+
+<blockquote>
+<p>默认账号</p>
+<ul>
+<li>username: elastic</li>
+<li>password: changeme<h4 id="Logstash-的安装与配置"><a href="#Logstash-的安装与配置" class="headerlink" title="Logstash 的安装与配置"></a>Logstash 的安装与配置</h4></li>
+</ul>
+</blockquote>
+<h5 id="下载并解压-Logstash"><a href="#下载并解压-Logstash" class="headerlink" title="下载并解压 Logstash"></a>下载并解压 Logstash</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"># wget https://artifacts.elastic.co/downloads/logstash/logstash-5.3.0.zip</div><div class="line"># unzip logstash-5.3.0.zip</div><div class="line"># mv logstash-5.3.0 /usr/local/</div></pre></td></tr></table></figure>
+<h5 id="测试-Logstash"><a href="#测试-Logstash" class="headerlink" title="测试 Logstash"></a>测试 Logstash</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cd /usr/local/logstash-5.3.0</div><div class="line">bin/logstash -e &apos;input &#123; stdin &#123; &#125; &#125; output &#123; stdout &#123;&#125; &#125;&apos;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>-e 选项表示直接从命令行指定配置</p>
+</blockquote>
+<p>待 Logstash 启动， 看到 “Pipeline main started” ，在命令行中输入 “hello logstash”，将会看到<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">hello logstash</div><div class="line">2017-04-22T17:19:31.051Z iZj6c1rlufgkgsimhzuumaZ hello logstash</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>Logstash 将时间戳和主机名添加到了消息中</p>
+</blockquote>
+<h5 id="添加一个-Logstash-配置文件，将我们上面安装的Nginx-的访问日志作为input，输出到-ElasticSearch-中"><a href="#添加一个-Logstash-配置文件，将我们上面安装的Nginx-的访问日志作为input，输出到-ElasticSearch-中" class="headerlink" title="添加一个 Logstash 配置文件，将我们上面安装的Nginx 的访问日志作为input，输出到 ElasticSearch 中"></a>添加一个 Logstash 配置文件，将我们上面安装的Nginx 的访问日志作为input，输出到 ElasticSearch 中</h5><p>Nginx 访问日志的位置：<code>/var/log/nginx/access.log</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vi first-pipeline.conf</div></pre></td></tr></table></figure>
+<p>first-pipeline.conf 示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">input &#123;</div><div class="line">  file &#123;</div><div class="line">    path =&gt; &quot;/var/log/nginx/access.log&quot;</div><div class="line">    type =&gt; &quot;nginx&quot;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">filter &#123;</div><div class="line">    grok &#123;</div><div class="line">        match =&gt; &#123; &quot;message&quot; =&gt; &quot;%&#123;COMBINEDAPACHELOG&#125;&quot;&#125;</div><div class="line">    &#125;</div><div class="line">    geoip &#123;</div><div class="line">        source =&gt; &quot;clientip&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">output &#123;</div><div class="line">    #stdout &#123; codec =&gt; rubydebug &#125;</div><div class="line">    elasticsearch &#123;</div><div class="line">        hosts =&gt; [&quot;10.30.70.120:9200&quot;,&quot;10.47.45.32:9200&quot;]</div><div class="line">        user =&gt; &quot;elastic&quot;</div><div class="line">        password =&gt; &quot;changeme&quot;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>配置文件简析</p>
+<ul>
+<li><p>input 区块</p>
+<blockquote>
+<p>使用了 input 的file 插件， 该插件跟踪 path 路径下的文件变化，并将数据读取到 Logstash。</p>
+</blockquote>
+</li>
+<li><p>filter 区块</p>
+<blockquote>
+<ul>
+<li>该区块应用了 grok 插件，会将非结构化的日志数据转化为可查询的结构化的数据</li>
+<li>geoip插件将IP地址转换为实际地址坐标信息</li>
+</ul>
+</blockquote>
+</li>
+<li><p>output区块</p>
+<blockquote>
+<ul>
+<li>该区块使用了 ElasticSearch 插件，直接将数据输出到 ElasticSearch集群中</li>
+<li>stdout插件则会直接将结果输出到控制台。（开发时将其打开，方便调试）</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h5 id="测试-amp-运行"><a href="#测试-amp-运行" class="headerlink" title="测试&amp;运行"></a>测试&amp;运行</h5><p>测试配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/usr/local/logstash-5.3.0/bin/logstash -f first-pipeline.conf --config.test_and_exit</div></pre></td></tr></table></figure></p>
+<ul>
+<li>–config.test_and_exit , 测试我们编写的配置文件</li>
+</ul>
+<p>如果测试通过，用下面的命令启动 Logstash<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">bin/logstash -f first-pipeline.conf --config.reload.automatic</div></pre></td></tr></table></figure></p>
+<ul>
+<li>–config.reload.automatic ,启用自动重新加载配置</li>
+</ul>
+<blockquote>
+<p>启用自动重新加载配置，之后每次修改配置文件时不必停止再重新启动Logstash。</p>
+</blockquote>
+<h5 id="验证-1"><a href="#验证-1" class="headerlink" title="验证"></a>验证</h5><p>浏览器打开 <code>http://47.90.15.84</code> ，登录 Kibana</p>
+<p>添加“<code>logstash-*</code>” 索引</p>
+<center><br><img src="http://wx3.sinaimg.cn/mw690/8e242e12ly1fewnxhoiqyj21hc0u0tdk.jpg" alt="添加索引"><br></center>
+
+<p>然后再 Discovery 中查看是否有数据被写入</p>
+<center><br><img src="http://wx1.sinaimg.cn/mw690/8e242e12ly1few1y2tl0uj21h30prtfm.jpg" alt="验证效果"><br></center>
+
+<h4 id="beats-的安装与配置"><a href="#beats-的安装与配置" class="headerlink" title="beats 的安装与配置"></a>beats 的安装与配置</h4><p>Beats是作为代理在服务器上安装的开源的 data shippers，能将各种不同类型的操作数据（如， wireData、LogFiles、Metrics、WinEvent）直接发送到 Elasticsearch，或者通过Logstash将其发送到Elasticsearch。我们可以使用它来解析和转换我们需要收集的各种数据。</p>
+<p>这里以 Metricbeat 为例，来监控我们想要监控的服务器。</p>
+<h5 id="步骤1：安装Metricbeat"><a href="#步骤1：安装Metricbeat" class="headerlink" title="步骤1：安装Metricbeat"></a>步骤1：安装Metricbeat</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">curl -L -O https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-5.3.1-x86_64.rpm</div><div class="line">sudo  rpm -vi metricbeat-5.3.1-x86_64.rpm</div></pre></td></tr></table></figure>
+<blockquote>
+<p>yum 包管理工具安装：<a href="https://www.elastic.co/guide/en/beats/metricbeat/5.3/setup-repositories.html" target="_blank" rel="external">https://www.elastic.co/guide/en/beats/metricbeat/5.3/setup-repositories.html</a></p>
+</blockquote>
+<p>测试<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">metricbeat -version</div></pre></td></tr></table></figure></p>
+<h5 id="步骤2：配置Metricbeat"><a href="#步骤2：配置Metricbeat" class="headerlink" title="步骤2：配置Metricbeat"></a>步骤2：配置Metricbeat</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cat /etc/metricbeat/metricbeat.yml</div></pre></td></tr></table></figure>
+<p>内容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">metricbeat.modules:</div><div class="line">- module: system</div><div class="line"> metricsets:</div><div class="line">   - cpu</div><div class="line">   - load</div><div class="line">   - core</div><div class="line">   - diskio</div><div class="line">   - filesystem</div><div class="line">   - fsstat</div><div class="line">   - memory</div><div class="line">   - network</div><div class="line">   - process</div><div class="line">   - socket</div><div class="line"> enabled: true</div><div class="line"> period: 10s</div><div class="line"> processes: [&apos;.*&apos;]</div><div class="line">- module: nginx</div><div class="line"> metricsets: [&quot;stubstatus&quot;]</div><div class="line"> enabled: true</div><div class="line"> period: 10s</div><div class="line"> hosts: [&quot;http://127.0.0.1&quot;]</div><div class="line"> server_status_path: &quot;NginxStatus&quot;</div><div class="line"></div><div class="line">output.elasticsearch:</div><div class="line"> hosts: [&quot;10.30.70.120:9200&quot;,&quot;10.47.45.32:9200&quot;]</div><div class="line"> username: &quot;elastic&quot;</div><div class="line"> password: &quot;changeme&quot;</div><div class="line"></div><div class="line">logging.level: debug</div></pre></td></tr></table></figure></p>
+<p>配置文件检查<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># metricbeat.sh -c metricbeat.yml  -configtest</div></pre></td></tr></table></figure></p>
+<p>显示 <code>Config OK</code> 则说明配置文件语法正确</p>
+<h5 id="第3步：加载索引模板Elasticsearch"><a href="#第3步：加载索引模板Elasticsearch" class="headerlink" title="第3步：加载索引模板Elasticsearch"></a>第3步：加载索引模板Elasticsearch</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -H &apos;Content-Type: application/json&apos; -XPUT &apos;http://10.30.70.120:9200/_template/metricbeat&apos; -d@/etc/metricbeat/metricbeat.template.json -u elastic:changeme</div></pre></td></tr></table></figure>
+<p>有如下显示则表示加载成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;&quot;acknowledged&quot;:true&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="第4步：启动Metricbeat"><a href="#第4步：启动Metricbeat" class="headerlink" title="第4步：启动Metricbeat"></a>第4步：启动Metricbeat</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/etc/init.d/metricbeat start</div></pre></td></tr></table></figure>
+<p>验证服务器的统计信息是否被正确的已经发送在Elasticsearch中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -XGET &apos;http://10.30.70.120:9200/metricbeat-*/_search?pretty&apos; -u elastic:changeme</div></pre></td></tr></table></figure></p>
+<h5 id="第5步：导入Kibana仪表板模板"><a href="#第5步：导入Kibana仪表板模板" class="headerlink" title="第5步：导入Kibana仪表板模板"></a>第5步：导入Kibana仪表板模板</h5><p><code>Metricbeat</code>自带了 <code>scripts/import_dashboards</code> 导入工具，我们可以使用它来导入例如dashboards, visualizations。该脚本还会为Metricbeat创建<code>metricbeat-*</code> 索引。</p>
+<blockquote>
+<p>我们可以通过 scripts/import_dashboards 后跟相应的选项，来控制是否只导入 dashboards 或者 index。</p>
+<ul>
+<li><code>-only-index</code> , 只创建索引</li>
+<li><code>-only-dashboards</code> , 只导入 仪表盘</li>
+</ul>
+</blockquote>
+<p>由于我们采用的是 rpm包 安装的 Metricbeat，所以该脚本是在<code>/usr/share/metricbeat/</code> 下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"># cd /usr/share/metricbeat/</div><div class="line"># ./scripts/import_dashboards -es http://10.30.70.120:9200 -user elastic -pass changeme</div><div class="line">Create temporary directory /tmp/tmp252960117</div><div class="line">Downloading https://artifacts.elastic.co/downloads/beats/beats-dashboards/beats-dashboards-5.3.0.zip</div><div class="line">Unzip archive /tmp/tmp252960117</div><div class="line">Importing Kibana from /tmp/tmp252960117/beats-dashboards-5.3.0/filebeat</div><div class="line">...</div><div class="line">Importing Kibana from /tmp/tmp252960117/beats-dashboards-5.3.0/packetbeat</div><div class="line">Importing Kibana from /tmp/tmp252960117/beats-dashboards-5.3.0/winlogbeat</div></pre></td></tr></table></figure>
+<p>导入之后，我们登录 Kibana 查看</p>
+<center><br><br><img src="http://wx2.sinaimg.cn/mw690/8e242e12ly1fewv6vsm41j21kw0fggr5.jpg" alt="img"><br><br><img src="http://wx1.sinaimg.cn/mw690/8e242e12ly1fewv89jhhdj21kw0w6wlv.jpg" alt="img"><br><br></center>
+
+<p>点击其中相应的 dashboard 我们就能查看到相应的参数。</p>
+<h4 id="over"><a href="#over" class="headerlink" title="over~"></a>over~</h4><p>到此，这个简单的日志分析系统的架构就算基本搭建出来了。</p>
+<p>对于搭建过程中遇到的其它问题和上述相关软件的使用，留待以后慢慢整理~~~~</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。&lt;br&gt;目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、Apache 的 Chukwa&lt;br&gt;Cloudera 的 Fluentd、还有ELK 等等。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="ELK" scheme="https://weizhimiao.github.io/categories/ELK/"/>
+    
+    
+      <category term="ELK" scheme="https://weizhimiao.github.io/tags/ELK/"/>
+    
+      <category term="Elasticsearch" scheme="https://weizhimiao.github.io/tags/Elasticsearch/"/>
+    
+      <category term="Logstash" scheme="https://weizhimiao.github.io/tags/Logstash/"/>
+    
+      <category term="Kibana" scheme="https://weizhimiao.github.io/tags/Kibana/"/>
+    
+  </entry>
   
   <entry>
     <title>浅谈Web客户端追踪[转]</title>
@@ -2125,6 +2480,97 @@
   </entry>
   
   <entry>
+    <title>sudo使用场景分析[转]</title>
+    <link href="https://weizhimiao.github.io/2016/11/16/sudo%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90/"/>
+    <id>https://weizhimiao.github.io/2016/11/16/sudo使用场景分析/</id>
+    <published>2016-11-16T12:30:00.000Z</published>
+    <updated>2017-02-27T03:11:32.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。</p>
+<ul>
+<li><p>情景一：用户无权限执行 root 命令</p>
+</li>
+<li><p>情景二：vim 编辑后发现忘记使用 sudo</p>
+</li>
+<li><p>情景三：执行 root 命令忘记加 sudo</p>
+</li>
+<li><p>情景四：shell 内置命令如何使用 sudo</p>
+</li>
+<li><p>情景五：sudo 操作记录日志</p>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="情景一：用户无权限执行-root-命令"><a href="#情景一：用户无权限执行-root-命令" class="headerlink" title="情景一：用户无权限执行 root 命令"></a>情景一：用户无权限执行 root 命令</h2><p>普通用户登录 shell 之后，如果自身没有权限访问某个文件或执行某个命令时，若该用户获得root授权，那么就可以在需要执行的命令之前加上 sudo，临时切换到root用户的权限，完成相关的操作。在sudo于1980年前后被写出之前，一般用户管理系统的方式是利用su切换为超级用户。但是使用su的缺点之一在于必须要先告知超级用户的密码，而sudo使一般用户不需要知道超级用户的密码即可获得权限。</p>
+<p>那么哪些用户可以临时获得 root 权限呢？这就需要在 <code>/etc/sudoers</code> 文件中进行配置：</p>
+<p>授权给单个用户：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">guohl   ALL=(ALL) ALL</div></pre></td></tr></table></figure></p>
+<p>上面这个例子中：</p>
+<ul>
+<li><p>guohl：允许使用 sudo 的用户名</p>
+</li>
+<li><p>ALL：允许从任何终端（任何机器）使用 sudo</p>
+</li>
+<li><p>(ALL)：允许以任何用户执行 sudo 命令</p>
+</li>
+<li><p>ALL：允许 sudo 权限执行任何命令</p>
+</li>
+</ul>
+<p>如果我们想让用户 test 只能在本主机（主机名为guohl-pc）以 root 账户执行/bin/chown、/bin/chmod 两条命令，那么就应该这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">test   guohl-pc=(root) /bin/chown,/bin/chmod</div></pre></td></tr></table></figure></p>
+<p>如果test 登录之后运行 sudo 命令，不满足上面三个条件命令均失败。</p>
+<p>授权给用户组:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># Allow members of group sudo to execute any command</div><div class="line"># (Note that later entries override this, so you might need to move it further down)</div><div class="line">%sudo ALL=(ALL) ALL</div><div class="line">和授权给单个用户类似，只不过将用户名在这里换成%组名，所有在该组中的用户都按照此规则进行授权。对于该例，所有在 sudo 组内的用户都有在任何终端（第一个ALL）、以任何用户（第二个ALL）、执行任何命令（第三个ALL）的权限，查看 /etc/group 文件可以知道哪些用户属于 sudo 组。</div></pre></td></tr></table></figure></p>
+<p>举例:</p>
+<p>如果当前帐号在 /etc/sudoers 文件中被授予 sudo 的权限，那么你就可以将任何 root 命令作为 sudo 命令的参数，使用 root 权限来执行该命令。举例来说，挂载一个文件系统只能由 root 来执行，但是一个普通用户也可以使用 sudo 来挂载：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$sudo mount /dev/sda7 /mnt</div><div class="line">[sudo] password for guohailin:</div></pre></td></tr></table></figure>
+<p>首次使用会要求你输入当前用户的密码，系统确实输入正确即以 root 权限来执行 mount 命令，接下来一段时间（默认为5分钟）再次使用 sudo 命令就不需要输密码了。</p>
+<h2 id="情景二：vim-编辑后发现忘记使用-sudo"><a href="#情景二：vim-编辑后发现忘记使用-sudo" class="headerlink" title="情景二：vim 编辑后发现忘记使用 sudo"></a>情景二：vim 编辑后发现忘记使用 sudo</h2><p>我们经常会遇到这样的一个囧境：使用 <code>vim</code> 对某个文件进行编辑，编辑完之后，按 ESC 之后回到普通模式，再按 <code>:wq</code> 准备保存退出时，发现没有权限对该文件进行修改，我们在使用 <code>vim</code> 命令时忘记在前面加 <code>sudo</code> 了。我就经常出现这种问题，之前的做法是只能不保存强退，再加上 <code>sudo</code> 重新编辑。</p>
+<p>但是今后我们再也不需要用这么愚蠢的做法了，我们可以在 vim 的普通模式下，按 <code>:w !sudo tee %</code>，这样就可以 root 权限来保存文件了，你也无需因为自己一时忘记加个 sudo 而沮丧懊恼了！</p>
+<h2 id="情景三：执行-root-命令忘记加-sudo"><a href="#情景三：执行-root-命令忘记加-sudo" class="headerlink" title="情景三：执行 root 命令忘记加 sudo"></a>情景三：执行 root 命令忘记加 sudo</h2><p>我们还会遇到这样稍微好一点的情形：输入一个长长的命令，按 Enter 之后出现无权限操作，因为我们忘记加 sudo 了。大多人的做法是按 ↑ 回到上一条命令，在该命令之前加上 sudo，再执行该命令。</p>
+<p>以后，我们无需这样了，只要输入 <code>sudo !!</code> 即可，这里的 <code>!!</code> 代表上一条命令。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ head -n 4 /etc/sudoers</div><div class="line">head: cannot open `/etc/sudoers&apos; for reading: Permission denied</div><div class="line"></div><div class="line">$ sudo !!</div><div class="line">sudo head -n 4 /etc/sudoers</div><div class="line"># /etc/sudoers</div><div class="line">#</div><div class="line"># This file MUST be edited with the &apos;visudo&apos; command as root.</div><div class="line">#</div></pre></td></tr></table></figure></p>
+<h2 id="情景四：shell-内置命令如何使用-sudo"><a href="#情景四：shell-内置命令如何使用-sudo" class="headerlink" title="情景四：shell 内置命令如何使用 sudo"></a>情景四：shell 内置命令如何使用 sudo</h2><p>shell 是一个交互式的应用程序，在执行外部命令时通过 fork 来创建一个子进程，再通过 exec 来加载外部命令的程序来执行，但是如果一个命令是 shell 内置命令，那么只能直接由 shell 来运行。sudo 的意思是，以别的用户（如root）的权限来 fork 一个进程，加载程序并运行，因此 sudo 后面不能跟 shell 的内置命令，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /sys/kernel/debugfs</div><div class="line">sudo: cd: command not found</div></pre></td></tr></table></figure>
+<p>在这种情况，我们又没有 root 账户的密码，我们怎样执行该命令呢？有种办法就是使用 sudo 获得root shell 的权限，然后在root shell 中执行该命令。进入root shell 很简单，输入sudo bash 确认本用户的密码即可，此时你会发现命令提示符显示当前是 root。一旦获得root shell，你可以执行任何命令而不需要在每条命令前输入sudo了。</p>
+<p>另外，常用的shell 内置命令在<a href="http://www.thegeekstuff.com/2010/08/bash-shell-builtin-commands/" target="_blank" rel="external">这里</a> 有简单介绍，我们可以使用 type 命令来查看命令的类型，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ type ls</div><div class="line">ls is /bin/ls</div><div class="line">$ type umask</div><div class="line">umask is a shell builtin</div></pre></td></tr></table></figure>
+<h2 id="情景五：sudo-操作记录日志"><a href="#情景五：sudo-操作记录日志" class="headerlink" title="情景五：sudo 操作记录日志"></a>情景五：sudo 操作记录日志</h2><p>作为一个 Linux 系统的管理员，不仅可以让指定的用户或用户组作为root用户或其它用户来运行某些命令，还能将指定的用户所输入的命令和参数作详细的记录。而sudo的日志功能就可以用户跟踪用户输入的命令，这不仅能增进系统的安全性，还能用来进行故障检修。但是要记录sudo的日志还要一些简单的配置：</p>
+<p>1、创建sudo日志文件</p>
+<p>我们将sudo日志文件放置在 <code>/var/log/sudo.log</code> 文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo touch /var/log/sudo.log</div></pre></td></tr></table></figure></p>
+<p>2、修改 <code>/etc/rsyslog.conf</code> 配置文件</p>
+<p>我使用系统为<code>Ubuntu13.04</code>为改名字，但有些系统名为<code>/etc/syslog.conf</code>，注意不同发行版之间的差别，在该文件加入下面一行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">local2.debug    /var/log/sudo.log    #空白不能用空格，必须用tab</div></pre></td></tr></table></figure>
+<p>3、修改 /etc/sudoers 配置文件</p>
+<p>注意网上很多关于sudo日志文件配置都缺少这一步！在该文件中加入下面一行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Defaults    logfile=/var/log/sudo.log</div></pre></td></tr></table></figure></p>
+<p>4、重启 syslog 服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service rsyslog restart</div></pre></td></tr></table></figure></p>
+<p>5、查看 sudo 日志记录：</p>
+<p>经过上面的配置，sudo 的所有成功和不成功的sudo</p>
+<p>命令都记录到文件/var/log/sudo.log 中，例如我运行几条sudo 命令之后，查看该文件的记录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ cat sudo.log</div><div class="line">Sep 20 22:10:51 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/cat /etc/sudoers</div><div class="line">Sep 20 22:11:36 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/usr/sbin/service rsyslog restart</div><div class="line">Sep 20 22:11:45 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls</div><div class="line">Sep 20 22:12:08 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls /root/</div></pre></td></tr></table></figure></p>
+<p>[原文：<a href="http://www.cnblogs.com/hazir/p/sudo_command.html" target="_blank" rel="external">http://www.cnblogs.com/hazir/p/sudo_command.html</a>]</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;情景一：用户无权限执行 root 命令&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景二：vim 编辑后发现忘记使用 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景三：执行 root 命令忘记加 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景四：shell 内置命令如何使用 sudo&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;情景五：sudo 操作记录日志&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
+    
+    
+      <category term="sudo" scheme="https://weizhimiao.github.io/tags/sudo/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Bash脚本15分钟进阶教程[转]</title>
     <link href="https://weizhimiao.github.io/2016/11/16/Bash%E8%84%9A%E6%9C%AC15%E5%88%86%E9%92%9F%E8%BF%9B%E9%98%B6%E6%95%99%E7%A8%8B/"/>
     <id>https://weizhimiao.github.io/2016/11/16/Bash脚本15分钟进阶教程/</id>
@@ -2322,97 +2768,6 @@
   </entry>
   
   <entry>
-    <title>sudo使用场景分析[转]</title>
-    <link href="https://weizhimiao.github.io/2016/11/16/sudo%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90/"/>
-    <id>https://weizhimiao.github.io/2016/11/16/sudo使用场景分析/</id>
-    <published>2016-11-16T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。</p>
-<ul>
-<li><p>情景一：用户无权限执行 root 命令</p>
-</li>
-<li><p>情景二：vim 编辑后发现忘记使用 sudo</p>
-</li>
-<li><p>情景三：执行 root 命令忘记加 sudo</p>
-</li>
-<li><p>情景四：shell 内置命令如何使用 sudo</p>
-</li>
-<li><p>情景五：sudo 操作记录日志</p>
-</li>
-</ul>
-<a id="more"></a>
-<h2 id="情景一：用户无权限执行-root-命令"><a href="#情景一：用户无权限执行-root-命令" class="headerlink" title="情景一：用户无权限执行 root 命令"></a>情景一：用户无权限执行 root 命令</h2><p>普通用户登录 shell 之后，如果自身没有权限访问某个文件或执行某个命令时，若该用户获得root授权，那么就可以在需要执行的命令之前加上 sudo，临时切换到root用户的权限，完成相关的操作。在sudo于1980年前后被写出之前，一般用户管理系统的方式是利用su切换为超级用户。但是使用su的缺点之一在于必须要先告知超级用户的密码，而sudo使一般用户不需要知道超级用户的密码即可获得权限。</p>
-<p>那么哪些用户可以临时获得 root 权限呢？这就需要在 <code>/etc/sudoers</code> 文件中进行配置：</p>
-<p>授权给单个用户：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">guohl   ALL=(ALL) ALL</div></pre></td></tr></table></figure></p>
-<p>上面这个例子中：</p>
-<ul>
-<li><p>guohl：允许使用 sudo 的用户名</p>
-</li>
-<li><p>ALL：允许从任何终端（任何机器）使用 sudo</p>
-</li>
-<li><p>(ALL)：允许以任何用户执行 sudo 命令</p>
-</li>
-<li><p>ALL：允许 sudo 权限执行任何命令</p>
-</li>
-</ul>
-<p>如果我们想让用户 test 只能在本主机（主机名为guohl-pc）以 root 账户执行/bin/chown、/bin/chmod 两条命令，那么就应该这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># User privilege specification</div><div class="line">test   guohl-pc=(root) /bin/chown,/bin/chmod</div></pre></td></tr></table></figure></p>
-<p>如果test 登录之后运行 sudo 命令，不满足上面三个条件命令均失败。</p>
-<p>授权给用户组:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># Allow members of group sudo to execute any command</div><div class="line"># (Note that later entries override this, so you might need to move it further down)</div><div class="line">%sudo ALL=(ALL) ALL</div><div class="line">和授权给单个用户类似，只不过将用户名在这里换成%组名，所有在该组中的用户都按照此规则进行授权。对于该例，所有在 sudo 组内的用户都有在任何终端（第一个ALL）、以任何用户（第二个ALL）、执行任何命令（第三个ALL）的权限，查看 /etc/group 文件可以知道哪些用户属于 sudo 组。</div></pre></td></tr></table></figure></p>
-<p>举例:</p>
-<p>如果当前帐号在 /etc/sudoers 文件中被授予 sudo 的权限，那么你就可以将任何 root 命令作为 sudo 命令的参数，使用 root 权限来执行该命令。举例来说，挂载一个文件系统只能由 root 来执行，但是一个普通用户也可以使用 sudo 来挂载：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$sudo mount /dev/sda7 /mnt</div><div class="line">[sudo] password for guohailin:</div></pre></td></tr></table></figure>
-<p>首次使用会要求你输入当前用户的密码，系统确实输入正确即以 root 权限来执行 mount 命令，接下来一段时间（默认为5分钟）再次使用 sudo 命令就不需要输密码了。</p>
-<h2 id="情景二：vim-编辑后发现忘记使用-sudo"><a href="#情景二：vim-编辑后发现忘记使用-sudo" class="headerlink" title="情景二：vim 编辑后发现忘记使用 sudo"></a>情景二：vim 编辑后发现忘记使用 sudo</h2><p>我们经常会遇到这样的一个囧境：使用 <code>vim</code> 对某个文件进行编辑，编辑完之后，按 ESC 之后回到普通模式，再按 <code>:wq</code> 准备保存退出时，发现没有权限对该文件进行修改，我们在使用 <code>vim</code> 命令时忘记在前面加 <code>sudo</code> 了。我就经常出现这种问题，之前的做法是只能不保存强退，再加上 <code>sudo</code> 重新编辑。</p>
-<p>但是今后我们再也不需要用这么愚蠢的做法了，我们可以在 vim 的普通模式下，按 <code>:w !sudo tee %</code>，这样就可以 root 权限来保存文件了，你也无需因为自己一时忘记加个 sudo 而沮丧懊恼了！</p>
-<h2 id="情景三：执行-root-命令忘记加-sudo"><a href="#情景三：执行-root-命令忘记加-sudo" class="headerlink" title="情景三：执行 root 命令忘记加 sudo"></a>情景三：执行 root 命令忘记加 sudo</h2><p>我们还会遇到这样稍微好一点的情形：输入一个长长的命令，按 Enter 之后出现无权限操作，因为我们忘记加 sudo 了。大多人的做法是按 ↑ 回到上一条命令，在该命令之前加上 sudo，再执行该命令。</p>
-<p>以后，我们无需这样了，只要输入 <code>sudo !!</code> 即可，这里的 <code>!!</code> 代表上一条命令。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ head -n 4 /etc/sudoers</div><div class="line">head: cannot open `/etc/sudoers&apos; for reading: Permission denied</div><div class="line"></div><div class="line">$ sudo !!</div><div class="line">sudo head -n 4 /etc/sudoers</div><div class="line"># /etc/sudoers</div><div class="line">#</div><div class="line"># This file MUST be edited with the &apos;visudo&apos; command as root.</div><div class="line">#</div></pre></td></tr></table></figure></p>
-<h2 id="情景四：shell-内置命令如何使用-sudo"><a href="#情景四：shell-内置命令如何使用-sudo" class="headerlink" title="情景四：shell 内置命令如何使用 sudo"></a>情景四：shell 内置命令如何使用 sudo</h2><p>shell 是一个交互式的应用程序，在执行外部命令时通过 fork 来创建一个子进程，再通过 exec 来加载外部命令的程序来执行，但是如果一个命令是 shell 内置命令，那么只能直接由 shell 来运行。sudo 的意思是，以别的用户（如root）的权限来 fork 一个进程，加载程序并运行，因此 sudo 后面不能跟 shell 的内置命令，如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /sys/kernel/debugfs</div><div class="line">sudo: cd: command not found</div></pre></td></tr></table></figure>
-<p>在这种情况，我们又没有 root 账户的密码，我们怎样执行该命令呢？有种办法就是使用 sudo 获得root shell 的权限，然后在root shell 中执行该命令。进入root shell 很简单，输入sudo bash 确认本用户的密码即可，此时你会发现命令提示符显示当前是 root。一旦获得root shell，你可以执行任何命令而不需要在每条命令前输入sudo了。</p>
-<p>另外，常用的shell 内置命令在<a href="http://www.thegeekstuff.com/2010/08/bash-shell-builtin-commands/" target="_blank" rel="external">这里</a> 有简单介绍，我们可以使用 type 命令来查看命令的类型，如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ type ls</div><div class="line">ls is /bin/ls</div><div class="line">$ type umask</div><div class="line">umask is a shell builtin</div></pre></td></tr></table></figure>
-<h2 id="情景五：sudo-操作记录日志"><a href="#情景五：sudo-操作记录日志" class="headerlink" title="情景五：sudo 操作记录日志"></a>情景五：sudo 操作记录日志</h2><p>作为一个 Linux 系统的管理员，不仅可以让指定的用户或用户组作为root用户或其它用户来运行某些命令，还能将指定的用户所输入的命令和参数作详细的记录。而sudo的日志功能就可以用户跟踪用户输入的命令，这不仅能增进系统的安全性，还能用来进行故障检修。但是要记录sudo的日志还要一些简单的配置：</p>
-<p>1、创建sudo日志文件</p>
-<p>我们将sudo日志文件放置在 <code>/var/log/sudo.log</code> 文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo touch /var/log/sudo.log</div></pre></td></tr></table></figure></p>
-<p>2、修改 <code>/etc/rsyslog.conf</code> 配置文件</p>
-<p>我使用系统为<code>Ubuntu13.04</code>为改名字，但有些系统名为<code>/etc/syslog.conf</code>，注意不同发行版之间的差别，在该文件加入下面一行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">local2.debug    /var/log/sudo.log    #空白不能用空格，必须用tab</div></pre></td></tr></table></figure>
-<p>3、修改 /etc/sudoers 配置文件</p>
-<p>注意网上很多关于sudo日志文件配置都缺少这一步！在该文件中加入下面一行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Defaults    logfile=/var/log/sudo.log</div></pre></td></tr></table></figure></p>
-<p>4、重启 syslog 服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service rsyslog restart</div></pre></td></tr></table></figure></p>
-<p>5、查看 sudo 日志记录：</p>
-<p>经过上面的配置，sudo 的所有成功和不成功的sudo</p>
-<p>命令都记录到文件/var/log/sudo.log 中，例如我运行几条sudo 命令之后，查看该文件的记录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$ cat sudo.log</div><div class="line">Sep 20 22:10:51 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/cat /etc/sudoers</div><div class="line">Sep 20 22:11:36 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/usr/sbin/service rsyslog restart</div><div class="line">Sep 20 22:11:45 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls</div><div class="line">Sep 20 22:12:08 : guohailin : TTY=pts/1 ; PWD=/var/log ; USER=root ;</div><div class="line">    COMMAND=/bin/ls /root/</div></pre></td></tr></table></figure></p>
-<p>[原文：<a href="http://www.cnblogs.com/hazir/p/sudo_command.html" target="_blank" rel="external">http://www.cnblogs.com/hazir/p/sudo_command.html</a>]</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;情景一：用户无权限执行 root 命令&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景二：vim 编辑后发现忘记使用 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景三：执行 root 命令忘记加 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景四：shell 内置命令如何使用 sudo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;情景五：sudo 操作记录日志&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
-    
-    
-      <category term="sudo" scheme="https://weizhimiao.github.io/tags/sudo/"/>
-    
-  </entry>
-  
-  <entry>
     <title>常见的排序算法与实现（PHP）汇总</title>
     <link href="https://weizhimiao.github.io/2016/11/07/%E5%B8%B8%E8%A7%81%E7%9A%84%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E4%B8%8E%E5%AE%9E%E7%8E%B0%EF%BC%88PHP%EF%BC%89%E6%B1%87%E6%80%BB/"/>
     <id>https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/</id>
@@ -2577,55 +2932,6 @@
 <p>11、将所有的文件名中含有”*.txt”的文件，移入指定目录中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ find -iname &quot;*.txt*&quot; -exec mv -v &#123;&#125; /home/user \;</div></pre></td></tr></table></figure></p>
 <p>12、拆分大体积tar.gz文件（拆成每个100MB），然后合并<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ split -b 100m /path/to/large/archive /path/to/output/files</div><div class="line">$ cat files* &gt; archive</div></pre></td></tr></table></figure></p>
 <p>13、Shell(Bash)中如何判断是否存在某个命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># 判断foo命令是否存在</div><div class="line">$ command -v foo &gt;/dev/null 2&gt;&amp;1 || &#123; echo &gt;&amp;2 &quot;I require foo but it&apos;s not installed.  Aborting.&quot;; exit 1; &#125;</div><div class="line">$ type foo &gt;/dev/null 2&gt;&amp;1 || &#123; echo &gt;&amp;2 &quot;I require foo but it&apos;s not installed.  Aborting.&quot;; exit 1; &#125;</div><div class="line">$ hash foo 2&gt;/dev/null || &#123; echo &gt;&amp;2 &quot;I require foo but it&apos;s not installed.  Aborting.&quot;; exit 1; &#125;</div></pre></td></tr></table></figure></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;img src=&quot;http://n.sinaimg.cn/games/3ece443e/20161030/bash.png&quot; alt=&quot;Linux中常用的shell脚本&quot;&gt;&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="Linux" scheme="https://weizhimiao.github.io/categories/Linux/"/>
-    
-    
-      <category term="shell" scheme="https://weizhimiao.github.io/tags/shell/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux中常用的shell脚本</title>
-    <link href="https://weizhimiao.github.io/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/"/>
-    <id>https://weizhimiao.github.io/2016/10/30/Linux中常用的shell脚本/</id>
-    <published>2016-10-30T12:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
-    
-    <content type="html"><![CDATA[<p><img src="http://n.sinaimg.cn/games/3ece443e/20161030/bash.png" alt="Linux中常用的shell脚本"></p>
-<a id="more"></a>
-<p>1、对于进程来说，查看其运行时的环境变量<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cat /proc/$PID/environ</div></pre></td></tr></table></figure></p>
-<p>示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">#首先需要我们运行一个程序</div><div class="line"># pgrep inotifywait</div><div class="line">8977</div><div class="line"># cat /proc/8977/environ</div><div class="line">HOSTNAME=localhost.localdomainSELINUX_ROLE_REQUESTED=TERM=xterm-256colorSHELL=/bin/bashHISTSIZE=1000SSH_CLIENT=192.168.1.100 63684 22SELINUX_USE_CURRENT_RANGE=SSH_TTY=/dev/pts/0USER=rootLS_COLORS=rs=0:di=38;... %sG_BROKEN_FILENAMES=1_=/usr/local/bin/inotifywaitOLDPWD=/data</div><div class="line">#一般返回的环境变量会有很多，我们采用换行方式查看会更直观</div><div class="line"></div><div class="line"># cat /proc/8977/environ | tr &apos;\0&apos; &apos;\n&apos;</div><div class="line">HOSTNAME=localhost.localdomain</div><div class="line">SELINUX_ROLE_REQUESTED=</div><div class="line">TERM=xterm-256color</div><div class="line">SHELL=/bin/bash</div><div class="line">HISTSIZE=1000</div><div class="line">SSH_CLIENT=192.168.1.100 63684 22</div><div class="line">SELINUX_USE_CURRENT_RANGE=</div><div class="line">SSH_TTY=/dev/pts/0</div><div class="line">USER=root</div><div class="line">....</div></pre></td></tr></table></figure></p>
-<p>2、获得字符串长度<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># var=wahaha</div><div class="line"># echo $&#123;var&#125;</div><div class="line">wahaha</div><div class="line"># echo $&#123;#var&#125;</div><div class="line">6</div></pre></td></tr></table></figure></p>
-<p>3、识别当前使用的是哪种shell<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">echo $SHELL</div><div class="line">/bin/bash</div></pre></td></tr></table></figure></p>
-<p>4、shell脚本检查是执行当前脚本的是否为root用户<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># cat check_root.sh</div><div class="line">#!/bin/bash</div><div class="line">if [ $UID -ne 0 ]; then</div><div class="line">	echo &quot;Non root user. Please run as root.&quot;</div><div class="line">else</div><div class="line">	echo Root User</div><div class="line">fi</div></pre></td></tr></table></figure></p>
-<p>5、修改bash提示字符串（username@hastname:~$）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">#利用PS1环境变量来定制</div><div class="line"># cat ~/.bashrc | grep PS1</div><div class="line">PS1=&apos;$&#123;debian_chroot:+$($debian_chroot)&#125;\u@\h:\w\$ &apos;</div><div class="line"># \u 用户名</div><div class="line"># \h 主机名</div><div class="line"># \w 当前工作目录</div></pre></td></tr></table></figure></p>
-<p>6、如何判断一个命令是否执行成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">当一个命令发生错误并退回时，他会返回一个非0的退出状态；</div><div class="line">而当命令成功完成后，它会返回数字0.</div><div class="line">退出状态可以从特殊变量 $? 中获得（在命令执行之后立刻运行 $? ,就可以打印出退出状态）</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">#!/bin/bash</div><div class="line">CMD=&quot;commod&quot;  #commod代表需要检测退出状态的命令</div><div class="line">$CMD</div><div class="line">if [ $? -eq 0 ];</div><div class="line">then</div><div class="line">  echo &quot;$CMD executed succ&quot;</div><div class="line">else</div><div class="line">  echo &quot;$CMD excuted unsucc&quot;</div><div class="line">fi</div></pre></td></tr></table></figure>
-<p>7、shell中数组的定义与操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">#定义1</div><div class="line">array_var=(1 2 3 4 5)</div><div class="line">#定义2</div><div class="line">array_var[0]=&quot;test&quot;</div><div class="line">array_var[1]=&quot;test1&quot;</div><div class="line">array_var[2]=&quot;test2&quot;</div><div class="line">array_var[3]=&quot;test3&quot;</div><div class="line">#打印特定索引数组元素</div><div class="line">echo $&#123;array_var[0]&#125;</div><div class="line">#以清单形式打印出数组中的所有值</div><div class="line">echo $&#123;array_var[*]&#125;</div><div class="line">test test1 test2 test3</div><div class="line">#也可以</div><div class="line">echo $&#123;array_var[@]&#125;</div><div class="line">test test1 test2 test3</div><div class="line">#输出数组元素个数</div><div class="line">echo $&#123;#array_var[*]&#125;</div><div class="line">4</div></pre></td></tr></table></figure></p>
-<p>8、按照指定格式打印系统当前时间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"># date &quot;+%Y%m%d&quot;</div><div class="line">20161029</div><div class="line"># %a  星期  例，Sat</div><div class="line"># %A  星期  例，Saturday</div><div class="line"># %b  月    例，Nov</div><div class="line"># %B  月    例，November</div><div class="line"># %d  日   例，31</div><div class="line"># %D  固定格式(mm/dd/yy)  例，10/18/10</div><div class="line"># %y  年   例，16</div><div class="line"># %Y  年   例，2016</div><div class="line"># %I或%H 小时  例，08</div><div class="line"># %M  分钟  例，30</div><div class="line"># %S  秒   例，10</div><div class="line"># %N  纳秒  例，694394444</div></pre></td></tr></table></figure></p>
-<p>9、shell函数参数传递<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">#!/bin/bash</div><div class="line">func()&#123;</div><div class="line">  echo $1,$2  #访问参数1和参数2</div><div class="line">  echo &quot;$@&quot;   #以列表方式一次性打印所有参数</div><div class="line">  echo &quot;$*&quot;   #类似于$@,但是参数被作为单个实体</div><div class="line">  return 0;   #返回值</div><div class="line">&#125;</div><div class="line"></div><div class="line"># $1,  第一个参数</div><div class="line"># $2,  第二个参数</div><div class="line"># $n,  第n个参数</div><div class="line"># &quot;$@&quot;,   被扩展成&quot;$1&quot; &quot;$2&quot; &quot;$3&quot;等</div><div class="line"># &quot;$*&quot;,   被扩展成&quot;$1c$2c$3&quot; ，其中c是IFS的第一个字符</div><div class="line"># &quot;$@&quot;要比&quot;$*&quot;用的多。由于&quot;$*&quot;将所有参数当做单个字符串，因此它很少被使用</div></pre></td></tr></table></figure></p>
-<p>10、利用子shell生成独立进程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"># cat sub_shell.sh</div><div class="line">#!/bin/bash</div><div class="line">pwd;</div><div class="line">(cd /bin; pwd);</div><div class="line">pwd;</div><div class="line"># ./sub_shell.sh</div><div class="line">/root/shell</div><div class="line">/bin</div><div class="line">/root/shell</div><div class="line"></div><div class="line"># 我们可以发现（）中的子shell对于当前shell没有影响，它所有的改变仅限于（）内部</div></pre></td></tr></table></figure></p>
-<p>11、运行命令直至成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">repeat()&#123;</div><div class="line">  while true</div><div class="line">  do</div><div class="line">    $@  &amp;&amp; return</div><div class="line">  done</div><div class="line">&#125;</div><div class="line"># 原理：该函数通过$@接收传参。如果命令执行成功，则返回并退出循环，否则一直循环</div><div class="line"></div><div class="line"># Tips：将该函数加入的shell的rc文件中，方便我们使用</div><div class="line"></div><div class="line"># 示例：使用repeat（）从网上下载一个文件，直至成功</div><div class="line">repeat wget -c http://xxxx.com/example.tar.gz</div></pre></td></tr></table></figure></p>
-<p>12、删除多余的空行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># cat -s file &gt;&gt; newfile</div></pre></td></tr></table></figure></p>
-<p>13、文件查找<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"># find /home -name &quot;*.txt&quot;</div><div class="line"># find . \( -name &quot;*.txt&quot; -o -name &quot;*.pdf&quot; \)</div><div class="line">...</div></pre></td></tr></table></figure></p>
-<p>14、排序、去重<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"># 排序  sort</div><div class="line"># 去重  uniq</div><div class="line">sort file.txt | uniq</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"># cat check_sorted.sh</div><div class="line">#!/bin/bash</div><div class="line"># 功能：检查文件是否已经排序过</div><div class="line">sort -C filename;</div><div class="line">if [ $? -eq 0 ]</div><div class="line">then</div><div class="line">  echo Sorted</div><div class="line">else</div><div class="line">  echo Unsorted</div><div class="line">fi</div></pre></td></tr></table></figure>
-<p>15、交互输出自动化实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">#!/bin/bash</div><div class="line"># 文件名：enter.sh</div><div class="line">read -p &quot;Enter number:&quot; no ;</div><div class="line">read -p &quot;Enter name&quot; name ;</div><div class="line">echo You have entered $no $name;</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#利用echo -e来生成输入序列</div><div class="line">echo -e &quot;1\nhello\n&quot; | ./enter.sh</div></pre></td></tr></table></figure>
-<p>16、利用并行进程加速命令执行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">#!/bin/bash</div><div class="line">PIDARRAY=()</div><div class="line">for file in File1.ios File2.ios</div><div class="line">do</div><div class="line">  md5sum $file &amp;</div><div class="line">  PIDARRAY+=(&quot;$!&quot;)</div><div class="line">done</div><div class="line">wait $&#123;PIDARRAY[@]&#125;</div><div class="line"># 原理：利用bash的操作符&amp;，它使得shell将命令置于后台并继续执行脚本。使用 $! 来获得进程的PID（在bash中 $! 保存最近一个后台进程的PID）。将这些进程PID放入PIDARRAY数组中。使用wait命令等待这些进程执行完成。</div></pre></td></tr></table></figure></p>
-<p>17、查找并删除内容重复的文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line">#创建测试文件testfile，testfile1，testfile2，newfile ;其中testfile1和testfile2都是testfile的副本</div><div class="line"></div><div class="line"># echo &quot;hello&quot; &gt;&gt; testfile</div><div class="line"># cp testfile testfile1</div><div class="line"># cp testfile testfile2</div><div class="line"># echo hello world &gt;&gt; newfile</div><div class="line"></div><div class="line"># cat remove_duplicates.sh</div><div class="line">#!/bin/bash</div><div class="line"></div><div class="line">ls -lS --time-style=long-iso | awk &apos;BEGIN &#123;</div><div class="line">	getline; getline;</div><div class="line">	name1=$8; size=$5;</div><div class="line">&#125;&#123;</div><div class="line">	name2=$8</div><div class="line">	if(size==$5)&#123;</div><div class="line">		&quot;md5sum &quot;name1 | getline; csum1=$1;</div><div class="line">		&quot;md5sum &quot;name2 | getline; csum2=$1;</div><div class="line">		if(csum1==csum2)&#123;</div><div class="line">			print name1;</div><div class="line">			print name2;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	size=$5;</div><div class="line">	name1=name2;</div><div class="line">&#125;&apos; | sort -u &gt; duplicate_files</div><div class="line"></div><div class="line">cat duplicate_files | xargs -I &#123;&#125; md5sum &#123;&#125; | sort | uniq -w 32 | awk &apos;&#123;print &quot;^&quot;$2&quot;$&quot; &#125;&apos; | sort -u &gt; duplicate_sample</div><div class="line"></div><div class="line">echo Removing...</div><div class="line">comm duplicate_files duplicate_sample -2 -3 | tee /dev/stderr | xargs rm</div><div class="line">rm -f duplicate_files duplicate_sample</div><div class="line">echo Removed duplicates files successfully</div><div class="line"></div><div class="line"># 执行脚本</div><div class="line"># ./remove_duplicates.sh</div><div class="line">Removing...</div><div class="line">testfile</div><div class="line">testfile1</div><div class="line">Removed duplicates files successfully</div><div class="line"></div><div class="line"># 如上testfile、testfile1、testfile2这三个相同内容的文件，只保留了testfile2.</div><div class="line"></div><div class="line"># 脚本原理说明：</div><div class="line"># ls -lS 将当前目录下的所有文件按照文件大小进行排序，并列出文件的详细信息</div><div class="line"># awk命令的执行步骤：awk首先会执行BEGIN&#123;&#125;语句块，处理完&#123;&#125;中所有的命令后，在执行END&#123;&#125;语句块</div><div class="line"># 在awk中，外部的命令的输出可以用这样的方式来读取，&quot;cmd&quot; | getline ，随后我们就可以用 $0 来获取命令的输出 ，在$1,$2,$3...$n 获取命令输出中的每一列</div><div class="line"># BEGIN&#123;&#125;语句块中有两个getline;是因为 ls -lS --time-style=long-iso 命令的输出的第一行是文件的数量，所以我们直接跳过，来获取下一行数据</div><div class="line"># comm 通常只接受排过序的文件。所以在之前需要使用 sort -u 进行排序</div><div class="line"># tee 命令在这有一个妙用：它将文件名在传递给rm命令的同时，也起到了print的效果。tee将来自stdin的行写入文件，同事将其发送到stdout</div></pre></td></tr></table></figure></p>
-<p>18、解析文本中的电子邮件地址和URL<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"># 正则表达式</div><div class="line">#   mail：[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,4&#125;</div><div class="line">#   URL： (http|https)://[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,3&#125;</div><div class="line"></div><div class="line"># wget www.sina.com.cn/index.html</div><div class="line"></div><div class="line"># 解析index.html中的email</div><div class="line"># egrep -o &quot;[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,4&#125;&quot; index.html</div><div class="line">jubao@vip.sina.com</div><div class="line">jubao@vip.sina.com</div><div class="line"></div><div class="line"># 解析index.html中的URL</div><div class="line"># egrep -o &quot;(http|https)://[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,3&#125;&quot; index.html</div><div class="line">http://www.sina.com.cn</div><div class="line">http://www.sina.com.cn</div><div class="line">http://auto.sina.com.cn</div><div class="line">http://www.sina.com.cn</div><div class="line">...</div><div class="line">http://hq.sinajs.cn</div><div class="line">http://rm.sina.com.cn</div><div class="line">http://d4.sina.com.cn</div><div class="line">http://d1.sina.com.cn</div><div class="line">http://i1.sinaimg.cn</div><div class="line">http://news.sina.com.cn</div><div class="line">http://login.sina.com.cn</div><div class="line">http://login.sina.com.cn</div></pre></td></tr></table></figure></p>
-<p>19、以纯文本形式下载网页<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">lynx:是一款基于命令行的web浏览器。我们可以利用它获取纯文本形式的网页</div><div class="line"></div><div class="line">命令：</div><div class="line"># lynx -dump http://www.sina.com.cn</div><div class="line">-dump 选项表示将网页内容以ASCII编码形式打印</div><div class="line"></div><div class="line">另，lynx会将页面中所有的超链接（&lt;a href=&quot;link&quot;&gt;）作为文本的页脚，单独放置在标题为 References 的文本区域。如果我们需要匹配除某个页面中所有的超链接也可以使用该方法，也省的我们用正则匹配</div></pre></td></tr></table></figure></p>
-<p>20、列出网络上所有的活动主机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"># cat ping.sh</div><div class="line">#!/bin/bash</div><div class="line">for ip in 192.168.1.&#123;1..255&#125;;</div><div class="line">do</div><div class="line">	ping $ip -c 2 &amp;&gt; /dev/null;</div><div class="line"></div><div class="line">	if [ $? -eq 0 ]</div><div class="line">	then</div><div class="line">		echo $ip is alive</div><div class="line">	fi</div><div class="line">done</div><div class="line"></div><div class="line"># 并行ping</div><div class="line"># cat ping_1.sh</div><div class="line">#!/bin/bash</div><div class="line">for ip in 192.168.1.&#123;1..255&#125;;</div><div class="line">do</div><div class="line">	(</div><div class="line">	ping $ip -c 2 &amp;&gt; /dev/null;</div><div class="line"></div><div class="line">	if [ $? -eq 0 ]</div><div class="line">	then</div><div class="line">		echo $ip is alive</div><div class="line">	fi</div><div class="line">	)&amp;</div><div class="line">done</div><div class="line">wait</div><div class="line"></div><div class="line"># 将wait放在脚本最后，它就会一直等到所有的子脚本进程全部结束</div></pre></td></tr></table></figure></p>
-<p>21、网络上利用套接字进行快速文件复制<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"># 设置侦听套接字</div><div class="line">nc -l 1234</div><div class="line"></div><div class="line"># 在另一终端或主机中连接到该套接字</div><div class="line">nc 127.0.0.1 1234</div><div class="line">message_test</div><div class="line"></div><div class="line"># 连接到套接字后就可以在终端中输入信息回车就会发送</div><div class="line"></div><div class="line"># 文件复制</div><div class="line">在接收端执行以下命令：</div><div class="line">nc -l 1234 &gt; destination_filename</div><div class="line">在发送端执行下列命令：</div><div class="line">nc 127.0.0.1 1234 &lt; source_filename</div></pre></td></tr></table></figure></p>
 ]]></content>
     
     <summary type="html">
