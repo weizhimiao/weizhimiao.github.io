@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2017-04-24T02:39:27.000Z</updated>
+  <updated>2017-04-24T13:20:37.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://weizhimiao.github.io/2017/04/23/%E5%88%A9%E7%94%A8ELK%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/"/>
     <id>https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/</id>
     <published>2017-04-23T12:30:00.000Z</published>
-    <updated>2017-04-24T02:39:27.000Z</updated>
+    <updated>2017-04-24T13:20:37.000Z</updated>
     
     <content type="html"><![CDATA[<p>不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。<br>目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、Apache 的 Chukwa<br>Cloudera 的 Fluentd、还有ELK 等等。</p>
 <a id="more"></a>
@@ -375,7 +375,7 @@
     <link href="https://weizhimiao.github.io/2017/03/29/%E6%B5%85%E8%B0%88Web%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%BD%E8%B8%AA/"/>
     <id>https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/</id>
     <published>2017-03-29T12:30:00.000Z</published>
-    <updated>2017-04-14T05:54:52.000Z</updated>
+    <updated>2017-04-24T13:20:37.000Z</updated>
     
     <content type="html"><![CDATA[<p>随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。</p>
 <a id="more"></a>
