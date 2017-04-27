@@ -910,7 +910,7 @@ ACID表示原子性（atomicity）、一致性（consistency）、隔离行（is
                     // show search results
                     if (isMatch) {
                         matchcounts += 1;
-                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        str += "<li><a href='/"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
                         var content = data.content.trim().replace(/<[^>]+>/g,"");
                         if (first_occur >= 0) {
                             // cut out 100 characters

@@ -906,7 +906,7 @@ PHP中的错误则属于自身的问题，是一种非法的语法或者环境�
                     // show search results
                     if (isMatch) {
                         matchcounts += 1;
-                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        str += "<li><a href='/"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
                         var content = data.content.trim().replace(/<[^>]+>/g,"");
                         if (first_occur >= 0) {
                             // cut out 100 characters

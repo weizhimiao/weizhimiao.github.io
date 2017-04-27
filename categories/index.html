@@ -47,8 +47,6 @@
 
 
 
-  
-
 
   <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
 
@@ -612,7 +610,7 @@
                     // show search results
                     if (isMatch) {
                         matchcounts += 1;
-                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        str += "<li><a href='/"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
                         var content = data.content.trim().replace(/<[^>]+>/g,"");
                         if (first_occur >= 0) {
                             // cut out 100 characters
