@@ -70,7 +70,7 @@ keepalived工作原理keepalived是以VRRP协议为实现基础的，VRRP全称V
 <meta property="og:description" content="keepalived是什么keepalived是集群管理中保证集群高可用的一个服务软件，其功能类似于heartbeat，用来防止单点故障。
 keepalived工作原理keepalived是以VRRP协议为实现基础的，VRRP全称Virtual Router Redundancy Protocol，即虚拟路由冗余协议。
 虚拟路由冗余协议，可以认为是实现路由器高可用的协议，即将N台提供相同功能的路由">
-<meta property="og:updated_time" content="2017-02-27T03:11:32.000Z">
+<meta property="og:updated_time" content="2017-05-02T03:15:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="keepalive工作原理和配置(转)">
 <meta name="twitter:description" content="keepalived是什么keepalived是集群管理中保证集群高可用的一个服务软件，其功能类似于heartbeat，用来防止单点故障。
@@ -87,7 +87,7 @@ keepalived工作原理keepalived是以VRRP协议为实现基础的，VRRP全称V
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: 0,
+      userId: undefined,
       author: '博主'
     }
   };
@@ -312,13 +312,6 @@ keepalived工作原理keepalived是以VRRP协议为实现基础的，VRRP全称V
           
 
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/05/keepalived工作原理和配置/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/05/keepalived工作原理和配置/" itemprop="commentsCount"></span>
-                </a>
-              </span>
             
           
 
@@ -557,11 +550,12 @@ keepalived工作原理keepalived是以VRRP协议为实现基础的，VRRP全称V
 
           
   <div class="comments" id="comments">
-    
-      <div class="ds-thread" data-thread-key="2016/10/05/keepalived工作原理和配置/"
-           data-title="keepalive工作原理和配置(转)" data-url="https://weizhimiao.github.io/2016/10/05/keepalived工作原理和配置/">
-      </div>
-    
+  
+    <div class="ds-thread" data-thread-key="2016/10/05/keepalived工作原理和配置/"
+         data-title="keepalive工作原理和配置(转)" data-url="https://weizhimiao.github.io/2016/10/05/keepalived工作原理和配置/">
+         <div id="SOHUCS" sid="2016/10/05/keepalived工作原理和配置/" ></div>
+    </div>
+  
   </div>
 
 
@@ -704,15 +698,10 @@ keepalived工作原理keepalived是以VRRP协议为实现基础的，VRRP全称V
     NexT.Mist
   </a>
 </div>
-<!--
-<div class="theme-info">
-    | 京ICP备 
-    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-          16031041号
-    </a>
-</div>
--->
 
+<div class="theme-info">
+    | 京ICP备16031041号
+</div>
 
         
 
@@ -806,31 +795,22 @@ keepalived工作原理keepalived是以VRRP协议为实现基础的，VRRP全称V
 
 
   
-
-  
-    
-  
-
+  <!--PC和WAP自适应版-->
   <script type="text/javascript">
-    var duoshuoQuery = {short_name:"weizhimiao"};
-    (function() {
-      var ds = document.createElement('script');
-      ds.type = 'text/javascript';ds.async = true;
-      ds.id = 'duoshuo-script';
-      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-      ds.charset = 'UTF-8';
-      (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-    })();
+  (function(){
+  var appid = 'cysYwmWlG';
+  var conf = 'prod_53183cc00eb3753989689605598510ea';
+  var width = window.innerWidth || document.documentElement.clientWidth;
+  if (width < 960) {
+  window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })();
   </script>
 
-  
-    
-    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
-    <script src="/js/src/hook-duoshuo.js"></script>
-  
 
 
+
+
+
+  
 
 
 

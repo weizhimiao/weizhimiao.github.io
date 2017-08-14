@@ -72,7 +72,7 @@ ACID表示原子性（atomicity）、一致性（consistency）、隔离行（is
 ACID表示原子性（atomicity）、一致性（consistency）、隔离行（isolation）和持久性（durability）。一个运行良好的事务处理系统，必须具备这些特征。
 
 一个实现了ACID的数据库，相比于没有实现ACID的数据库，通常需要更强的CPU，">
-<meta property="og:updated_time" content="2017-02-27T03:11:32.000Z">
+<meta property="og:updated_time" content="2017-05-02T03:15:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="事务的ACID概念">
 <meta name="twitter:description" content="数据库中的事务就是一组原子行的SQL查询，或者说一个独立的工作但愿。也就是说，事务内的语句，要么全部执行成功，要么全部执行失败。
@@ -90,7 +90,7 @@ ACID表示原子性（atomicity）、一致性（consistency）、隔离行（is
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: 0,
+      userId: undefined,
       author: '博主'
     }
   };
@@ -315,13 +315,6 @@ ACID表示原子性（atomicity）、一致性（consistency）、隔离行（is
           
 
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/17/事务的ACID概念/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/17/事务的ACID概念/" itemprop="commentsCount"></span>
-                </a>
-              </span>
             
           
 
@@ -549,11 +542,12 @@ ACID表示原子性（atomicity）、一致性（consistency）、隔离行（is
 
           
   <div class="comments" id="comments">
-    
-      <div class="ds-thread" data-thread-key="2016/09/17/事务的ACID概念/"
-           data-title="事务的ACID概念" data-url="https://weizhimiao.github.io/2016/09/17/事务的ACID概念/">
-      </div>
-    
+  
+    <div class="ds-thread" data-thread-key="2016/09/17/事务的ACID概念/"
+         data-title="事务的ACID概念" data-url="https://weizhimiao.github.io/2016/09/17/事务的ACID概念/">
+         <div id="SOHUCS" sid="2016/09/17/事务的ACID概念/" ></div>
+    </div>
+  
   </div>
 
 
@@ -696,15 +690,10 @@ ACID表示原子性（atomicity）、一致性（consistency）、隔离行（is
     NexT.Mist
   </a>
 </div>
-<!--
-<div class="theme-info">
-    | 京ICP备 
-    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-          16031041号
-    </a>
-</div>
--->
 
+<div class="theme-info">
+    | 京ICP备16031041号
+</div>
 
         
 
@@ -798,31 +787,22 @@ ACID表示原子性（atomicity）、一致性（consistency）、隔离行（is
 
 
   
-
-  
-    
-  
-
+  <!--PC和WAP自适应版-->
   <script type="text/javascript">
-    var duoshuoQuery = {short_name:"weizhimiao"};
-    (function() {
-      var ds = document.createElement('script');
-      ds.type = 'text/javascript';ds.async = true;
-      ds.id = 'duoshuo-script';
-      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-      ds.charset = 'UTF-8';
-      (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-    })();
+  (function(){
+  var appid = 'cysYwmWlG';
+  var conf = 'prod_53183cc00eb3753989689605598510ea';
+  var width = window.innerWidth || document.documentElement.clientWidth;
+  if (width < 960) {
+  window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })();
   </script>
 
-  
-    
-    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
-    <script src="/js/src/hook-duoshuo.js"></script>
-  
 
 
+
+
+
+  
 
 
 

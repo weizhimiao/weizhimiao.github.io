@@ -72,7 +72,7 @@ PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲
 其实缓冲区最本质的作用就是,协调高速CPU和相对缓慢的IO设备(磁盘等)的运作.
 PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲区,就要知道执行PHP的时候,缓冲区被设置到了什么地方.
 当执行PHP的时候,如果碰到了echo print_r之类的会输出数据的代码,PHP就会将要输出的数据">
-<meta property="og:updated_time" content="2017-02-27T03:11:32.000Z">
+<meta property="og:updated_time" content="2017-05-02T03:15:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="PHP输出缓冲区">
 <meta name="twitter:description" content="什么是缓冲区?简单而言,缓冲区的作用就是,把输入或者输出的内容先放进内存,而不显示或者读取.
@@ -90,7 +90,7 @@ PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: 0,
+      userId: undefined,
       author: '博主'
     }
   };
@@ -315,13 +315,6 @@ PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲
           
 
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/07/PHP输出缓冲区/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/07/PHP输出缓冲区/" itemprop="commentsCount"></span>
-                </a>
-              </span>
             
           
 
@@ -557,11 +550,12 @@ PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲
 
           
   <div class="comments" id="comments">
-    
-      <div class="ds-thread" data-thread-key="2016/10/07/PHP输出缓冲区/"
-           data-title="PHP输出缓冲区" data-url="https://weizhimiao.github.io/2016/10/07/PHP输出缓冲区/">
-      </div>
-    
+  
+    <div class="ds-thread" data-thread-key="2016/10/07/PHP输出缓冲区/"
+         data-title="PHP输出缓冲区" data-url="https://weizhimiao.github.io/2016/10/07/PHP输出缓冲区/">
+         <div id="SOHUCS" sid="2016/10/07/PHP输出缓冲区/" ></div>
+    </div>
+  
   </div>
 
 
@@ -704,15 +698,10 @@ PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲
     NexT.Mist
   </a>
 </div>
-<!--
-<div class="theme-info">
-    | 京ICP备 
-    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-          16031041号
-    </a>
-</div>
--->
 
+<div class="theme-info">
+    | 京ICP备16031041号
+</div>
 
         
 
@@ -806,31 +795,22 @@ PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲
 
 
   
-
-  
-    
-  
-
+  <!--PC和WAP自适应版-->
   <script type="text/javascript">
-    var duoshuoQuery = {short_name:"weizhimiao"};
-    (function() {
-      var ds = document.createElement('script');
-      ds.type = 'text/javascript';ds.async = true;
-      ds.id = 'duoshuo-script';
-      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-      ds.charset = 'UTF-8';
-      (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-    })();
+  (function(){
+  var appid = 'cysYwmWlG';
+  var conf = 'prod_53183cc00eb3753989689605598510ea';
+  var width = window.innerWidth || document.documentElement.clientWidth;
+  if (width < 960) {
+  window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })();
   </script>
 
-  
-    
-    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
-    <script src="/js/src/hook-duoshuo.js"></script>
-  
 
 
+
+
+
+  
 
 
 

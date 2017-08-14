@@ -90,7 +90,7 @@
 当前所在目录：    用户家目录
 
    管理员        /root">
-<meta property="og:updated_time" content="2017-02-27T03:11:32.000Z">
+<meta property="og:updated_time" content="2017-05-02T03:15:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux常用命令">
 <meta name="twitter:description" content="Linux命令格式格式：命令    [选项]    [参数]
@@ -117,7 +117,7 @@
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: 0,
+      userId: undefined,
       author: '博主'
     }
   };
@@ -343,13 +343,6 @@
 
           
             
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/06/Linux常用命令/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/06/Linux常用命令/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
           
 
           
@@ -547,16 +540,16 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/10/06/Linux网络配置/" rel="next" title="Linux网络配置">
-                <i class="fa fa-chevron-left"></i> Linux网络配置
+              <a href="/2016/10/06/Linux简介/" rel="next" title="Linux系统的简介和安装">
+                <i class="fa fa-chevron-left"></i> Linux系统的简介和安装
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/10/06/Linux目录结构介绍/" rel="prev" title="Linux目录结构介绍">
-                Linux目录结构介绍 <i class="fa fa-chevron-right"></i>
+              <a href="/2016/10/06/Linux中的用户和用户组管理/" rel="prev" title="Linux中的用户和用户组管理">
+                Linux中的用户和用户组管理 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -605,11 +598,12 @@
 
           
   <div class="comments" id="comments">
-    
-      <div class="ds-thread" data-thread-key="2016/10/06/Linux常用命令/"
-           data-title="Linux常用命令" data-url="https://weizhimiao.github.io/2016/10/06/Linux常用命令/">
-      </div>
-    
+  
+    <div class="ds-thread" data-thread-key="2016/10/06/Linux常用命令/"
+         data-title="Linux常用命令" data-url="https://weizhimiao.github.io/2016/10/06/Linux常用命令/">
+         <div id="SOHUCS" sid="2016/10/06/Linux常用命令/" ></div>
+    </div>
+  
   </div>
 
 
@@ -752,15 +746,10 @@
     NexT.Mist
   </a>
 </div>
-<!--
-<div class="theme-info">
-    | 京ICP备 
-    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-          16031041号
-    </a>
-</div>
--->
 
+<div class="theme-info">
+    | 京ICP备16031041号
+</div>
 
         
 
@@ -854,31 +843,22 @@
 
 
   
-
-  
-    
-  
-
+  <!--PC和WAP自适应版-->
   <script type="text/javascript">
-    var duoshuoQuery = {short_name:"weizhimiao"};
-    (function() {
-      var ds = document.createElement('script');
-      ds.type = 'text/javascript';ds.async = true;
-      ds.id = 'duoshuo-script';
-      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-      ds.charset = 'UTF-8';
-      (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-    })();
+  (function(){
+  var appid = 'cysYwmWlG';
+  var conf = 'prod_53183cc00eb3753989689605598510ea';
+  var width = window.innerWidth || document.documentElement.clientWidth;
+  if (width < 960) {
+  window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })();
   </script>
 
-  
-    
-    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
-    <script src="/js/src/hook-duoshuo.js"></script>
-  
 
 
+
+
+
+  
 
 
 

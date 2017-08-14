@@ -74,7 +74,7 @@
 <meta property="og:image" content="http://wx1.sinaimg.cn/mw690/8e242e12ly1few1y2tl0uj21h30prtfm.jpg">
 <meta property="og:image" content="http://wx2.sinaimg.cn/mw690/8e242e12ly1fewv6vsm41j21kw0fggr5.jpg">
 <meta property="og:image" content="http://wx1.sinaimg.cn/mw690/8e242e12ly1fewv89jhhdj21kw0w6wlv.jpg">
-<meta property="og:updated_time" content="2017-04-24T13:20:37.000Z">
+<meta property="og:updated_time" content="2017-05-02T03:15:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="利用ELK搭建自己的日志分析系统">
 <meta name="twitter:description" content="不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、A">
@@ -90,7 +90,7 @@
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: 0,
+      userId: undefined,
       author: '博主'
     }
   };
@@ -315,13 +315,6 @@
           
 
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2017/04/23/利用ELK搭建自己的日志分析系统/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/04/23/利用ELK搭建自己的日志分析系统/" itemprop="commentsCount"></span>
-                </a>
-              </span>
             
           
 
@@ -767,11 +760,12 @@
 
           
   <div class="comments" id="comments">
-    
-      <div class="ds-thread" data-thread-key="2017/04/23/利用ELK搭建自己的日志分析系统/"
-           data-title="利用ELK搭建自己的日志分析系统" data-url="https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/">
-      </div>
-    
+  
+    <div class="ds-thread" data-thread-key="2017/04/23/利用ELK搭建自己的日志分析系统/"
+         data-title="利用ELK搭建自己的日志分析系统" data-url="https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/">
+         <div id="SOHUCS" sid="2017/04/23/利用ELK搭建自己的日志分析系统/" ></div>
+    </div>
+  
   </div>
 
 
@@ -914,15 +908,10 @@
     NexT.Mist
   </a>
 </div>
-<!--
-<div class="theme-info">
-    | 京ICP备 
-    <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-          16031041号
-    </a>
-</div>
--->
 
+<div class="theme-info">
+    | 京ICP备16031041号
+</div>
 
         
 
@@ -1016,31 +1005,22 @@
 
 
   
-
-  
-    
-  
-
+  <!--PC和WAP自适应版-->
   <script type="text/javascript">
-    var duoshuoQuery = {short_name:"weizhimiao"};
-    (function() {
-      var ds = document.createElement('script');
-      ds.type = 'text/javascript';ds.async = true;
-      ds.id = 'duoshuo-script';
-      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-      ds.charset = 'UTF-8';
-      (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-    })();
+  (function(){
+  var appid = 'cysYwmWlG';
+  var conf = 'prod_53183cc00eb3753989689605598510ea';
+  var width = window.innerWidth || document.documentElement.clientWidth;
+  if (width < 960) {
+  window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })();
   </script>
 
-  
-    
-    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
-    <script src="/js/src/hook-duoshuo.js"></script>
-  
 
 
+
+
+
+  
 
 
 

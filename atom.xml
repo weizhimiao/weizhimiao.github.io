@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://weizhimiao.github.io/"/>
-  <updated>2017-04-24T13:20:37.000Z</updated>
+  <updated>2017-05-02T03:15:17.000Z</updated>
   <id>https://weizhimiao.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://weizhimiao.github.io/2017/04/23/%E5%88%A9%E7%94%A8ELK%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/"/>
     <id>https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/</id>
     <published>2017-04-23T12:30:00.000Z</published>
-    <updated>2017-04-24T13:20:37.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。<br>目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、Apache 的 Chukwa<br>Cloudera 的 Fluentd、还有ELK 等等。</p>
 <a id="more"></a>
@@ -375,7 +375,7 @@
     <link href="https://weizhimiao.github.io/2017/03/29/%E6%B5%85%E8%B0%88Web%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%BD%E8%B8%AA/"/>
     <id>https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/</id>
     <published>2017-03-29T12:30:00.000Z</published>
-    <updated>2017-04-24T13:20:37.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。</p>
 <a id="more"></a>
@@ -542,7 +542,7 @@
     <link href="https://weizhimiao.github.io/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/"/>
     <id>https://weizhimiao.github.io/2017/02/22/PHP中常见的密码处理方式与建议/</id>
     <published>2017-02-22T12:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>密码安全的重要性我们就不用再去强调，随着在线攻击的增多，如果我们对密码没有进行合适的处理或做防御措施，我们的应用就会肯定会收到来自各方的威胁和攻击。</p>
 <p><img src="http://n.sinaimg.cn/games/3ece443e/20170223/QQTuPian20170223093340.png" alt="password"></p>
@@ -751,7 +751,7 @@
     <link href="https://weizhimiao.github.io/2017/02/12/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E4%B8%AD%E7%9A%84%E8%8C%83%E5%BC%8F%E7%90%86%E8%AE%BA/"/>
     <id>https://weizhimiao.github.io/2017/02/12/数据库设计中的范式理论/</id>
     <published>2017-02-12T10:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>关系数据库中的关系必须满足一定的要求，数据库的设计范式简单的说就是数据库设计的规范。只有理解数据库的设计范式，才能设计出高效率、优雅的数据库。</p>
 <a id="more"></a>
@@ -816,7 +816,7 @@
     <link href="https://weizhimiao.github.io/2017/02/11/keepalived%E5%AE%9E%E7%8E%B0%E5%8F%8C%E6%9C%BA%E9%AB%98%E5%8F%AF%E7%94%A8/"/>
     <id>https://weizhimiao.github.io/2017/02/11/keepalived实现双机高可用/</id>
     <published>2017-02-11T14:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p><code>Keepalived</code> 是一个基于<code>VRRP</code>协议来实现的<code>LVS</code>服务高可用方案，可以利用其来避免单点故障。一个<code>LVS</code>服务至少会有2台服务器运行<code>Keepalived</code>，一台为主服务器（<code>MASTER</code>），一台为备份服务器（<code>BACKUP</code>），但是对外表现为一个<code>虚拟IP</code>，主服务器会发送特定的消息给备份服务器，当备份服务器收不到这个消息的时候，即主服务器宕机的时候， 备份服务器就会接管<code>虚拟IP</code>，继续提供服务，从而保证服务的高可用性。</p>
 <a id="more"></a>
@@ -969,7 +969,7 @@
     <link href="https://weizhimiao.github.io/2017/02/11/keepalived%E9%85%8D%E7%BD%AE%E6%95%B4%E7%90%86/"/>
     <id>https://weizhimiao.github.io/2017/02/11/keepalived配置整理/</id>
     <published>2017-02-11T13:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>keepalived只有一个配置文件 keepalived.conf ，里面主要包括以下几个配置区域，分别是</p>
 <ul>
@@ -1343,7 +1343,7 @@
     <link href="https://weizhimiao.github.io/2017/02/11/keepalived%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/"/>
     <id>https://weizhimiao.github.io/2017/02/11/keepalived安装配置/</id>
     <published>2017-02-11T12:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p><a href="http://www.keepalived.org/download.html" target="_blank" rel="external">keepalived 源码包下载地址:http://www.keepalived.org/download.html</a></p>
 <h2 id="服务器内核要求"><a href="#服务器内核要求" class="headerlink" title="服务器内核要求"></a>服务器内核要求</h2><p>需要服务器内核支持：</p>
@@ -1455,7 +1455,7 @@
     <link href="https://weizhimiao.github.io/2017/02/03/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8/"/>
     <id>https://weizhimiao.github.io/2017/02/03/Github中webhooks应用/</id>
     <published>2017-02-03T12:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p><code>Webhooks</code> 是 <code>Github</code> 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，<code>Github</code> 会将信息以<code>POST</code>方式发送到我们指定的<code>URL</code>。通过<code>Webhooks</code> 我们可以记录更新，触发<code>CI构建</code>、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。</p>
 <p><code>Github</code> 上对于每个账号或者项目上的每个事件最多可以创建20个 <code>Webhooks</code> 。<br><a id="more"></a></p>
@@ -1646,7 +1646,7 @@
     <link href="https://weizhimiao.github.io/2017/01/22/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8B%E5%AE%A2%E6%88%B7%E7%AB%AFC-%E6%9C%8D%E5%8A%A1%E5%99%A8S%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/"/>
     <id>https://weizhimiao.github.io/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/</id>
     <published>2017-01-22T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>我们知道<code>Redis</code>是一个典型的<code>C/S</code>设计程序，一个服务器可以与多个客户端建立连接。通过<code>I/O</code>多路复用技术实现的文件事件处理器，<code>Redis</code>服务器使用单线程单进程的方式来处理命令请求，并与多个客户端进行网络通信。</p>
 <p>所以，对于<code>Redis</code>我们分为这两部分来了解，</p>
@@ -1877,7 +1877,7 @@
     <link href="https://weizhimiao.github.io/2017/01/13/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8B%E4%BA%8B%E4%BB%B6%E5%8E%9F%E7%90%86%E5%92%8C%E5%AE%9E%E7%8E%B0/"/>
     <id>https://weizhimiao.github.io/2017/01/13/深入了解Redis之事件原理和实现/</id>
     <published>2017-01-13T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>Redis服务器是一个事件驱动程序，其主要处理的事件主要可分为以下两类：</p>
 <ul>
@@ -2023,7 +2023,7 @@
     <link href="https://weizhimiao.github.io/2017/01/12/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8BRedis%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96%E6%96%B9%E5%BC%8F/"/>
     <id>https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis的持久化方式/</id>
     <published>2017-01-12T13:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>我们知道Redis是一个内存数据库，它所有的数据库状态都存储在内存中，所以如果想要在服务器故障、重启之后数据还在，就需要一个将这些数据持久化的一个功能。</p>
 <p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/redisChiJiuHuaYuanLi.png" alt="redis持久化原理"></p>
@@ -2121,7 +2121,7 @@
     <link href="https://weizhimiao.github.io/2017/01/12/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8BRedis%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"/>
     <id>https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis数据库的实现/</id>
     <published>2017-01-12T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>Redis这个<code>key-value</code>的存储系统，由于其高性能，支持主从复制和丰富的数据结构等特性，目前已经广泛应用于我们的各个场景之中。所以了解整理其相关的一些内容，用以加深我们对其的了解，方便之后更好的使用它实现我们的各种功能。</p>
 <a id="more"></a>
@@ -2239,7 +2239,7 @@
     <link href="https://weizhimiao.github.io/2016/12/29/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA%5B%E8%BD%AC%5D/"/>
     <id>https://weizhimiao.github.io/2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/</id>
     <published>2016-12-29T13:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p><strong><em>使用变量来对应用程序性能进行管理</em></strong></p>
 <p>变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约<a href="http://nginx.org/en/docs/varindex.html" target="_blank" rel="external">150个变量</a>可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 <strong>应用程序跟踪</strong> 和 <strong>应用程序性能管理（APM）</strong> ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Plus，除非两个产品之间有差异。</p>
@@ -2303,7 +2303,7 @@
     <link href="https://weizhimiao.github.io/2016/11/29/%E8%B4%AA%E5%A9%AA%E5%92%8C%E6%87%92%E6%83%B0%E5%8C%B9%E9%85%8D%E6%A8%A1%E5%BC%8F%E4%BD%BF%E7%94%A8%E5%B0%8F%E7%BB%93/"/>
     <id>https://weizhimiao.github.io/2016/11/29/贪婪和懒惰匹配模式使用小结/</id>
     <published>2016-11-29T12:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>所谓的贪婪/懒惰匹配模式，就是指正则表达式在匹配字符串是的两种不同的匹配策略。<br>简单的说就是，贪婪匹配模式在正则匹配时会尽量匹配出尽可能多的字符；而懒惰匹配模式则相反，它会匹配尽可能少的字符。</p>
 <p>举例来说，</p>
@@ -2388,7 +2388,7 @@
     <link href="https://weizhimiao.github.io/2016/11/27/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Memcached/"/>
     <id>https://weizhimiao.github.io/2016/11/27/深入了解Memcached/</id>
     <published>2016-11-27T14:30:00.000Z</published>
-    <updated>2017-03-09T08:57:13.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://n.sinaimg.cn/games/3ece443e/20161128/memcachedDuoXianChengMoXingYuanLiTu.png" alt="Memcached多线程模型原理"></p>
 <a id="more"></a>
@@ -2451,7 +2451,7 @@
     <link href="https://weizhimiao.github.io/2016/11/16/%E6%96%87%E4%BB%B6%E9%94%81%E6%9C%BA%E5%88%B6%E5%AE%9E%E7%8E%B0%E4%B8%8E%E5%BA%94%E7%94%A8/"/>
     <id>https://weizhimiao.github.io/2016/11/16/文件锁机制实现与应用/</id>
     <published>2016-11-16T13:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>文件锁机制的作用：防止多个程序同时对一个不允许同时操作的工作做操作。</p>
 <a id="more"></a>
@@ -2484,7 +2484,7 @@
     <link href="https://weizhimiao.github.io/2016/11/16/Bash%E8%84%9A%E6%9C%AC15%E5%88%86%E9%92%9F%E8%BF%9B%E9%98%B6%E6%95%99%E7%A8%8B/"/>
     <id>https://weizhimiao.github.io/2016/11/16/Bash脚本15分钟进阶教程/</id>
     <published>2016-11-16T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>这里的技术技巧最初是来自谷歌的“Testing on the Toilet” (TOTT)。这里是一个修订和扩增版本。</p>
 <ul>
@@ -2681,7 +2681,7 @@
     <link href="https://weizhimiao.github.io/2016/11/16/sudo%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90/"/>
     <id>https://weizhimiao.github.io/2016/11/16/sudo使用场景分析/</id>
     <published>2016-11-16T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p>Linux 下使用 sudo 命令，可以让普通用户也能执行一些或者全部的 root 命令。本文就对我们常用到 sudo 操作情景进行简单分析，通过一些例子来了解 sudo 命令相关的技巧。</p>
 <ul>
@@ -2772,7 +2772,7 @@
     <link href="https://weizhimiao.github.io/2016/11/07/%E5%B8%B8%E8%A7%81%E7%9A%84%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E4%B8%8E%E5%AE%9E%E7%8E%B0%EF%BC%88PHP%EF%BC%89%E6%B1%87%E6%80%BB/"/>
     <id>https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/</id>
     <published>2016-11-07T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<ul>
 <li>冒泡排序</li>
@@ -2913,7 +2913,7 @@
     <link href="https://weizhimiao.github.io/2016/11/01/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC%EF%BC%88%E4%BA%8C%EF%BC%89/"/>
     <id>https://weizhimiao.github.io/2016/11/01/Linux中常用的shell脚本（二）/</id>
     <published>2016-11-01T12:30:00.000Z</published>
-    <updated>2017-02-27T03:11:32.000Z</updated>
+    <updated>2017-05-02T03:15:17.000Z</updated>
     
     <content type="html"><![CDATA[<p><img src="http://n.sinaimg.cn/games/3ece443e/20161030/bash.png" alt="Linux中常用的shell脚本"></p>
 <a id="more"></a>
