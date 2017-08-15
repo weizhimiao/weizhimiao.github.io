@@ -71,7 +71,7 @@ Systemd是一个系统管理守护进程、工具和库的集合，用于取代S
 Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。
 在Linux生态系统中，Systemd被部署到了大多数的标准Linux发行版中(redhat、CentOS、fedora)，只有为数不多的几个发行版尚未部署。Sys">
 <meta property="og:image" content="https://dn-linuxcn.qbox.me/data/attachment/album/201507/30/210221zg6czg8yogegegay.jpg">
-<meta property="og:updated_time" content="2017-08-15T16:01:57.000Z">
+<meta property="og:updated_time" content="2017-08-15T16:04:36.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="systemctl 命令完全指南">
 <meta name="twitter:description" content="Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。
@@ -346,6 +346,7 @@ Systemd是一个系统管理守护进程、工具和库的集合，用于取代S
 <p>在Linux生态系统中，Systemd被部署到了大多数的标准Linux发行版中(redhat、CentOS、fedora)，只有为数不多的几个发行版尚未部署。Systemd通常是所有其它守护进程的父进程，但并非总是如此。</p>
 <p><img src="https://dn-linuxcn.qbox.me/data/attachment/album/201507/30/210221zg6czg8yogegegay.jpg" alt="使用Systemctl管理Linux服务"></p>
 <p>本文旨在阐明在运行systemd的系统上“如何控制系统和服务”。</p>
+<a id="more"></a>
 <h2 id="Systemd初体验和Systemctl基础"><a href="#Systemd初体验和Systemctl基础" class="headerlink" title="Systemd初体验和Systemctl基础"></a>Systemd初体验和Systemctl基础</h2><h3 id="1-首先检查你的系统中是否安装有systemd并确定当前安装的版本"><a href="#1-首先检查你的系统中是否安装有systemd并确定当前安装的版本" class="headerlink" title="1. 首先检查你的系统中是否安装有systemd并确定当前安装的版本"></a>1. 首先检查你的系统中是否安装有systemd并确定当前安装的版本</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># systemctl --version</span></div><div class="line">systemd 215</div><div class="line">+PAM +AUDIT +SELINUX +IMA +SYSVINIT +LIBCRYPTSETUP +GCRYPT +ACL +XZ -SECCOMP -APPARMOR</div></pre></td></tr></table></figure>
 <p>上例中很清楚地表明，我们安装了215版本的systemd。</p>
 <h3 id="2-检查systemd和systemctl的二进制文件和库文件的安装位置"><a href="#2-检查systemd和systemctl的二进制文件和库文件的安装位置" class="headerlink" title="2. 检查systemd和systemctl的二进制文件和库文件的安装位置"></a>2. 检查systemd和systemctl的二进制文件和库文件的安装位置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># whereis systemd</span></div><div class="line">systemd: /usr/lib/systemd /etc/systemd /usr/share/systemd /usr/share/man/man1/systemd.1.gz</div><div class="line"><span class="comment"># whereis systemctl</span></div><div class="line">systemctl: /usr/bin/systemctl /usr/share/man/man1/systemctl.1.gz</div></pre></td></tr></table></figure>
