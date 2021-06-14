@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="大型网站系统特点 高并发，大流量 高可用 海量数据 用户分布广泛，网络情况复杂 安全环境恶略 需求快速变更，发布频繁 渐进式发展">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大型网站技术架构剖析">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/13/大型网站技术架构剖析/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="大型网站系统特点 高并发，大流量 高可用 海量数据 用户分布广泛，网络情况复杂 安全环境恶略 需求快速变更，发布频繁 渐进式发展">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161013/DaXingWangZhanJiShuJiaGouPouXi.jpg">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="大型网站技术架构剖析">
+<meta name="twitter:description" content="大型网站系统特点 高并发，大流量 高可用 海量数据 用户分布广泛，网络情况复杂 安全环境恶略 需求快速变更，发布频繁 渐进式发展">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161013/DaXingWangZhanJiShuJiaGouPouXi.jpg">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/13/大型网站技术架构剖析/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>大型网站技术架构剖析 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/13/大型网站技术架构剖析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">大型网站技术架构剖析<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/大型网站技术架构剖析.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-13 10:30:00" itemprop="dateCreated datePublished" datetime="2016-10-13T10:30:00+08:00">2016-10-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/架构/" itemprop="url" rel="index"><span itemprop="name">架构</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/13/大型网站技术架构剖析/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/13/大型网站技术架构剖析/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">1.6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">1 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="http://n.sinaimg.cn/games/3ece443e/20161013/DaXingWangZhanJiShuJiaGouPouXi.jpg" alt="大型网站技术架构剖析"></p>
+<h2 id="大型网站系统特点"><a href="#大型网站系统特点" class="headerlink" title="大型网站系统特点"></a>大型网站系统特点</h2><ul>
+<li>高并发，大流量</li>
+<li>高可用</li>
+<li>海量数据</li>
+<li>用户分布广泛，网络情况复杂</li>
+<li>安全环境恶略</li>
+<li>需求快速变更，发布频繁</li>
+<li>渐进式发展</li>
+</ul>
+<a id="more"></a>
+<h2 id="大型网站发展演化过程"><a href="#大型网站发展演化过程" class="headerlink" title="大型网站发展演化过程"></a>大型网站发展演化过程</h2><h3 id="一台服务器"><a href="#一台服务器" class="headerlink" title="一台服务器"></a>一台服务器</h3><p>特点：没人</p>
+<p>应用程序、数据库、文件都在一个服务器。</p>
+<h3 id="应用服务器和数据服务器分离"><a href="#应用服务器和数据服务器分离" class="headerlink" title="应用服务器和数据服务器分离"></a>应用服务器和数据服务器分离</h3><p>应用服务器</p>
+<ul>
+<li>处理大量业务</li>
+<li>需要更快更强的CPU</li>
+</ul>
+<p>数据服务器</p>
+<ul>
+<li>需要快速磁盘检索和数据缓存</li>
+<li>需要更快的磁盘和更大的内存</li>
+</ul>
+<p>文件服务器</p>
+<ul>
+<li>需要更大的硬盘</li>
+</ul>
+<h3 id="使用缓存改善网站性能"><a href="#使用缓存改善网站性能" class="headerlink" title="使用缓存改善网站性能"></a>使用缓存改善网站性能</h3><ul>
+<li>本地缓存</li>
+<li>远程缓存（分布式缓存）</li>
+</ul>
+<h3 id="使用应用服务器集群改善并发处理能力"><a href="#使用应用服务器集群改善并发处理能力" class="headerlink" title="使用应用服务器集群改善并发处理能力"></a>使用应用服务器集群改善并发处理能力</h3><ul>
+<li>负载均衡服务器</li>
+<li>用户服务器集群</li>
+</ul>
+<h3 id="数据库读写分离"><a href="#数据库读写分离" class="headerlink" title="数据库读写分离"></a>数据库读写分离</h3><p>利用数据库的主从热备份，来实现数据库的读写分离。从而改善数据库的负载压力。</p>
+<h3 id="使用反向代理和CDN加速网站响应"><a href="#使用反向代理和CDN加速网站响应" class="headerlink" title="使用反向代理和CDN加速网站响应"></a>使用反向代理和CDN加速网站响应</h3><blockquote>
+<p>基本原理都是缓存（都可以缓存一些静态资源）</p>
+</blockquote>
+<p>反向代理服务器</p>
+<ul>
+<li>缓存用户请求资源</li>
+</ul>
+<p>CDN服务器</p>
+<ul>
+<li>目的：尽早返回数据给用户</li>
+</ul>
+<h3 id="使用分布式文件系统和分布式数据库系统"><a href="#使用分布式文件系统和分布式数据库系统" class="headerlink" title="使用分布式文件系统和分布式数据库系统"></a>使用分布式文件系统和分布式数据库系统</h3><p>分布式数据库是网站数据库拆分的最后手段。不到万不得已的时网站更常用的拆分手段是业务拆分。</p>
+<h3 id="使用NoSQL和搜索引擎"><a href="#使用NoSQL和搜索引擎" class="headerlink" title="使用NoSQL和搜索引擎"></a>使用NoSQL和搜索引擎</h3><p>应对更复杂的存储和检索需求</p>
+<h3 id="业务拆分"><a href="#业务拆分" class="headerlink" title="业务拆分"></a>业务拆分</h3><blockquote>
+<p>应对日益复杂的业务场景</p>
+</blockquote>
+<p>拆分方法</p>
+<ul>
+<li>根据产品线拆分成不同的应用</li>
+</ul>
+<p>应用产品之间的关系</p>
+<ul>
+<li>超链接</li>
+<li>消息队列进行数据分发</li>
+<li>访问同一个数据存储系统</li>
+</ul>
+<h3 id="分布式服务"><a href="#分布式服务" class="headerlink" title="分布式服务"></a>分布式服务</h3><p>通过分布式服务调用公用业务服务完成具体业务需要</p>
+<h2 id="大型网站架构模式"><a href="#大型网站架构模式" class="headerlink" title="大型网站架构模式"></a>大型网站架构模式</h2><h3 id="分层"><a href="#分层" class="headerlink" title="分层"></a>分层</h3><ul>
+<li>应用层</li>
+<li>服务层</li>
+<li>数据层</li>
+</ul>
+<h3 id="分割"><a href="#分割" class="headerlink" title="分割"></a>分割</h3><p>对不同的层继续进行垂直的分割</p>
+<h3 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h3><blockquote>
+<p>分层、分割的主要目的就是为了便于分布式部署。</p>
+<p>分布式就是为了用更多的计算机来完成同样的功能</p>
+</blockquote>
+<ul>
+<li>分布式应用和服务</li>
+<li>分布式静态资源</li>
+<li>分布式数据和存储</li>
+<li>分布式计算</li>
+<li>分布式配置</li>
+<li>分布式文件系统</li>
+</ul>
+<h3 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h3><blockquote>
+<p>多台服务器部署相同应用构成一个集群。通过负载均衡设备对外提供服务</p>
+</blockquote>
+<p>有点：</p>
+<ul>
+<li>提高系统并发访问量</li>
+<li>提高系统可用性（冗余）</li>
+</ul>
+<h3 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h3><blockquote>
+<p>改善性能的第一手段</p>
+</blockquote>
+<ul>
+<li>内容分发网络CDN</li>
+<li>反向代理</li>
+<li>本地缓存</li>
+<li>分布式缓存</li>
+</ul>
+<h3 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h3><ul>
+<li>共享内存队列（单服务器）</li>
+<li>分布式消息队列(分布式系统)</li>
+</ul>
+<h3 id="冗余"><a href="#冗余" class="headerlink" title="冗余"></a>冗余</h3><p>访问和负载很小的服务器也至少要部署两台构成集群。目的就是实现服务的高可用。</p>
+<h3 id="自动化"><a href="#自动化" class="headerlink" title="自动化"></a>自动化</h3><ul>
+<li>自动化报警</li>
+<li>自动化失效转移</li>
+<li>自动化失效恢复</li>
+<li>自动化降级</li>
+<li>自动化分配资源</li>
+</ul>
+<h3 id="安全"><a href="#安全" class="headerlink" title="安全"></a>安全</h3><ul>
+<li>身份认证</li>
+<li>加密</li>
+<li>验证码识别</li>
+<li>对于XSS，SQL注入，进行编码转换等</li>
+<li>敏感信息过滤</li>
+<li>风险控制</li>
+</ul>
+<h2 id="网站性能测试优化"><a href="#网站性能测试优化" class="headerlink" title="网站性能测试优化"></a>网站性能测试优化</h2><h3 id="性能测试指标"><a href="#性能测试指标" class="headerlink" title="性能测试指标"></a>性能测试指标</h3><ul>
+<li>响应时间</li>
+<li>并发数</li>
+<li>吞吐量</li>
+<li>性能计数器</li>
+</ul>
+<h3 id="性能测试方法"><a href="#性能测试方法" class="headerlink" title="性能测试方法"></a>性能测试方法</h3><ul>
+<li>性能测试</li>
+<li>负载测试</li>
+<li>压力测试</li>
+<li>稳定性测试</li>
+</ul>
+<h3 id="常见优化手段"><a href="#常见优化手段" class="headerlink" title="常见优化手段"></a>常见优化手段</h3><p>用户视角</p>
+<ul>
+<li>优化页面HTML样式</li>
+<li>利用浏览器的并发和异步</li>
+<li>调整浏览器缓存策略</li>
+<li>CDN和反向代理</li>
+</ul>
+<p>开发人员</p>
+<ul>
+<li>使用缓存加速数据读取速度</li>
+<li>使用集群提高系统吞吐能力</li>
+<li>使用异步消息加速响应及实现消峰</li>
+<li>优化代码改善程序性能</li>
+</ul>
+<p>运维人员</p>
+<ul>
+<li>优化骨干网</li>
+<li>使用高性价比定制服务器</li>
+<li>使用虚拟化技术优化资源利用</li>
+</ul>
+<h3 id="网站性能优化"><a href="#网站性能优化" class="headerlink" title="网站性能优化"></a>网站性能优化</h3><p>web性能优化</p>
+<ul>
+<li>减少HTTP请求（合并css、javascript、图片）</li>
+<li>使用浏览器缓存（使用Cache-Control和Expire属性）</li>
+<li>启用压缩（减少网络数据传输量）</li>
+<li>减少页面阻塞（CSS文件尽量放在最上面，javascript放在最下面）</li>
+<li>减少Cookie传输</li>
+<li>CDN加速</li>
+<li>反向代理<ul>
+<li>安全</li>
+<li>加速web请求（可以缓存一些静态资源）</li>
+<li>负载均衡</li>
+</ul>
+</li>
+</ul>
+<p>应用服务器优化</p>
+<ul>
+<li>分布式缓存</li>
+<li><p>异步操作（消息队列）</p>
+<blockquote>
+<p>原则：任何可以晚点在做的事都可以晚点再做</p>
+</blockquote>
+</li>
+<li><p>使用集群</p>
+<blockquote>
+<p>使用负载均衡技术来构建</p>
+</blockquote>
+</li>
+</ul>
+<p>存储服务器优化</p>
+<ul>
+<li>访问频繁的页面不应该访问数据库（如首页，最好是静态的）</li>
+<li>谨慎使用锁操作</li>
+<li>对缓存的管理提高到和其他服务器一样的级别</li>
+<li>大文件小文件分别对待</li>
+</ul>
+<h2 id="大型网站架构设计误区"><a href="#大型网站架构设计误区" class="headerlink" title="大型网站架构设计误区"></a>大型网站架构设计误区</h2><ul>
+<li>一味追求大公司的解决方案</li>
+<li>为了技术而技术</li>
+<li>企图用技术解决所有问题</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/13/大型网站技术架构剖析/" title="大型网站技术架构剖析">https://weizhimiao.github.io/2016/10/13/大型网站技术架构剖析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/12/PHP的MVC设计与实现/" rel="next" title="PHP魔术方法小结">
+                <i class="fa fa-chevron-left"></i> PHP魔术方法小结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/13/大话MySQL性能优化/" rel="prev" title="大话MySQL性能优化">
+                大话MySQL性能优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#大型网站系统特点"><span class="nav-number">1.</span> <span class="nav-text">大型网站系统特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#大型网站发展演化过程"><span class="nav-number">2.</span> <span class="nav-text">大型网站发展演化过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一台服务器"><span class="nav-number">2.1.</span> <span class="nav-text">一台服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用服务器和数据服务器分离"><span class="nav-number">2.2.</span> <span class="nav-text">应用服务器和数据服务器分离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用缓存改善网站性能"><span class="nav-number">2.3.</span> <span class="nav-text">使用缓存改善网站性能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用应用服务器集群改善并发处理能力"><span class="nav-number">2.4.</span> <span class="nav-text">使用应用服务器集群改善并发处理能力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库读写分离"><span class="nav-number">2.5.</span> <span class="nav-text">数据库读写分离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用反向代理和CDN加速网站响应"><span class="nav-number">2.6.</span> <span class="nav-text">使用反向代理和CDN加速网站响应</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用分布式文件系统和分布式数据库系统"><span class="nav-number">2.7.</span> <span class="nav-text">使用分布式文件系统和分布式数据库系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用NoSQL和搜索引擎"><span class="nav-number">2.8.</span> <span class="nav-text">使用NoSQL和搜索引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#业务拆分"><span class="nav-number">2.9.</span> <span class="nav-text">业务拆分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分布式服务"><span class="nav-number">2.10.</span> <span class="nav-text">分布式服务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#大型网站架构模式"><span class="nav-number">3.</span> <span class="nav-text">大型网站架构模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分层"><span class="nav-number">3.1.</span> <span class="nav-text">分层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分割"><span class="nav-number">3.2.</span> <span class="nav-text">分割</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分布式"><span class="nav-number">3.3.</span> <span class="nav-text">分布式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群"><span class="nav-number">3.4.</span> <span class="nav-text">集群</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存"><span class="nav-number">3.5.</span> <span class="nav-text">缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步"><span class="nav-number">3.6.</span> <span class="nav-text">异步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#冗余"><span class="nav-number">3.7.</span> <span class="nav-text">冗余</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自动化"><span class="nav-number">3.8.</span> <span class="nav-text">自动化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安全"><span class="nav-number">3.9.</span> <span class="nav-text">安全</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网站性能测试优化"><span class="nav-number">4.</span> <span class="nav-text">网站性能测试优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#性能测试指标"><span class="nav-number">4.1.</span> <span class="nav-text">性能测试指标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#性能测试方法"><span class="nav-number">4.2.</span> <span class="nav-text">性能测试方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见优化手段"><span class="nav-number">4.3.</span> <span class="nav-text">常见优化手段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网站性能优化"><span class="nav-number">4.4.</span> <span class="nav-text">网站性能优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#大型网站架构设计误区"><span class="nav-number">5.</span> <span class="nav-text">大型网站架构设计误区</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

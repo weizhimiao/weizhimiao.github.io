@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。">
+<meta name="keywords" content="客户端追踪">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈Web客户端追踪[转]">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/CCC2C265-F4A1-4D0E-AEE7-3DAC87997A54.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/4809C3B6-4DAD-49A8-9AE5-3B59C15E44A7.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/90ADED7C-F517-4460-AAF4-4052AF293B63.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/5FD30CF8-5A10-454A-924A-0E51431A95FB.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/1F01FC18-7FAB-4DE7-88DF-4BCBDE1F5979.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/909A1F2B-3584-49CA-9446-8BD5E9685565.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/3D9E61BC-FFE2-4FDF-8755-2BC7F293ABD4.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/81117524-6CBE-4EBF-B2E8-F6CFDED2C069.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/13E3C6AC-ACC4-4D12-B33E-F14FF233F9D7.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/761F97FB-C31C-49ED-91F9-0361F0DF4A26.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/BE609BB4-53EE-4115-BA93-40CD9C243972.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/AAC806FA-2B19-4735-932F-80D47366E009.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/4EFB75A4-9BF9-4E43-A9B4-D0F17BC3984D.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/BD836DFD-178E-446F-A71F-C2DF37A2DD15.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/B8554485-29B1-4B8A-89AB-8550371CE09A.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/1BDA6AFA-B37C-400E-AE2F-71B13F76E4F9.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/7B8514B0-881B-4880-B297-918CB3B72A4C.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/38DBB916-AAF4-42E1-B7B4-11A3F9DC3F39.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/038BF410-893D-4D20-B62A-24FECB62A794.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/2959BA38-D4E7-4E17-BDE4-3A562ABB1D21.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/C748D9A2-26B7-4205-9A39-652AE9DAD763.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/369C0E01-4122-4B75-BCAA-00C6026C1378.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/701F38B8-C7A0-49AE-8676-6053F8F0EF4D.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浅谈Web客户端追踪[转]">
+<meta name="twitter:description" content="随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20170329/CCC2C265-F4A1-4D0E-AEE7-3DAC87997A54.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>浅谈Web客户端追踪[转] | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浅谈Web客户端追踪[转]<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/浅谈Web客户端追踪.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-03-29 20:30:00" itemprop="dateCreated datePublished" datetime="2017-03-29T20:30:00+08:00">2017-03-29</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/03/29/浅谈Web客户端追踪/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/03/29/浅谈Web客户端追踪/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">5.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">5 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>随着互联网络的广泛普及，数以亿计网民的网络行为数据早已成为最宝贵的资源，企业通过五花八门的各种手段了解网民的行为和隐私数据，用于广告投递、用户兴趣分析等，进而作为决策的依据。利用Web客户端对用户行为进行收集和追踪是重要手段之一，文本对主流的Web客户端追踪技术进行了简要分析，并给出相关参考供感兴趣的朋友深入，不喜之处还望大神勿喷。</p>
+<a id="more"></a>
+<h2 id="Web客户端追踪技术概述"><a href="#Web客户端追踪技术概述" class="headerlink" title="Web客户端追踪技术概述"></a>Web客户端追踪技术概述</h2><p>Web客户端追踪，主要是指用户使用客户端（通常是指浏览器）访问Web网站时，Web服务器通过一系列手段对用户客户端进行标记和识别，进而关联和分析用户行为的技术。</p>
+<p>实际上，只要通过Web进入互联网的海洋，Web客户端追踪几乎无时不刻不在发生。</p>
+<p>当你网购时，即便没有登录，关掉浏览器后购物车的物品也不会消失；当你访问其他新闻、娱乐网站时，弹出的广告往往都是近期浏览购物网站的类似商品；稍有意识的用户可能会不定时清空浏览器缓存、使用“无痕浏览”、“隐私保护模式”等，然而仍然不能阻止类似广告的洗脑。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/CCC2C265-F4A1-4D0E-AEE7-3DAC87997A54.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/4809C3B6-4DAD-49A8-9AE5-3B59C15E44A7.png" alt="img"></center>
+
+<p>现实世界可通过体貌特征、身份证件、生物特征（如指纹信息）等手段对用户进行唯一性识别，Web世界主要通过Cookies、客户端指纹等技术进行识别。</p>
+<h2 id="典型追踪技术"><a href="#典型追踪技术" class="headerlink" title="典型追踪技术"></a>典型追踪技术</h2><h3 id="1-Cookie追踪"><a href="#1-Cookie追踪" class="headerlink" title="1. Cookie追踪"></a>1. Cookie追踪</h3><h4 id="1-Cookie简介"><a href="#1-Cookie简介" class="headerlink" title="1)  Cookie简介"></a>1)  Cookie简介</h4><p>Cookie，中文翻译为小甜饼，有时也用复数形式Cookies，在Web世界中其实际上是用户浏览网站时，网站存储在用户浏览器上的一段信息，并在服务器和浏览器之间传递，用户与辨别用户身份和维持状态。</p>
+<p>通常是以cookies:user@domain格式命名的，user是你的本地用户名，domain是所访问的网站的域名。在现有Windows系统中，一般存放位置在</p>
+<p><code>C:\Users\user\AppData\Local\Microsoft\Windows\TemporaryInternet Files\</code>文件夹下。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/90ADED7C-F517-4460-AAF4-4052AF293B63.png" alt="img"></center>
+
+
+<p>以添加购物车为例，Cookies的大致利用过程可表示为：</p>
+<ul>
+<li>①、用户第一次访问购物网站：</li>
+</ul>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/5FD30CF8-5A10-454A-924A-0E51431A95FB.png" alt="img"></center>
+
+<ul>
+<li>②、用户第二次访问网站：</li>
+</ul>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/1F01FC18-7FAB-4DE7-88DF-4BCBDE1F5979.png" alt="img"></center>
+
+<ul>
+<li>③、浏览器查看Cookies如下：</li>
+</ul>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/909A1F2B-3584-49CA-9446-8BD5E9685565.png" alt="img"></center>
+
+
+<h4 id="2-Evercookie"><a href="#2-Evercookie" class="headerlink" title="2)  Evercookie"></a>2)  Evercookie</h4><p>用户可以通过清空浏览器缓存等方式，清除已保存的Cookie，Evercookie将Cookie通过多种机制保存到系统多个地方，如果用户删除其中某几处的Cookie， Evercookie仍然可以恢复Cookie，如果开启本地共享对象(Local Shared Objects)，Evercookie甚至可以跨浏览器传播（详见参考地址[1]）。</p>
+<p>主要的存储机制如下图，开源地址：</p>
+<p><a href="https://github.com/samyk/evercookie" target="_blank" rel="noopener">https://github.com/samyk/evercookie</a></p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/3D9E61BC-FFE2-4FDF-8755-2BC7F293ABD4.png" alt="img"></center>
+
+<h4 id="3-Cookie同步"><a href="#3-Cookie同步" class="headerlink" title="3)  Cookie同步"></a>3)  Cookie同步</h4><p>Cookie同步是指用户访问某A网站时，该网站通过页面跳转等方式将用户的Cookie发送到B网站，使得B网站获取到用户在A网站的用户隐私信息，然后通过Ad Network等一系列平台进行有效的广告推送服务。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/81117524-6CBE-4EBF-B2E8-F6CFDED2C069.png" alt="img"></center>
+
+<p>研究人员通过访问了Alexa排名前1500网站，发现两个追踪者进行Cookie同步以后，可以把数据完全共享，就像是一个追踪者一样。（详见参考地址[2]）</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/13E3C6AC-ACC4-4D12-B33E-F14FF233F9D7.png" alt="img"></center>
+
+<p>Cookie越来越受限制，不少安全工具甚至是浏览器都允许或者引导关闭追踪Cookie，浏览器指纹追踪渐渐成为了Web追踪的重要技术手段。</p>
+<h3 id="2-浏览器指纹"><a href="#2-浏览器指纹" class="headerlink" title="2. 浏览器指纹"></a>2. 浏览器指纹</h3><p>类似人的外貌和指纹，Web客户端（这里主要指浏览器）也有多种“外貌”信息和“指纹”信息，将这些信息综合分析计算后，可对客户端唯一性识别，进而追踪、了解网民行为和隐私数据。</p>
+<h4 id="1-基本指纹"><a href="#1-基本指纹" class="headerlink" title="1)  基本指纹"></a>1)  基本指纹</h4><p>基本指纹是任何浏览器都具有的特征标识，比如硬件类型（Apple）、操作系统（Mac OS）、用户代理（Useragent）、系统字体、语言、屏幕分辨率、浏览器插件 (Flash,Silverlight, Java, etc)、浏览器扩展、浏览器设置(Do-Not-Track, etc)、时区差（BrowserGMT Offset）等众多信息。</p>
+<p>可以在该网址进行查看测试，<a href="https://www.whatismybrowser.com/" target="_blank" rel="noopener">https://www.whatismybrowser.com/</a></p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/761F97FB-C31C-49ED-91F9-0361F0DF4A26.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/BE609BB4-53EE-4115-BA93-40CD9C243972.png" alt="img"></center>
+
+<h4 id="2-高级指纹"><a href="#2-高级指纹" class="headerlink" title="2)  高级指纹"></a>2)  高级指纹</h4><p>基本指纹就像是人的外貌特征，外貌可以用男女、身高、体重之分，然而这些特征不能对某个人进行唯一性标识。基于HTML5的诸多高级指纹对此提供了新思路。</p>
+<ul>
+<li>①、Canvas指纹</li>
+</ul>
+<p>Canvas（画布），是HTML5中一种动态绘图的标签，可以使用其生成高级图片，官网有众多绘画事例，如下图。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/AAC806FA-2B19-4735-932F-80D47366E009.png" alt="img"></center>
+
+<p>2014年9月，ProPublica报道：新型的Canvas指纹追踪正在被用到“上到白宫，下到YouPorn”等众多网站，众多重要网站都部署了Canvas指纹追踪。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/4EFB75A4-9BF9-4E43-A9B4-D0F17BC3984D.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/BD836DFD-178E-446F-A71F-C2DF37A2DD15.png" alt="img"></center>
+
+<p>利用Canvas进行追踪的过程大致如下：</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/B8554485-29B1-4B8A-89AB-8550371CE09A.png" alt="img"></center>
+
+<p>基于Canvas绘制特定内容的图片，使用canvas.toDataURL()方法获得图片内容的base64编码（对于PNG格式的图片，以块(chunk)划分，最后一块是32位CRC校验）作为唯一性标识，如下图。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/1BDA6AFA-B37C-400E-AE2F-71B13F76E4F9.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/7B8514B0-881B-4880-B297-918CB3B72A4C.png" alt="img"></center>
+
+<p><strong><em>Canvas指纹的原理大致如下：</em></strong></p>
+<p>相同的HTML5Canvas元素绘制操作，在不同操作系统、不同浏览器上，产生的图片内容不完全相同。</p>
+<p>在图片格式上，不同浏览器使用了不同的图形处理引擎、不同的图片导出选项、不同的默认压缩级别等。</p>
+<p>在像素级别来看，操作系统各自使用了不同的设置和算法来进行抗锯齿和子像素渲染操作。即使相同的绘图操作，产生的图片数据的CRC检验也不相同。</p>
+<p>在线测试地址：</p>
+<p><a href="https://www.browserleaks.com/canvas" target="_blank" rel="noopener">https://www.browserleaks.com/canvas</a></p>
+<p>可查看浏览器的Canvas唯一性字符串。</p>
+<ul>
+<li>②、AudioContext指纹</li>
+</ul>
+<p>HTML5提供给JavaScript编程用的AudioAPI则让开发者有能力在代码中直接操作原始的音频流数据，对其进行任意生成、加工、再造，诸如提高音色，改变音调，音频分割等多种操作，甚至可称为网页版的Adobe Audition。</p>
+<p><strong><em>AudioContext指纹原理大致如下：</em></strong></p>
+<p>方法一：生成音频信息流(三角波)，对其进行FFT变换，计算SHA值作为指纹，音频输出到音频设备之前进行清除，用户毫无察觉。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/38DBB916-AAF4-42E1-B7B4-11A3F9DC3F39.png" alt="img"></center>
+
+
+<p>方法二：生成音频信息流（正弦波），进行动态压缩处理，计算MD5值。</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/038BF410-893D-4D20-B62A-24FECB62A794.png" alt="img"></center>
+
+
+<p>AudioContext指纹基本原理：<br>主机或浏览器硬件或软件的细微差别，导致音频信号的处理上的差异，相同器上的同款浏览器产生相同的音频输出，不同机器或不同浏览器产生的音频输出会存在差异。</p>
+<p>从上可以看出AudioContext和Canvas指纹原理很类似，都是利用硬件或软件的差异，前者生成音频，后者生成图片，然后计算得到不同哈希值来作为标识。</p>
+<p>音频指纹测试地址：<a href="https://audiofingerprint.openwpm.com/" target="_blank" rel="noopener">https://audiofingerprint.openwpm.com/</a></p>
+<h4 id="3-硬件指纹"><a href="#3-硬件指纹" class="headerlink" title="3)  硬件指纹"></a>3)  硬件指纹</h4><p>硬件指纹主要通过检测硬件模块获取信息，作为对基于软件的指纹的补充，主要的硬件模块有：GPU’sclock frequency、Camera、Speakers/Microphone、Motion sensors、GPS、Battery等。</p>
+<p>更多细节请参考：<a href="https://arxiv.org/pdf/1503.01408v3.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1503.01408v3.pdf</a></p>
+<h4 id="4-综合指纹"><a href="#4-综合指纹" class="headerlink" title="4)  综合指纹"></a>4)  综合指纹</h4><p>Web世界的指纹碰撞不可避免，将上述基本指纹和高级指纹综合起来，计算哈希值作为综合指纹，可以大大降低碰撞率。</p>
+<p>测试地址：<a href="https://panopticlick.eff.org/" target="_blank" rel="noopener">https://panopticlick.eff.org/</a></p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/2959BA38-D4E7-4E17-BDE4-3A562ABB1D21.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/C748D9A2-26B7-4205-9A39-652AE9DAD763.png" alt="img"></center>
+
+<h3 id="3-跨浏览器指纹"><a href="#3-跨浏览器指纹" class="headerlink" title="3. 跨浏览器指纹"></a>3. 跨浏览器指纹</h3><p>上述指纹都是基于浏览器进行的，同一台电脑的不同浏览器具有不同的指纹信息。</p>
+<p>这样造成的结果是，当同一用户使用同一台电脑的不同浏览器时，服务方收集到的浏览器指纹信息不同，无法将该用户进行唯一性识别，进而无法有效分析改用户的的行为。</p>
+<p>近期有学者研究了一种跨浏览器的浏览器指纹，其依赖于浏览器与操作系统和硬件底层进行交互进而分析计算出指纹，这种指纹对于同一台电脑的不同浏览器也是相同的。</p>
+<p>更多技术细节请参考：</p>
+<p><a href="http://yinzhicao.org/TrackingFree/crossbrowsertracking_NDSS17.pdf" target="_blank" rel="noopener">http://yinzhicao.org/TrackingFree/crossbrowsertracking_NDSS17.pdf</a></p>
+<h3 id="4-WebRTC"><a href="#4-WebRTC" class="headerlink" title="4. WebRTC"></a>4. WebRTC</h3><p>WebRTC（网页实时通信，Web Real Time Communication），是一个支持网页浏览器进行实时语音对话或视频对话的API，功能是让浏览器实时获取和交换视频、音频和数据。基于WebRTC可以实现浏览器上，通过Javascript就可以达到实时通讯的能力。</p>
+<p>基于WebRTC的实时通讯功能，可以获取客户端的IP地址，包括本地内网地址和公网地址。其原理是利用到RTCPeerConnection的API，大致函数如下：</p>
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/369C0E01-4122-4B75-BCAA-00C6026C1378.png" alt="img"></center>
+
+<center><img src="http://n.sinaimg.cn/games/3ece443e/20170329/701F38B8-C7A0-49AE-8676-6053F8F0EF4D.png" alt="img"></center>
+
+
+<p>利用WebRTC能做的事情还远不止这些，比如使用其探测扫描内网信息，进行语音、视频交流，更多技术细节请参考：</p>
+<p><a href="http://net.ipcalf.com" target="_blank" rel="noopener">http://net.ipcalf.com</a></p>
+<p><a href="https://diafygi.github.io/webrtc-ips/" target="_blank" rel="noopener">https://diafygi.github.io/webrtc-ips/</a></p>
+<h2 id="防客户端追踪措施"><a href="#防客户端追踪措施" class="headerlink" title="防客户端追踪措施"></a>防客户端追踪措施</h2><h3 id="1-浏览器设置"><a href="#1-浏览器设置" class="headerlink" title="1. 浏览器设置"></a>1. 浏览器设置</h3><ul>
+<li><p>①、使用隐身模式，目前主流的浏览器都支持该模式。</p>
+</li>
+<li><p>②、禁用Cookie和JavaScript（此项可能导致页面显示不正常，慎用）</p>
+</li>
+<li><p>③、禁用WebRTC，如Firefox浏览器：打开about:config，找到media.peerconnection.enabled的项，设置成 false</p>
+</li>
+<li><p>④、禁用Geolocation，Firefox浏览器：打开about:config，找到geo.enabled的值，设置其值为 false。Chrome 点击设置（Settings），从显示高级设置（Show advanced settings）上，找到隐私（Privacy）并且点击内容设置（Content settings），在窗口里找到定位（Location）并设置选项不允许任何网站追踪你的物理位置（Do not allow any site to track your physical location）</p>
+</li>
+<li><p>⑤、限制API访问文件资源时序信息，恶意网站会通过检测浏览器缓存的时序信息，包括访问和忽略第三方网站的资源，来判断使用者是否访问过第三方网站。Firefox浏览器：打开about:config，将dom.enable_resource_timing, dom.enable_user_timing 和dom.performance.enable_user_timing_logging设置为 false，来阻止这些 API 运行。</p>
+</li>
+</ul>
+<h3 id="2-插件"><a href="#2-插件" class="headerlink" title="2. 插件"></a>2. 插件</h3><p>推荐几个较好的插件来阻止第三方广告追踪和广告：<br>Ghostery，官网地址：<br><a href="https://www.ghostery.com/try-us/download-browser-extension" target="_blank" rel="noopener">https://www.ghostery.com/try-us/download-browser-extension</a></p>
+<p>Privacy Badger，官网地址：<br><a href="https://www.eff.org/privacybadger/" target="_blank" rel="noopener">https://www.eff.org/privacybadger/</a></p>
+<p>uMatrix（仅Chrome和FireFox）：<br><a href="https://addons.mozilla.org/en-us/firefox/addon/umatrix/" target="_blank" rel="noopener">https://addons.mozilla.org/en-us/firefox/addon/umatrix/</a></p>
+<p>NoScript（仅FireFox）：<br><a href="https://addons.mozilla.org/en-US/firefox/addon/noscript/#" target="_blank" rel="noopener">https://addons.mozilla.org/en-US/firefox/addon/noscript/#</a></p>
+<p>Chameleon（仅Chrome）：<br><a href="https://github.com/ghostwords/chameleon" target="_blank" rel="noopener">https://github.com/ghostwords/chameleon</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] <a href="http://samy.pl/evercookie/" target="_blank" rel="noopener">http://samy.pl/evercookie/</a></p>
+<p>[2] <a href="http://freedom-to-tinker.com/2014/08/07/the-hidden-perils-of-cookie-syncing/" target="_blank" rel="noopener">http://freedom-to-tinker.com/2014/08/07/the-hidden-perils-of-cookie-syncing/</a></p>
+<p>[3] <a href="https://securehomes.esat.kuleuven.be/~gacar/persistent/index.html" target="_blank" rel="noopener">https://securehomes.esat.kuleuven.be/~gacar/persistent/index.html</a></p>
+<p>[4] <a href="http://cseweb.ucsd.edu/~hovav/papers/ms12.html" target="_blank" rel="noopener">http://cseweb.ucsd.edu/~hovav/papers/ms12.html</a></p>
+<p>[5] <a href="https://arxiv.org/pdf/1503.01408v3.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1503.01408v3.pdf</a></p>
+<p>[6] <a href="https://eprint.iacr.org/2015/616.pdf" target="_blank" rel="noopener">https://eprint.iacr.org/2015/616.pdf</a></p>
+<blockquote>
+<p>作者：ArkTeam/Wellee</p>
+<p>来源：FreeBuf</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/" title="浅谈Web客户端追踪[转]">https://weizhimiao.github.io/2017/03/29/浅谈Web客户端追踪/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/客户端追踪/" rel="tag"># 客户端追踪</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/22/PHP中常见的密码处理方式与建议/" rel="next" title="PHP中常见的密码处理方式与建议">
+                <i class="fa fa-chevron-left"></i> PHP中常见的密码处理方式与建议
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/04/23/利用ELK搭建自己的日志分析系统/" rel="prev" title="利用ELK搭建自己的日志分析系统">
+                利用ELK搭建自己的日志分析系统 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Web客户端追踪技术概述"><span class="nav-number">1.</span> <span class="nav-text">Web客户端追踪技术概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#典型追踪技术"><span class="nav-number">2.</span> <span class="nav-text">典型追踪技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Cookie追踪"><span class="nav-number">2.1.</span> <span class="nav-text">1. Cookie追踪</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Cookie简介"><span class="nav-number">2.1.1.</span> <span class="nav-text">1)  Cookie简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Evercookie"><span class="nav-number">2.1.2.</span> <span class="nav-text">2)  Evercookie</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Cookie同步"><span class="nav-number">2.1.3.</span> <span class="nav-text">3)  Cookie同步</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-浏览器指纹"><span class="nav-number">2.2.</span> <span class="nav-text">2. 浏览器指纹</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-基本指纹"><span class="nav-number">2.2.1.</span> <span class="nav-text">1)  基本指纹</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-高级指纹"><span class="nav-number">2.2.2.</span> <span class="nav-text">2)  高级指纹</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-硬件指纹"><span class="nav-number">2.2.3.</span> <span class="nav-text">3)  硬件指纹</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-综合指纹"><span class="nav-number">2.2.4.</span> <span class="nav-text">4)  综合指纹</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-跨浏览器指纹"><span class="nav-number">2.3.</span> <span class="nav-text">3. 跨浏览器指纹</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-WebRTC"><span class="nav-number">2.4.</span> <span class="nav-text">4. WebRTC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#防客户端追踪措施"><span class="nav-number">3.</span> <span class="nav-text">防客户端追踪措施</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-浏览器设置"><span class="nav-number">3.1.</span> <span class="nav-text">1. 浏览器设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-插件"><span class="nav-number">3.2.</span> <span class="nav-text">2. 插件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

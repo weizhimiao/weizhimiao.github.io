@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="我们知道Redis是一个典型的C/S设计程序，一个服务器可以与多个客户端建立连接。通过I/O多路复用技术实现的文件事件处理器，Redis服务器使用单线程单进程的方式来处理命令请求，并与多个客户端进行网络通信。 所以，对于Redis我们分为这两部分来了解，  Redis服务器维护和管理客户端状态的方法 Redis服务器的运行机制">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入了解Redis之客户端C-服务器S设计与实现">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="我们知道Redis是一个典型的C/S设计程序，一个服务器可以与多个客户端建立连接。通过I/O多路复用技术实现的文件事件处理器，Redis服务器使用单线程单进程的方式来处理命令请求，并与多个客户端进行网络通信。 所以，对于Redis我们分为这两部分来了解，  Redis服务器维护和管理客户端状态的方法 Redis服务器的运行机制">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170116/clientsLianBiao.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanJieShouBingFaSongMingLingQingQiuDeGuoCheng.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanZhuangTaiZhongDeMingLingQingQiu.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanZhuangTaiDeargvShuXingHeargcShuXing.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanJieShouBingDaYinMingLingHuiFuDeGuoCheng.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入了解Redis之客户端C-服务器S设计与实现">
+<meta name="twitter:description" content="我们知道Redis是一个典型的C/S设计程序，一个服务器可以与多个客户端建立连接。通过I/O多路复用技术实现的文件事件处理器，Redis服务器使用单线程单进程的方式来处理命令请求，并与多个客户端进行网络通信。 所以，对于Redis我们分为这两部分来了解，  Redis服务器维护和管理客户端状态的方法 Redis服务器的运行机制">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20170116/clientsLianBiao.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>深入了解Redis之客户端C-服务器S设计与实现 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入了解Redis之客户端C-服务器S设计与实现<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/深入了解Redis之客户端C-服务器S设计与实现.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-01-22 20:30:00" itemprop="dateCreated datePublished" datetime="2017-01-22T20:30:00+08:00">2017-01-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">8.2k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们知道<code>Redis</code>是一个典型的<code>C/S</code>设计程序，一个服务器可以与多个客户端建立连接。通过<code>I/O</code>多路复用技术实现的文件事件处理器，<code>Redis</code>服务器使用单线程单进程的方式来处理命令请求，并与多个客户端进行网络通信。</p>
+<p>所以，对于<code>Redis</code>我们分为这两部分来了解，</p>
+<ul>
+<li><code>Redis</code>服务器维护和管理客户端状态的方法</li>
+<li><code>Redis</code>服务器的运行机制</li>
+</ul>
+<a id="more"></a>
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>对于每个与服务器进行连接的客户端，服务器都为这些客户端建立了相应的 <code>redisClient</code> 结构（客户端状态），这个结构保存了客户端当前的状态信息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">typedef struct redisClent&#123;</span><br><span class="line"></span><br><span class="line">  // ...</span><br><span class="line">  // 客户端的套接字描述符</span><br><span class="line">  int fd;</span><br><span class="line">  // 客户端的名字</span><br><span class="line">  robj *name;</span><br><span class="line">  // 客户端的标识值（flag）</span><br><span class="line">  int flags;</span><br><span class="line">  // 输入缓冲区</span><br><span class="line">  sqs querybuf;</span><br><span class="line">  // 命令与命令参数</span><br><span class="line">  robj **argv;</span><br><span class="line">  // 命令参数个数</span><br><span class="line">  int argc;</span><br><span class="line">  //命令的实现函数</span><br><span class="line">  struct redisCommand *cmd;</span><br><span class="line">  //输出缓冲区</span><br><span class="line">  char buf[REDIS_REPLY_CHUNK_BYTES];</span><br><span class="line">  //</span><br><span class="line">  int bufpos;</span><br><span class="line">  // 身份认证相关属性</span><br><span class="line">  int authenticated;</span><br><span class="line">  //</span><br><span class="line">  time_t ctime;</span><br><span class="line">  time_t lastinteraction;</span><br><span class="line">  time_t obuf_soft_limit_reached_time;</span><br><span class="line"></span><br><span class="line">  // ...</span><br><span class="line"></span><br><span class="line">&#125; redisClient</span><br></pre></td></tr></table></figure></p>
+<p><code>Redis</code>服务器状态结构的<code>clients</code>属性是一个链表，这个链表保存了所有与服务器连接的客户端的状态结构(<code>redisClient</code>)，对客户端执行批量操作或者查找某个指定的客户端，都可以通过遍历 <code>clients</code> 链表来完成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct redisServer &#123;</span><br><span class="line">  //...</span><br><span class="line"></span><br><span class="line">  // 一个链表，保存了所有客户端状态</span><br><span class="line">  list *clients;</span><br><span class="line"></span><br><span class="line">  //...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如图，是一个与三个客户端进行连接的服务器。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170116/clientsLianBiao.png" alt="clients 链表"></p>
+<h3 id="客户端类型"><a href="#客户端类型" class="headerlink" title="客户端类型"></a>客户端类型</h3><p>按照处理的命令请求的来源，客户端可以分为以下两种：</p>
+<ul>
+<li><p>伪客户端</p>
+<blockquote>
+<p>处理来自<code>AOF</code>文件或者Lua脚本的命令请求。目前<code>Redis</code>会在两个地方用到伪客户端，</p>
+<ul>
+<li>用于载入 <code>AOF</code> 文件并还原数据库状态</li>
+<li>用于执行<code>Lua</code>脚本中包含的<code>Redis</code>命令</li>
+</ul>
+</blockquote>
+</li>
+<li><p>普通客户端</p>
+<blockquote>
+<p>处理来自网络的普通命令请求。</p>
+</blockquote>
+</li>
+</ul>
+<p>两者的主要区别是，在客户端状态结构（<code>redisClient</code>）中的 <code>fd</code> 属性，伪客户端的该属性值为<code>-1</code>，普通客户端的该属性的值是普通客户端的套接字的描述符。</p>
+<h3 id="客户端状态属性"><a href="#客户端状态属性" class="headerlink" title="客户端状态属性"></a>客户端状态属性</h3><p>客户端状态属性主要可以分为两类：</p>
+<ul>
+<li><p>比较通用的属性</p>
+<ul>
+<li>套接字描述，根据客户端端类型的不同，该属性的值可以是<code>-1</code> 或者是大于<code>-1</code> 的整数。</li>
+<li>名字，默认情况下，一个连接到服务器的客户端是没有名字的，使用 <code>CLIENT setname</code> 可以为客户端设置一个名字。</li>
+<li>标识，记录了客户端的角色（<code>role</code>）如，主服务器，从服务器，低版本的从服务器，专门处理<code>Lua</code>脚本的伪客户端；以及客户端目前所处的状态，如客户端正在执行<code>MONITOR</code>命令，客户端正在被<code>BRPOP</code>、<code>BLPOP</code>等命令阻塞，客户端正在执行事务等等。</li>
+<li>输入缓冲区，用于保存客户端发送的命令请求。</li>
+<li>命令与命令参数，保存命令参数以及命令参数个数。</li>
+<li>命令的实现函数，保存命令的实现函数。</li>
+<li>输出缓冲区，保存执行命令所得的命令回复内容。</li>
+<li>身份验证，用于记录客户端是否通过了身份验证。</li>
+<li>时间，记录创建客户端的时间、客户端与服务器最后一次交互的时间、输出缓冲区第一次到达软性限制的时间等等。</li>
+</ul>
+</li>
+<li><p>和特定功能相关的属性</p>
+<ul>
+<li><code>db</code>属性（数据库操作时需要）</li>
+<li><code>dictid</code>属性（数据库操作时需要）</li>
+<li><code>mstate</code>属性（执行事务时需要）</li>
+<li><code>watched_keys</code>属性（执行<code>WATCH</code>命令时需要）</li>
+<li>…</li>
+</ul>
+</li>
+</ul>
+<h3 id="客户端的创建与关闭"><a href="#客户端的创建与关闭" class="headerlink" title="客户端的创建与关闭"></a>客户端的创建与关闭</h3><h4 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h4><p>如果客户端是通过网络连接与服务器进行连接的普通客户端，在客户端使用connect函数连接到服务器时，服务器就会调用连接事件处理器，为客户端创建相应的客户端状态，并将这个新的客户端状态添加到服务器状态结构 clients 链表的末尾。</p>
+<p>对于Lua脚本的伪客户端，服务器会在初始化时，创建负责执行Lua脚本中包含的<code>Redis</code>命令的伪客户端，并将这个伪客户端关联在服务器状态结构的 <code>lua_client</code> 属性中。且 <code>lua_client</code> 伪客户端会在服务器运行的整个生命周期中会一直存在，只有在服务器关闭时，这个伪客户端才会关闭。</p>
+<p>对于用户载入 <code>AOF</code> 文件还原数据库的伪客户端，会在服务器载入<code>AOF</code>文件时创建，用于执行<code>AOF</code>文件包含的<code>Redis</code>命令，在完成载入操作之后，这个伪客户端就会关闭。</p>
+<h4 id="关闭"><a href="#关闭" class="headerlink" title="关闭"></a>关闭</h4><p>对于一个普通客户端可以有多种原因而被关闭，</p>
+<ul>
+<li>客户端进程推出或者被杀死</li>
+<li>客户单向服务器端发送了不符合协议格式的命令请求</li>
+<li>客户端成为了 <code>CLIENT KILL</code> 命令的目标</li>
+<li>客户端空转时间 大于了 <code>timeout</code> 的设置</li>
+<li>客户端发送的命令请求的大小超过了输入缓冲区的大小限制（默认 <code>1GB</code>）</li>
+<li>发送给客户端的命令回复的大小超过了输出缓冲区的限制大小</li>
+</ul>
+<h2 id="服务器"><a href="#服务器" class="headerlink" title="服务器"></a>服务器</h2><p><code>Redis</code> 服务器负责与多个客户端建立网络连接，处理客户端发送的命令请求，在数据库中保存客户端执行命令所产生的数据，并通过资源管理来维持服务器自身的运转。</p>
+<h3 id="一条请求命令的执行过程"><a href="#一条请求命令的执行过程" class="headerlink" title="一条请求命令的执行过程"></a>一条请求命令的执行过程</h3><p>一条命令请求从发送到获得回复的过程中，客户端和服务器需要完成一系列操作。，例如，执行 <code>redis&gt; SET KEY VALUE</code>这条命令的执行过程如下：</p>
+<ul>
+<li>1）客户端向服务器发送命令请求 <code>SET KEY VALUE</code></li>
+<li>2）服务器接收并处理客户端发送过来的命令请求 <code>SET KEY VALUE</code>，在数据库中进行设置操作，并返回命令回复 <code>OK</code></li>
+<li>3）服务器将命令回复<code>OK</code>发送给客户端</li>
+<li>4）客户端接收服务器返回的命令回复<code>OK</code>，并将这个回复打印给用户</li>
+</ul>
+<h4 id="发送命令请求"><a href="#发送命令请求" class="headerlink" title="发送命令请求"></a>发送命令请求</h4><p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanJieShouBingFaSongMingLingQingQiuDeGuoCheng.png" alt="客户端接收并发送命令请求的过程"><br>如图所示，用户在客户端中键入一个命令请求时，客户端会将这个命令请求转换成协议格式，然后通过连接到服务器的套接字，将协议格式的命令发送服务器。</p>
+<p>示例，假设用户在客户端键入了命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET KEY VALUE</span><br></pre></td></tr></table></figure></p>
+<p>那么客户端会将这个命令转换成协议格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*3\r\n$3\r\nSET\r\n$3\r\nKEY\r\n$5\r\nVALUE\r\n</span><br></pre></td></tr></table></figure></p>
+<p>然后将这段协议内容发送给服务器。</p>
+<h4 id="服务器读取命令请求"><a href="#服务器读取命令请求" class="headerlink" title="服务器读取命令请求"></a>服务器读取命令请求</h4><p>当客户端与服务器之间的连接套接字因为客户端的写入而变得可读时，服务器将调用命令请求出来器来执行一下操作。</p>
+<ul>
+<li>1）读取套接字中协议格式的命令请求，并将其保存到客户端状态的输入缓冲区里。</li>
+<li>2）对输入缓冲区中的命令请求进行分析，提取出命令请求中包含的命令参数，以及参数的个数，然后分别保存到客户端状态的<code>argv</code>属性和<code>argc</code>属性中。</li>
+<li>3）调用命令执行器，执行客户端指定的命令。</li>
+</ul>
+<p>示例，</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanZhuangTaiZhongDeMingLingQingQiu.png" alt="客户端状态中的命令请求"></p>
+<p>服务器将命令请求保存到客户端状态的输入缓冲区。之后，分析程序将对输入缓冲区的协议进行分析，并将分析结果保存到客户端状态的<code>argv</code>属性和<code>argc</code>属性里。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanZhuangTaiDeargvShuXingHeargcShuXing.png" alt="客户端状态的argv属性和argc属性"></p>
+<h4 id="执行命令"><a href="#执行命令" class="headerlink" title="执行命令"></a>执行命令</h4><p>分析程序将分析结果保存到客户端状态的<code>argv</code>属性和<code>argc</code>属性里之后，服务器将通过调用命令执行器来完成执行命令所需的余下步骤。</p>
+<ul>
+<li><p>命令执行器：查找命令实现</p>
+<blockquote>
+<p>根据客户端状态的 <code>argv[0]</code> 参数，在命令表（<code>command table</code>） 中查找参数所指定的命令，并将找到的命令保存到客户端状态的cmd属性中。</p>
+</blockquote>
+</li>
+<li><p>命令执行器：执行预备操作</p>
+<blockquote>
+<p>到目前为止，服务器已经将执行命令所需的命令实现函数（<code>cmd</code>属性）、参数（<code>argv</code>属性）、参数个数（<code>argc</code>属性）都收集齐了。但在真正执行命令前，还需要进行一些预备操作，从而确保命令能够正确的、顺序被执行。这些操作有，</p>
+<ul>
+<li>检查实现函数是否为空</li>
+<li>检查参数个数满足当前实现函数的要求</li>
+<li>检查客户端是否已经通过了身份验证</li>
+<li>如果服务器打开了 <code>maxmemory</code> 功能，那么检查服务器的内从占用情况，并在有需要的情况下回收内存</li>
+<li>如果服务器上一次执行 <code>BGSAVE</code> 命令出错，且打开了 <code>stop-writes-on-bgsave-error</code> 功能，且服务器当前要执行的是一个写命令，则拒绝执行这个命令，并返回错误。</li>
+<li>检查服务器是否正处于某种状态（正在用<code>subscribe</code>命令订阅频道、正在用<code>psubscribe</code>命令订阅模式、正在进行数据载入、正在阻塞、正在执行事务），如果处于某种状态之下，则需要分别当前命令是否可以在该状态下被执行。</li>
+<li>如果服务器打开了监视功能，那么服务器会将要执行的命令和参数等信息，发送给监视器。</li>
+</ul>
+<p>当完成以上操作之后，服务器就可以开始真正执行命令了。</p>
+</blockquote>
+</li>
+<li><p>命令执行器：调用命令的实现函数</p>
+<blockquote>
+<p>因为之前服务器已经将要执行的命令的实现保存到了客户端状态的cmd属性、参数和个数分别保存到了<code>argv</code>属性和<code>argc</code>属性，所以当服务器决定要执行命令时，是需要执行就可以了。<code>client-&gt;cmd-&gt;proc(client);</code>实现函数执行完操作之后，会产生相应的命令回复，这些回复会保存在客户端状态的输出缓冲区里，之后实现函数还会为客户端的套接字关联命令回复处理器，这个处理器负责将命令回复返回给客户端。</p>
+</blockquote>
+</li>
+<li><p>命令执行器：执行后续操作</p>
+<blockquote>
+<p>在执行完函数之后，服务器还需要执行一些后续工作，</p>
+<ul>
+<li>如果服务器开启了慢日志功能，那么检查刚执行的命令是否符合条件</li>
+<li>更新命令的<code>redisCommand</code>结构中<code>milliseconds</code>属性（执行命令耗费时长），和<code>calls</code>属性（被调用次数）</li>
+<li>如果服务器开启<code>AOF</code>持久化功能，将刚执行的命令传播给所有从服务器</li>
+</ul>
+<p>到此，服务器对于当前命令的执行就告一段落了。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="将命令回复发送给客户端"><a href="#将命令回复发送给客户端" class="headerlink" title="将命令回复发送给客户端"></a>将命令回复发送给客户端</h4><p>前面的命令实现函数会将命令回复保存到客户端的输出缓冲区里面，并为客户端的套接字关联命令回复处理器，当客户端套接字变成可写状态时，服务器就会执行命令回复处理器，将保存在输出缓冲区中的命令回复发送给客户端。</p>
+<p>当命令回复发送完毕之后，回复处理器会清空客户端状态的输出缓冲区，为处理下一个命令请求做好准备。</p>
+<h4 id="客户端接收并打印命令回复"><a href="#客户端接收并打印命令回复" class="headerlink" title="客户端接收并打印命令回复"></a>客户端接收并打印命令回复</h4><p>当客户端接收到协议格式的命令回复之后，它会将这些回复转换成人类可读的格式，并打印给用户。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170120/KeHuDuanJieShouBingDaYinMingLingHuiFuDeGuoCheng.png" alt="客户端接收并打印显示命令回复的过程"></p>
+<h3 id="serverCron-函数"><a href="#serverCron-函数" class="headerlink" title="serverCron 函数"></a>serverCron 函数</h3><p><code>redis</code>服务器中的<code>serverCron</code>函数负责管理服务器的资源，并保持服务器自身的良好运转，其默认每隔 <code>100 ms</code> 执行一次。</p>
+<p><code>serverCron</code>函数需要做的事情，</p>
+<ul>
+<li>更新服务器的时间缓存（用于获得当前时间时）</li>
+<li>更新<code>LRU</code>时钟（用于计算键的空转事件）</li>
+<li>更新服务器每秒执行命令次数</li>
+<li>更新服务器内存峰值记录</li>
+<li>处理<code>SIGTERM</code>信号</li>
+<li>管理客户端资源</li>
+<li>管理数据库资源</li>
+<li>执行被延迟的<code>BGREWRITEAOF</code></li>
+<li>检查持久化操作的运行状态</li>
+<li>将<code>AOF</code>缓冲区中的内容写入<code>AOF</code>文件</li>
+<li>关闭异步客户端</li>
+<li>增加<code>cronloops</code>计数器值</li>
+</ul>
+<h3 id="初始化服务器"><a href="#初始化服务器" class="headerlink" title="初始化服务器"></a>初始化服务器</h3><p>一个<code>redis</code>服务器从启动到能够接受客户端的命令请求，需要经过一些列的初始化和设置过程，如</p>
+<ul>
+<li>初始化服务器状态结构</li>
+<li>载入配置选项</li>
+<li>初始化服务器数据结构</li>
+<li>还原数据库状态</li>
+<li>执行事件循环</li>
+</ul>
+<h4 id="初始化服务器状态结构"><a href="#初始化服务器状态结构" class="headerlink" title="初始化服务器状态结构"></a>初始化服务器状态结构</h4><p>服务器状态结构指的就是 <code>redisServer</code> 结构，初始化服务器的第一步就是创建一个 <code>struct redisServer</code>类型的实例变量 <code>server</code> 作为服务器的状态，并为结构中的各个属性设置默认值。</p>
+<p>具体初始化工作由 <code>redis.c/initServerConfig</code> 函数完成，<code>initServerConfig</code> 函数完成的主要工作是，</p>
+<ul>
+<li>设置服务器的运行ID</li>
+<li>设置服务器的默认运行频率</li>
+<li>设置服务器的默认配置文件路径</li>
+<li>设置服务器的运行架构</li>
+<li>设置服务器的默认端口号</li>
+<li>设置服务器的默认<code>RDB</code>持久化条件和<code>AOF</code>持久化条件</li>
+<li>创建命令表</li>
+</ul>
+<p>当<code>initServerConfig</code> 函数执行完毕之后，服务器就可以进入初始化的第二阶段–载入配置选项</p>
+<h4 id="载入配置选项"><a href="#载入配置选项" class="headerlink" title="载入配置选项"></a>载入配置选项</h4><p>服务器在用 <code>initServerConfig</code> 函数初始化完 <code>server</code> 变量之后，就会载入用户给指定的配置参数和配置文件，并根据用户设定的配置，对 <code>server</code> 变量相关属性进行修改：</p>
+<p>例如，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ redis-server --port 10086</span><br></pre></td></tr></table></figure></p>
+<p>那么我们就会修改了服务器默认的运行端口号。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ redis-server redis.conf</span><br></pre></td></tr></table></figure>
+<p>按照配置文件中的配置，修改 <code>server</code> 变量属性。</p>
+<p>服务器在载入用户指定的配置选项，并对<code>server</code>状态进行更新之后，服务器就可以进入初始化的第三个阶段–初始化服务器数据结构。</p>
+<h4 id="初始化服务器数据结构"><a href="#初始化服务器数据结构" class="headerlink" title="初始化服务器数据结构"></a>初始化服务器数据结构</h4><p>在之前执行 <code>initServerConfig</code> 函数初始化 <code>server</code> 状态，程序只创建了命令表的一个数据结构，不过了命令表之外，服务器状态还包含其他数据结构。</p>
+<ul>
+<li><code>server.client</code> 链表，记录了所有与服务器相连的客户端的状态结构，链表的每个节点都包含了一个<code>redisClient</code>结构实例。</li>
+<li><code>server.db</code> 数组，包含了服务器的所有数据库。</li>
+<li><code>server.pubsub_channels</code> 字典，保存频道订阅信息。</li>
+<li><code>server.pubsub_patterns</code> 链表，保存模式订阅信息。</li>
+<li><code>server.lua</code>，保存执行<code>lua</code>脚本的<code>Lua</code>环境。</li>
+<li><code>server.slowlog</code> ，保存慢查询日志。</li>
+</ul>
+<p>这些数据结构是通过 <code>iniServer</code> 函数来实现，为这些数据结构分配内存，并设置或关联初始化值。</p>
+<p><code>iniServer</code> 函数除了初始化这些数据结构之外，还会进行一些其他非常重要的设置操作，包括:</p>
+<ul>
+<li>为服务器是指进程信号处理器</li>
+<li>创建共享对象：这些对象包括<code>redis</code>服务器经常用到的一些值（如，包含“OK”回复的字符串对象，包含“ERR”回复的字符串对象，等等），服务器通过重用这些对象来避免反复重复的创建相同的对象。</li>
+<li>打开服务器的监听端口，并为监听套接字关联连接应答事件处理器，等待服务器正式运行时接收客户端连接。</li>
+<li>为 <code>serverCron</code> 函数创建时间事件，等待服务器正式运行时实行 <code>serverCron</code> 函数。</li>
+<li>如果<code>AOF</code>持久化功能已经打开，那么打开现有的<code>AOF</code>文件，如果<code>AOF</code>文件不存在，那么创建并打开一个新的<code>AOF</code>文件，为<code>AOF</code>文件写入做好准备。</li>
+<li>初始化后台<code>I/O</code>模块（<code>bio</code>），为将来的<code>I/O</code>操作做好准备。</li>
+</ul>
+<p>当<code>iniServer</code>函数执行完毕之后，服务器会用 <code>ASCII</code>字符在日志中打印出<code>Redis</code>的图标，以及Redis的版本信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">root@5254004e45d0:/srv/rorapps/redis/redis-2.8.15# src/redis-server</span><br><span class="line">[16445] 16 Sep 09:54:32.684 # Warning: no config file specified, using the default config. In order to specify a config file use src/redis-server /path/to/redis.conf</span><br><span class="line">[16445] 16 Sep 09:54:32.686 * Increased maximum number of open files to 10032 (it was originally set to 1024).</span><br><span class="line">				_._												  </span><br><span class="line">		   _.-``__ &apos;&apos;-._											 </span><br><span class="line">	  _.-``	`.  `_.  &apos;&apos;-._		   Redis 2.8.15 (00000000/0) 64 bit</span><br><span class="line">  .-`` .-```.  ```\/	_.,_ &apos;&apos;-._								   </span><br><span class="line"> (	&apos;	  ,	   .-`  | `,	)	 Running in stand alone mode</span><br><span class="line"> |`-._`-...-` __...-.``-._|&apos;` _.-&apos;|	 Port: 6379</span><br><span class="line"> |	`-._   `._	/	 _.-&apos;	|	 PID: 16445</span><br><span class="line">  `-._	`-._  `-./  _.-&apos;	_.-&apos;								   </span><br><span class="line"> |`-._`-._	`-.__.-&apos;	_.-&apos;_.-&apos;|								  </span><br><span class="line"> |	`-._`-._		_.-&apos;_.-&apos;	|		   http://redis.io		</span><br><span class="line">  `-._	`-._`-.__.-&apos;_.-&apos;	_.-&apos;								   </span><br><span class="line"> |`-._`-._	`-.__.-&apos;	_.-&apos;_.-&apos;|								  </span><br><span class="line"> |	`-._`-._		_.-&apos;_.-&apos;	|								  </span><br><span class="line">  `-._	`-._`-.__.-&apos;_.-&apos;	_.-&apos;								   </span><br><span class="line">	  `-._	`-.__.-&apos;	_.-&apos;									   </span><br><span class="line">		  `-._		_.-&apos;										   </span><br><span class="line">			  `-.__.-&apos;											   </span><br><span class="line"></span><br><span class="line">[16445] 16 Sep 09:54:32.688 # Server started, Redis version 2.8.15</span><br><span class="line">[16445] 16 Sep 09:54:32.688 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &apos;vm.overcommit_memory = 1&apos; to /etc/sysctl.conf and then reboot or run the command &apos;sysctl vm.overcommit_memory=1&apos; for this to take effect.</span><br><span class="line">[16445] 16 Sep 09:54:32.688 * The server is now ready to accept connections on port 6379</span><br></pre></td></tr></table></figure>
+<h4 id="还原数据库状态"><a href="#还原数据库状态" class="headerlink" title="还原数据库状态"></a>还原数据库状态</h4><p>在完成对 <code>server</code> 变量的初始化之后，服务器需要载入 <code>RDB</code> 文件或者 <code>AOF</code> 文件，并根据文件记录的内容来还原服务器的数据库状态。</p>
+<ul>
+<li>如果服务器采用的是 <code>AOF</code>方式的持久化方式，那么服务器将使用<code>AOF</code>文件来还原数据库状态。</li>
+<li>相反的如果服务器没有采用<code>AOF</code>方式的持久化方式，那么服务器使用<code>RDB</code>文件来还原服务器数据库状态。</li>
+</ul>
+<p>当服务器完成数据库的还原操作之后，服务器将在日志中打印出载入文件并还原数据库状态所耗费的时长<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[5244] 21 Nov 22:43:49.084 * DB loaded from disk: 0.067 seconds</span><br></pre></td></tr></table></figure></p>
+<h4 id="执行事件循环"><a href="#执行事件循环" class="headerlink" title="执行事件循环"></a>执行事件循环</h4><p>初始化的最后一步，服务器将打印以下日志，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[5244] 21 Nov 22:43:49.084 * The server is now ready to accept connections on port  6379</span><br></pre></td></tr></table></figure></p>
+<p>并开始执行服务器的时间循环（<code>loop</code>）<br>。</p>
+<p>至此，服务器的初始化操作就圆满完成。服务器从现在开始就可以接受客户端的连接请求，并处理客户端发来的命令请求了。。。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/" title="深入了解Redis之客户端C-服务器S设计与实现">https://weizhimiao.github.io/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/13/深入了解Redis之事件原理和实现/" rel="next" title="深入了解Redis之事件原理和实现">
+                <i class="fa fa-chevron-left"></i> 深入了解Redis之事件原理和实现
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/03/Github中webhooks应用/" rel="prev" title="Github中Webhooks的应用">
+                Github中Webhooks的应用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端"><span class="nav-number">1.</span> <span class="nav-text">客户端</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#客户端类型"><span class="nav-number">1.1.</span> <span class="nav-text">客户端类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#客户端状态属性"><span class="nav-number">1.2.</span> <span class="nav-text">客户端状态属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#客户端的创建与关闭"><span class="nav-number">1.3.</span> <span class="nav-text">客户端的创建与关闭</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关闭"><span class="nav-number">1.3.2.</span> <span class="nav-text">关闭</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务器"><span class="nav-number">2.</span> <span class="nav-text">服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一条请求命令的执行过程"><span class="nav-number">2.1.</span> <span class="nav-text">一条请求命令的执行过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#发送命令请求"><span class="nav-number">2.1.1.</span> <span class="nav-text">发送命令请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务器读取命令请求"><span class="nav-number">2.1.2.</span> <span class="nav-text">服务器读取命令请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#执行命令"><span class="nav-number">2.1.3.</span> <span class="nav-text">执行命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#将命令回复发送给客户端"><span class="nav-number">2.1.4.</span> <span class="nav-text">将命令回复发送给客户端</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端接收并打印命令回复"><span class="nav-number">2.1.5.</span> <span class="nav-text">客户端接收并打印命令回复</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#serverCron-函数"><span class="nav-number">2.2.</span> <span class="nav-text">serverCron 函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化服务器"><span class="nav-number">2.3.</span> <span class="nav-text">初始化服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化服务器状态结构"><span class="nav-number">2.3.1.</span> <span class="nav-text">初始化服务器状态结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#载入配置选项"><span class="nav-number">2.3.2.</span> <span class="nav-text">载入配置选项</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化服务器数据结构"><span class="nav-number">2.3.3.</span> <span class="nav-text">初始化服务器数据结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#还原数据库状态"><span class="nav-number">2.3.4.</span> <span class="nav-text">还原数据库状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#执行事件循环"><span class="nav-number">2.3.5.</span> <span class="nav-text">执行事件循环</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

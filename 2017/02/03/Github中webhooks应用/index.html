@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Webhooks 是 Github 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，Github 会将信息以POST方式发送到我们指定的URL。通过Webhooks 我们可以记录更新，触发CI构建、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。 Github 上对于每个账号或者项目上的每个事件最多可以创建20个 Webhooks 。">
+<meta name="keywords" content="git,版本控制">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Github中Webhooks的应用">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/02/03/Github中webhooks应用/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Webhooks 是 Github 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，Github 会将信息以POST方式发送到我们指定的URL。通过Webhooks 我们可以记录更新，触发CI构建、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。 Github 上对于每个账号或者项目上的每个事件最多可以创建20个 Webhooks 。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Github中Webhooks的应用">
+<meta name="twitter:description" content="Webhooks 是 Github 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，Github 会将信息以POST方式发送到我们指定的URL。通过Webhooks 我们可以记录更新，触发CI构建、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。 Github 上对于每个账号或者项目上的每个事件最多可以创建20个 Webhooks 。">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/02/03/Github中webhooks应用/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Github中Webhooks的应用 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/02/03/Github中webhooks应用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Github中Webhooks的应用<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Github中webhooks应用.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-02-03 20:30:00" itemprop="dateCreated datePublished" datetime="2017-02-03T20:30:00+08:00">2017-02-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/软件工程/" itemprop="url" rel="index"><span itemprop="name">软件工程</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/02/03/Github中webhooks应用/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/02/03/Github中webhooks应用/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">14k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">13 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>Webhooks</code> 是 <code>Github</code> 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，<code>Github</code> 会将信息以<code>POST</code>方式发送到我们指定的<code>URL</code>。通过<code>Webhooks</code> 我们可以记录更新，触发<code>CI构建</code>、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。</p>
+<p><code>Github</code> 上对于每个账号或者项目上的每个事件最多可以创建20个 <code>Webhooks</code> 。<br><a id="more"></a></p>
+<h2 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h2><p>配置 <code>Webhook</code> 时，我们可以自定义具体的事件。只有定义定义的这些事件才会触发对指定的<code>URL</code>的请求。默认，<code>webhooks</code> 只订阅 <code>push</code> 事件，不过我们也可通过 <code>API</code> 或者 <code>UI</code> 来更改订阅事件的列表。</p>
+<p>每个事件对应于可能发生在我们组织或 <code>Repository</code> 中的一组特定操作。 例如，如果订阅 <code>issues</code> 事件，则每次打开，关闭，标记 <code>issues</code> 时，我们都会收到详细的有效内容。</p>
+<p>可用事件有：</p>
+<table>
+<thead>
+<tr>
+<th>事件名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>任何时间触发任何事件（通配符事件）。</td>
+</tr>
+<tr>
+<td><code>commit_comment</code></td>
+<td>每次提交被注释时。</td>
+</tr>
+<tr>
+<td><code>create</code></td>
+<td>每次分支或标记被创建时。</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>每次分支或标记被删除时。</td>
+</tr>
+<tr>
+<td><code>deployment</code></td>
+<td>每次 <code>Repository</code> 被部署。</td>
+</tr>
+<tr>
+<td><code>deployment_status</code></td>
+<td>任何时候，Repository的部署有来自API的状态更新时。</td>
+</tr>
+<tr>
+<td><code>fork</code></td>
+<td>每次<code>Repository</code>被<code>fork</code>时。</td>
+</tr>
+<tr>
+<td><code>gollum</code></td>
+<td>每次<code>Wiki Page</code> 被更新时。</td>
+</tr>
+<tr>
+<td><code>issue_comment</code></td>
+<td>每次 <code>Issue</code> 中的评论被添加、编辑、或删除时。</td>
+</tr>
+<tr>
+<td><code>issues</code></td>
+<td>每次 <code>issue</code> 被分配、未分配，标记，未标记，打开，编辑，重大事件，拆除，关闭或重新打开时。</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>每次标签被创建、编辑、或删除时。</td>
+</tr>
+<tr>
+<td><code>member</code></td>
+<td>每次添加或删除一个协作者用户，或者更改他们的权限时。</td>
+</tr>
+<tr>
+<td><code>membership</code></td>
+<td>任何时候添加或删除团队中用户。（仅组织钩子）</td>
+</tr>
+<tr>
+<td><code>milestone</code></td>
+<td>每次创建、关闭、打开、编辑或删除 <code>milestone</code> （里程碑）时。</td>
+</tr>
+<tr>
+<td><code>organization</code></td>
+<td>任何时候添加，删除或邀请用户加入组织。 仅组织钩子。</td>
+</tr>
+<tr>
+<td><code>page_build</code></td>
+<td>每次页面网站建立时。</td>
+</tr>
+<tr>
+<td><code>project_card</code></td>
+<td>项目卡片创建，更新或删除。</td>
+</tr>
+<tr>
+<td><code>project_column</code></td>
+<td>项目 <code>column</code> 创建，更新，移动或删除时。</td>
+</tr>
+<tr>
+<td><code>project</code></td>
+<td>项目创建、编辑、或删除时。</td>
+</tr>
+<tr>
+<td><code>public</code></td>
+<td><code>Repository</code> 从private更改为public时。</td>
+</tr>
+<tr>
+<td><code>pull_request_review_comment</code></td>
+<td>每次pull请求被创建，编辑或删除差异注释时。</td>
+</tr>
+<tr>
+<td><code>pull_request_review</code></td>
+<td>每次提交Pull请求审核时。</td>
+</tr>
+<tr>
+<td><code>pull_request</code></td>
+<td>每次 pull 请求被打开，关闭，重新打开，编辑，分配，未分配，请求审核，审核请求已移除，已标记，未标记或已同步时。</td>
+</tr>
+<tr>
+<td><code>push</code></td>
+<td>每次 push 时（默认事件）</td>
+</tr>
+</tbody>
+</table>
+<p><code>repository</code>|每次 <code>Repository</code> 被创建、删除、公开或 私有化时。<br><code>release</code>|每次 <code>release</code> 被发布到 <code>Repository</code> 中时<br><code>status</code> |每次从API中更新版本库状态时。<br><code>team</code>   |任何时候创建，删除，修改 <code>Repository</code> 的团队。 仅组织钩子<br><code>team_add</code>|每次添加或修改 <code>Repository</code> 中的 team 成员时。<br><code>watch</code>  |每次用户对<code>Repository</code>加星标时。</p>
+<h2 id="有效载荷"><a href="#有效载荷" class="headerlink" title="有效载荷"></a>有效载荷</h2><p>每个事件类型具有特定的有效载荷格式以及相关的事件信息。 即，不同的事件被触发发送到我们配置的 <code>URL</code> 的 <code>POST</code> 数据格式和内容也会不同。</p>
+<p>例如，一个 <code>commit_comment</code> 事件如果被触发，将会向 URL 发送类似下面的内容。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;action&quot;: &quot;created&quot;,</span><br><span class="line">  &quot;comment&quot;: &#123;</span><br><span class="line">    &quot;url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/comments/11056394&quot;,</span><br><span class="line">    &quot;html_url&quot;: &quot;https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394&quot;,</span><br><span class="line">    &quot;id&quot;: 11056394,</span><br><span class="line">    &quot;user&quot;: &#123;</span><br><span class="line">      &quot;login&quot;: &quot;baxterthehacker&quot;,</span><br><span class="line">      &quot;id&quot;: 6752317,</span><br><span class="line">      &quot;avatar_url&quot;: &quot;https://avatars.githubusercontent.com/u/6752317?v=3&quot;,</span><br><span class="line">      &quot;gravatar_id&quot;: &quot;&quot;,</span><br><span class="line">      &quot;url&quot;: &quot;https://api.github.com/users/baxterthehacker&quot;,</span><br><span class="line">      &quot;html_url&quot;: &quot;https://github.com/baxterthehacker&quot;,</span><br><span class="line">      &quot;followers_url&quot;: &quot;https://api.github.com/users/baxterthehacker/followers&quot;,</span><br><span class="line">      &quot;following_url&quot;: &quot;https://api.github.com/users/baxterthehacker/following&#123;/other_user&#125;&quot;,</span><br><span class="line">      &quot;gists_url&quot;: &quot;https://api.github.com/users/baxterthehacker/gists&#123;/gist_id&#125;&quot;,</span><br><span class="line">      &quot;starred_url&quot;: &quot;https://api.github.com/users/baxterthehacker/starred&#123;/owner&#125;&#123;/repo&#125;&quot;,</span><br><span class="line">      &quot;subscriptions_url&quot;: &quot;https://api.github.com/users/baxterthehacker/subscriptions&quot;,</span><br><span class="line">      &quot;organizations_url&quot;: &quot;https://api.github.com/users/baxterthehacker/orgs&quot;,</span><br><span class="line">      &quot;repos_url&quot;: &quot;https://api.github.com/users/baxterthehacker/repos&quot;,</span><br><span class="line">      &quot;events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/events&#123;/privacy&#125;&quot;,</span><br><span class="line">      &quot;received_events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/received_events&quot;,</span><br><span class="line">      &quot;type&quot;: &quot;User&quot;,</span><br><span class="line">      &quot;site_admin&quot;: false</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;position&quot;: null,</span><br><span class="line">    &quot;line&quot;: null,</span><br><span class="line">    &quot;path&quot;: null,</span><br><span class="line">    &quot;commit_id&quot;: &quot;9049f1265b7d61be4a8904a9a27120d2064dab3b&quot;,</span><br><span class="line">    &quot;created_at&quot;: &quot;2015-05-05T23:40:29Z&quot;,</span><br><span class="line">    &quot;updated_at&quot;: &quot;2015-05-05T23:40:29Z&quot;,</span><br><span class="line">    &quot;body&quot;: &quot;This is a really good change! :+1:&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;repository&quot;: &#123;</span><br><span class="line">    &quot;id&quot;: 35129377,</span><br><span class="line">    &quot;name&quot;: &quot;public-repo&quot;,</span><br><span class="line">    &quot;full_name&quot;: &quot;baxterthehacker/public-repo&quot;,</span><br><span class="line">    &quot;owner&quot;: &#123;</span><br><span class="line">      &quot;login&quot;: &quot;baxterthehacker&quot;,</span><br><span class="line">      &quot;id&quot;: 6752317,</span><br><span class="line">      &quot;avatar_url&quot;: &quot;https://avatars.githubusercontent.com/u/6752317?v=3&quot;,</span><br><span class="line">      &quot;gravatar_id&quot;: &quot;&quot;,</span><br><span class="line">      &quot;url&quot;: &quot;https://api.github.com/users/baxterthehacker&quot;,</span><br><span class="line">      &quot;html_url&quot;: &quot;https://github.com/baxterthehacker&quot;,</span><br><span class="line">      &quot;followers_url&quot;: &quot;https://api.github.com/users/baxterthehacker/followers&quot;,</span><br><span class="line">      &quot;following_url&quot;: &quot;https://api.github.com/users/baxterthehacker/following&#123;/other_user&#125;&quot;,</span><br><span class="line">      &quot;gists_url&quot;: &quot;https://api.github.com/users/baxterthehacker/gists&#123;/gist_id&#125;&quot;,</span><br><span class="line">      &quot;starred_url&quot;: &quot;https://api.github.com/users/baxterthehacker/starred&#123;/owner&#125;&#123;/repo&#125;&quot;,</span><br><span class="line">      &quot;subscriptions_url&quot;: &quot;https://api.github.com/users/baxterthehacker/subscriptions&quot;,</span><br><span class="line">      &quot;organizations_url&quot;: &quot;https://api.github.com/users/baxterthehacker/orgs&quot;,</span><br><span class="line">      &quot;repos_url&quot;: &quot;https://api.github.com/users/baxterthehacker/repos&quot;,</span><br><span class="line">      &quot;events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/events&#123;/privacy&#125;&quot;,</span><br><span class="line">      &quot;received_events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/received_events&quot;,</span><br><span class="line">      &quot;type&quot;: &quot;User&quot;,</span><br><span class="line">      &quot;site_admin&quot;: false</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;private&quot;: false,</span><br><span class="line">    &quot;html_url&quot;: &quot;https://github.com/baxterthehacker/public-repo&quot;,</span><br><span class="line">    &quot;description&quot;: &quot;&quot;,</span><br><span class="line">    &quot;fork&quot;: false,</span><br><span class="line">    &quot;url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo&quot;,</span><br><span class="line">    &quot;forks_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/forks&quot;,</span><br><span class="line">    &quot;keys_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/keys&#123;/key_id&#125;&quot;,</span><br><span class="line">    &quot;collaborators_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/collaborators&#123;/collaborator&#125;&quot;,</span><br><span class="line">    &quot;teams_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/teams&quot;,</span><br><span class="line">    &quot;hooks_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/hooks&quot;,</span><br><span class="line">    &quot;issue_events_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/issues/events&#123;/number&#125;&quot;,</span><br><span class="line">    &quot;events_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/events&quot;,</span><br><span class="line">    &quot;assignees_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/assignees&#123;/user&#125;&quot;,</span><br><span class="line">    &quot;branches_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/branches&#123;/branch&#125;&quot;,</span><br><span class="line">    &quot;tags_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/tags&quot;,</span><br><span class="line">    &quot;blobs_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/blobs&#123;/sha&#125;&quot;,</span><br><span class="line">    &quot;git_tags_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/tags&#123;/sha&#125;&quot;,</span><br><span class="line">    &quot;git_refs_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/refs&#123;/sha&#125;&quot;,</span><br><span class="line">    &quot;trees_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/trees&#123;/sha&#125;&quot;,</span><br><span class="line">    &quot;statuses_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/statuses/&#123;sha&#125;&quot;,</span><br><span class="line">    &quot;languages_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/languages&quot;,</span><br><span class="line">    &quot;stargazers_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/stargazers&quot;,</span><br><span class="line">    &quot;contributors_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/contributors&quot;,</span><br><span class="line">    &quot;subscribers_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/subscribers&quot;,</span><br><span class="line">    &quot;subscription_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/subscription&quot;,</span><br><span class="line">    &quot;commits_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/commits&#123;/sha&#125;&quot;,</span><br><span class="line">    &quot;git_commits_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/commits&#123;/sha&#125;&quot;,</span><br><span class="line">    &quot;comments_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/comments&#123;/number&#125;&quot;,</span><br><span class="line">    &quot;issue_comment_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/issues/comments&#123;/number&#125;&quot;,</span><br><span class="line">    &quot;contents_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/contents/&#123;+path&#125;&quot;,</span><br><span class="line">    &quot;compare_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/compare/&#123;base&#125;...&#123;head&#125;&quot;,</span><br><span class="line">    &quot;merges_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/merges&quot;,</span><br><span class="line">    &quot;archive_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/&#123;archive_format&#125;&#123;/ref&#125;&quot;,</span><br><span class="line">    &quot;downloads_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/downloads&quot;,</span><br><span class="line">    &quot;issues_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/issues&#123;/number&#125;&quot;,</span><br><span class="line">    &quot;pulls_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/pulls&#123;/number&#125;&quot;,</span><br><span class="line">    &quot;milestones_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/milestones&#123;/number&#125;&quot;,</span><br><span class="line">    &quot;notifications_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/notifications&#123;?since,all,participating&#125;&quot;,</span><br><span class="line">    &quot;labels_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/labels&#123;/name&#125;&quot;,</span><br><span class="line">    &quot;releases_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/releases&#123;/id&#125;&quot;,</span><br><span class="line">    &quot;created_at&quot;: &quot;2015-05-05T23:40:12Z&quot;,</span><br><span class="line">    &quot;updated_at&quot;: &quot;2015-05-05T23:40:12Z&quot;,</span><br><span class="line">    &quot;pushed_at&quot;: &quot;2015-05-05T23:40:27Z&quot;,</span><br><span class="line">    &quot;git_url&quot;: &quot;git://github.com/baxterthehacker/public-repo.git&quot;,</span><br><span class="line">    &quot;ssh_url&quot;: &quot;git@github.com:baxterthehacker/public-repo.git&quot;,</span><br><span class="line">    &quot;clone_url&quot;: &quot;https://github.com/baxterthehacker/public-repo.git&quot;,</span><br><span class="line">    &quot;svn_url&quot;: &quot;https://github.com/baxterthehacker/public-repo&quot;,</span><br><span class="line">    &quot;homepage&quot;: null,</span><br><span class="line">    &quot;size&quot;: 0,</span><br><span class="line">    &quot;stargazers_count&quot;: 0,</span><br><span class="line">    &quot;watchers_count&quot;: 0,</span><br><span class="line">    &quot;language&quot;: null,</span><br><span class="line">    &quot;has_issues&quot;: true,</span><br><span class="line">    &quot;has_downloads&quot;: true,</span><br><span class="line">    &quot;has_wiki&quot;: true,</span><br><span class="line">    &quot;has_pages&quot;: true,</span><br><span class="line">    &quot;forks_count&quot;: 0,</span><br><span class="line">    &quot;mirror_url&quot;: null,</span><br><span class="line">    &quot;open_issues_count&quot;: 2,</span><br><span class="line">    &quot;forks&quot;: 0,</span><br><span class="line">    &quot;open_issues&quot;: 2,</span><br><span class="line">    &quot;watchers&quot;: 0,</span><br><span class="line">    &quot;default_branch&quot;: &quot;master&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;sender&quot;: &#123;</span><br><span class="line">    &quot;login&quot;: &quot;baxterthehacker&quot;,</span><br><span class="line">    &quot;id&quot;: 6752317,</span><br><span class="line">    &quot;avatar_url&quot;: &quot;https://avatars.githubusercontent.com/u/6752317?v=3&quot;,</span><br><span class="line">    &quot;gravatar_id&quot;: &quot;&quot;,</span><br><span class="line">    &quot;url&quot;: &quot;https://api.github.com/users/baxterthehacker&quot;,</span><br><span class="line">    &quot;html_url&quot;: &quot;https://github.com/baxterthehacker&quot;,</span><br><span class="line">    &quot;followers_url&quot;: &quot;https://api.github.com/users/baxterthehacker/followers&quot;,</span><br><span class="line">    &quot;following_url&quot;: &quot;https://api.github.com/users/baxterthehacker/following&#123;/other_user&#125;&quot;,</span><br><span class="line">    &quot;gists_url&quot;: &quot;https://api.github.com/users/baxterthehacker/gists&#123;/gist_id&#125;&quot;,</span><br><span class="line">    &quot;starred_url&quot;: &quot;https://api.github.com/users/baxterthehacker/starred&#123;/owner&#125;&#123;/repo&#125;&quot;,</span><br><span class="line">    &quot;subscriptions_url&quot;: &quot;https://api.github.com/users/baxterthehacker/subscriptions&quot;,</span><br><span class="line">    &quot;organizations_url&quot;: &quot;https://api.github.com/users/baxterthehacker/orgs&quot;,</span><br><span class="line">    &quot;repos_url&quot;: &quot;https://api.github.com/users/baxterthehacker/repos&quot;,</span><br><span class="line">    &quot;events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/events&#123;/privacy&#125;&quot;,</span><br><span class="line">    &quot;received_events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/received_events&quot;,</span><br><span class="line">    &quot;type&quot;: &quot;User&quot;,</span><br><span class="line">    &quot;site_admin&quot;: false</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其它事件的内容和格式，参考(<a href="https://developer.github.com/v3/activity/events/types/" target="_blank" rel="noopener">https://developer.github.com/v3/activity/events/types/</a>)</p>
+<p><strong>注意：</strong> 有效负载上限为<code>5 MB</code>。 如果我们的事件产生一个更大的有效载荷，<code>webhook</code> 将不会被触发。 例如，如果同时推送了多个分支或标签，则可能会发生在创建事件上。 所以建议监控我们的有效负载大小以确保 <code>webhooks</code> 能够被触发。</p>
+<h3 id="请求Header"><a href="#请求Header" class="headerlink" title="请求Header"></a>请求Header</h3><p>对 <code>Webhook</code> 配置的 <code>URL</code> 端点发出的 <code>HTTP</code> 请求将包含几个特殊<code>Header</code>头：</p>
+<table>
+<thead>
+<tr>
+<th><code>Header</code></th>
+<th><code>Description</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>X-GitHub-Event</code></td>
+<td>触发本次请求的事件的名称。</td>
+</tr>
+<tr>
+<td><code>X-Hub-Signature</code></td>
+<td>HMAC对有效负载的十六进制摘要，使用钩子的密钥作为密钥（如果已配置）。</td>
+</tr>
+<tr>
+<td><code>X-GitHub-Delivery</code></td>
+<td>本次请求的唯一ID。</td>
+</tr>
+</tbody>
+</table>
+<p>此外，请求的<code>User-Agent</code>将具有前缀<code>GitHub-Hookshot/</code>。</p>
+<p>请求示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">POST /payload HTTP/1.1</span><br><span class="line"></span><br><span class="line">Host: localhost:4567</span><br><span class="line">X-Github-Delivery: 72d3162e-cc78-11e3-81ab-4c9367dc0958</span><br><span class="line">User-Agent: GitHub-Hookshot/044aadd</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Content-Length: 6615</span><br><span class="line">X-GitHub-Event: issues</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  &quot;action&quot;: &quot;opened&quot;,</span><br><span class="line">  &quot;issue&quot;: &#123;</span><br><span class="line">    &quot;url&quot;: &quot;https://api.github.com/repos/octocat/Hello-World/issues/1347&quot;,</span><br><span class="line">    &quot;number&quot;: 1347,</span><br><span class="line">    ...</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;repository&quot; : &#123;</span><br><span class="line">    &quot;id&quot;: 1296269,</span><br><span class="line">    &quot;full_name&quot;: &quot;octocat/Hello-World&quot;,</span><br><span class="line">    &quot;owner&quot;: &#123;</span><br><span class="line">      &quot;login&quot;: &quot;octocat&quot;,</span><br><span class="line">      &quot;id&quot;: 1,</span><br><span class="line">      ...</span><br><span class="line">    &#125;,</span><br><span class="line">    ...</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;sender&quot;: &#123;</span><br><span class="line">    &quot;login&quot;: &quot;octocat&quot;,</span><br><span class="line">    &quot;id&quot;: 1,</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Ping事件"><a href="#Ping事件" class="headerlink" title="Ping事件"></a><code>Ping</code>事件</h2><p>当我们创建新的 <code>webhooks</code> 时，<code>Github</code> 会向我们配置的 <code>URL</code> 发送一个简单的 <code>ping</code> 事件，以检测我们配置的 <code>URL</code> 是否正确可用。 该事件未存储，因此无法通过<code>Events API</code>检索。 可以通过调用<code>ping</code>端点再次触发<code>ping</code>。</p>
+<p><code>Ping</code>事件有效负载</p>
+<table>
+<thead>
+<tr>
+<th>键</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zen</code></td>
+<td><code>GitHub</code>产生的随机字符串</td>
+</tr>
+<tr>
+<td><code>hook_id</code></td>
+<td>触发<code>ping</code>的<code>webhook</code>的<code>ID</code></td>
+</tr>
+<tr>
+<td><code>hook</code></td>
+<td><code>webhook</code>配置</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/02/03/Github中webhooks应用/" title="Github中Webhooks的应用">https://weizhimiao.github.io/2017/02/03/Github中webhooks应用/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/git/" rel="tag"># git</a>
+          
+            <a href="/tags/版本控制/" rel="tag"># 版本控制</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/" rel="next" title="深入了解Redis之客户端C-服务器S设计与实现">
+                <i class="fa fa-chevron-left"></i> 深入了解Redis之客户端C-服务器S设计与实现
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/11/keepalived安装配置/" rel="prev" title="keepalived安装与配置">
+                keepalived安装与配置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#事件"><span class="nav-number">1.</span> <span class="nav-text">事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#有效载荷"><span class="nav-number">2.</span> <span class="nav-text">有效载荷</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#请求Header"><span class="nav-number">2.1.</span> <span class="nav-text">请求Header</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ping事件"><span class="nav-number">3.</span> <span class="nav-text">Ping事件</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

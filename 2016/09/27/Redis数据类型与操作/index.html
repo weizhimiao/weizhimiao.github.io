@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Redis共有5种数据类型  string(字符串) hash(哈希表) list(双向队列) set(集合) zset(有序集合)">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis数据类型与操作">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/09/27/Redis数据类型与操作/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Redis共有5种数据类型  string(字符串) hash(哈希表) list(双向队列) set(集合) zset(有序集合)">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis数据类型与操作">
+<meta name="twitter:description" content="Redis共有5种数据类型  string(字符串) hash(哈希表) list(双向队列) set(集合) zset(有序集合)">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/09/27/Redis数据类型与操作/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Redis数据类型与操作 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/09/27/Redis数据类型与操作/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Redis数据类型与操作<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Redis数据类型与操作.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-09-27 20:30:00" itemprop="dateCreated datePublished" datetime="2016-09-27T20:30:00+08:00">2016-09-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/09/27/Redis数据类型与操作/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/09/27/Redis数据类型与操作/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">17k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">16 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Redis共有5种数据类型</p>
+<ul>
+<li>string(字符串)</li>
+<li>hash(哈希表)</li>
+<li>list(双向队列)</li>
+<li>set(集合)</li>
+<li>zset(有序集合)</li>
+</ul>
+<a id="more"></a>
+<h2 id="String（子串类型）"><a href="#String（子串类型）" class="headerlink" title="String（子串类型）"></a>String（子串类型）</h2><p>String是最简单的类型，一个Key对应一个Value，string类型是二进制安全的。Redis的string可以包含任何数据，比如jpg图片或者序列化的对象。</p>
+<ol>
+<li>set 键  “值”<blockquote>
+<p>设置一个键和值，键存在则覆盖，返回ok</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set name liming</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>get 键<blockquote>
+<p>获取一个键的值，返回值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; get name</span><br><span class="line">&quot;liming&quot;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>setnx 键 值<blockquote>
+<p>只有当该键不存在时设置一个键的值，若键已存在则返回0表示失败（防止覆盖），</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; setnx age 18</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; setnx age 18</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>setex 键 [有效时间] 值<blockquote>
+<p>设置一个指定有效期的键和值（单位秒）。不写有效时间则表示永久有效，等价于set</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; setex movie 30 canglaoshi</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; ttl movie				//获取键的有效时间</span><br><span class="line">(integer) 26</span><br><span class="line">127.0.0.1:6379&gt; ttl movie</span><br><span class="line">(integer) 20</span><br><span class="line">127.0.0.1:6379&gt; get movie</span><br><span class="line">&quot;canglaoshi&quot;</span><br><span class="line">127.0.0.1:6379&gt; ttl movie</span><br><span class="line">(integer) -2</span><br><span class="line">127.0.0.1:6379&gt; get movie</span><br><span class="line">(nil)</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>ttl 键<blockquote>
+<p>以秒为单位，返回给定 key 的剩余生存时间</p>
+<ul>
+<li>当 key 不存在时，返回 -2 。<ul>
+<li>当 key 存在但没有设置剩余生存时间时，返回 -1 。</li>
+<li>否则，以秒为单位，返回 key 的剩余生存时间。</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<ol start="5">
+<li>setrange 键 位置 子字串<blockquote>
+<p>替换子字符串 (替换长度由子子串长度决定)</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set key1 &quot;hello world&quot;</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get key1</span><br><span class="line">&quot;hello world&quot;</span><br><span class="line">127.0.0.1:6379&gt; setrange key1 6 liming</span><br><span class="line">(integer) 12</span><br><span class="line">127.0.0.1:6379&gt; get key1</span><br><span class="line">&quot;hello liming&quot;</span><br><span class="line">	#将key1键对应值的第6个位置开始替换（字符串位置从0开始计算）</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>mset 键1 值1 键2 值2 键3 值3 ….<blockquote>
+<p>批量设置键和值,成功则返回ok</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; mset name1 lm name2 sc name3 zjj</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+<ol start="7">
+<li>mget 键1 键2 键3….<blockquote>
+<p>批量获取值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; mget name1 name2 name3</span><br><span class="line">1) &quot;lm&quot;</span><br><span class="line">2) &quot;sc&quot;</span><br><span class="line">3) &quot;zjj&quot;</span><br></pre></td></tr></table></figure>
+<ol start="8">
+<li>msetnx 键1 值1 键2 值2 键3 值3 ….<blockquote>
+<p>批量设置不存在的键和值,成功则返回ok</p>
+</blockquote>
+</li>
+</ol>
+<ol start="9">
+<li>getset 键 新值<blockquote>
+<p>获取原值，并设置新值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set name &quot;shen chao&quot;</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get name</span><br><span class="line">&quot;shen chao&quot;</span><br><span class="line">127.0.0.1:6379&gt; getset name &quot;liming&quot;</span><br><span class="line">&quot;shen chao&quot;</span><br><span class="line">127.0.0.1:6379&gt; get name</span><br><span class="line">&quot;liming&quot;</span><br></pre></td></tr></table></figure>
+<ol start="10">
+<li>getrange 键 0 4  <blockquote>
+<p>获取指定范围的值（获取指定0到4位置上的值，字符串位置从0开始计算）</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; getrange key1 0 4</span><br><span class="line">&quot;hello&quot;</span><br></pre></td></tr></table></figure>
+<ol start="11">
+<li>incr 键  <blockquote>
+<p>指定键的值做加1操作，返回加后的结果（只能加数字）。</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set age 18</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; incr age</span><br><span class="line">(integer) 19</span><br><span class="line">127.0.0.1:6379&gt; get age</span><br><span class="line">&quot;19&quot;</span><br></pre></td></tr></table></figure>
+<ol start="12">
+<li>incrby 键 m    <blockquote>
+<p>其中m可以是正整数或负整数.加指定值，键不存在时候会设置键</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; incrby age 10</span><br><span class="line">(integer) 29</span><br><span class="line">127.0.0.1:6379&gt; get age</span><br><span class="line">&quot;29&quot;</span><br><span class="line">127.0.0.1:6379&gt; incrby age -5</span><br><span class="line">(integer) 24</span><br></pre></td></tr></table></figure>
+<ol start="13">
+<li>decr 键<blockquote>
+<p>指定键的值做减1操作，返回减后的结果。</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; decr age</span><br><span class="line">(integer) 23</span><br><span class="line">127.0.0.1:6379&gt; get age</span><br><span class="line">&quot;23&quot;</span><br></pre></td></tr></table></figure>
+<ol start="14">
+<li>decrby 键 n<blockquote>
+<p>其中n可以是正整数或负整数.设置某个键减上指定值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; decrby age 5</span><br><span class="line">(integer) 18</span><br><span class="line">127.0.0.1:6379&gt; decrby age -10</span><br><span class="line">(integer) 28</span><br><span class="line">127.0.0.1:6379&gt; get age</span><br><span class="line">&quot;28&quot;</span><br></pre></td></tr></table></figure>
+<ol start="15">
+<li>append  键 追加字串<blockquote>
+<p>给指定key的字符串追加value，返回新字符串值的长度</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; append name1 &quot; have a hot body!&quot;</span><br><span class="line">(integer) 19</span><br><span class="line">127.0.0.1:6379&gt; get name1</span><br><span class="line">&quot;lm have a hot body!&quot;</span><br></pre></td></tr></table></figure>
+<ol start="16">
+<li>strlen 键名<blockquote>
+<p>strlen求一个键长度</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; strlen name1</span><br><span class="line">(integer) 19</span><br></pre></td></tr></table></figure>
+<ol start="17">
+<li>del命令：<blockquote>
+<p>删除一个键</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; del name3</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; get name3</span><br><span class="line">(nil)</span><br></pre></td></tr></table></figure>
+<h2 id="hashs类型"><a href="#hashs类型" class="headerlink" title="hashs类型"></a>hashs类型</h2><blockquote>
+<p>注意：redis中没有表概念，所有的数据都存入键中。</p>
+<ul>
+<li>string键类型：所有的值（可以是任何数据类型）都保存在一个键当中，放在一个内存块中<ul>
+<li>hashs键类型：所有的值也都保存在一个键当中，只是放在不同的内存块中，每个块称作字段</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ol>
+<li>hset key field value<blockquote>
+<p>设置一个键，在键中保存字段和值<br>格式： hset 哈希集（键） 字段 值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hset user1 name4 ysm</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; keys *					//查看库中所有的键</span><br><span class="line">1) &quot;aa&quot;</span><br><span class="line">2) &quot;name&quot;</span><br><span class="line">3) &quot;name1&quot;</span><br><span class="line">4) &quot;user1&quot;</span><br><span class="line">5) &quot;name2&quot;</span><br><span class="line">6) &quot;age&quot;</span><br><span class="line">7) &quot;key1&quot;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>hsetnx  键  字段  值<blockquote>
+<p>   设置一个键中，不存在的字段和值。如果字段存在则报错（成功返回1，失败返回0）</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hsetnx user1 name1 lm</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; hsetnx user1 name1 sc</span><br><span class="line">(integer) 0					//报错</span><br><span class="line">127.0.0.1:6379&gt; hget user1 name1</span><br><span class="line">&quot;lm&quot;						//内容没有更新</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>hmset  键  字段1  值1  字段2  值2 …<blockquote>
+<p>   在一个键中，批量设置字段</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hmset user2 name liming age 36 interest AV-Girl</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>hget 键 字段<blockquote>
+<p>   获取键中的一个指定字段的值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hget user1 name1</span><br><span class="line">&quot;lm&quot;</span><br><span class="line">127.0.0.1:6379&gt; hget user2 interest</span><br><span class="line">&quot;AV-Girl&quot;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>hmget 键 字段1 [字段2…]<blockquote>
+<p>   获取键中一个或多个字段的值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hmget user2 name age interest</span><br><span class="line">1) &quot;liming&quot;</span><br><span class="line">2) &quot;36&quot;</span><br><span class="line">3) &quot;AV-Girl&quot;</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>hexists ：<blockquote>
+<p>判断指定的字段是否存在于键中</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; HEXISTS user2 age</span><br><span class="line">(integer) 1							//存在</span><br><span class="line">127.0.0.1:6379&gt; HEXISTS user1 age</span><br><span class="line">(integer) 0							//不存在</span><br></pre></td></tr></table></figure>
+<ol start="7">
+<li>hlen ：获取键中的字段数量</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hlen user2</span><br><span class="line">(integer) 3							//user2键中有3个字段</span><br></pre></td></tr></table></figure>
+<ol start="8">
+<li>hkeys ：获取键中的所有字段名</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hkeys user2</span><br><span class="line">1) &quot;name&quot;</span><br><span class="line">2) &quot;age&quot;</span><br><span class="line">3) &quot;interest&quot;</span><br></pre></td></tr></table></figure>
+<ol start="9">
+<li>hvals：获取键中所有字段的值</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hvals user2</span><br><span class="line">1) &quot;liming&quot;</span><br><span class="line">2) &quot;36&quot;</span><br><span class="line">3) &quot;AV-Girl&quot;</span><br></pre></td></tr></table></figure>
+<ol start="10">
+<li>hgetall ：获取键中的所有字段和值</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hgetall user2</span><br><span class="line">1) &quot;name&quot;</span><br><span class="line">2) &quot;liming&quot;</span><br><span class="line">3) &quot;age&quot;</span><br><span class="line">4) &quot;36&quot;</span><br><span class="line">5) &quot;interest&quot;</span><br><span class="line">6) &quot;AV-Girl&quot;</span><br></pre></td></tr></table></figure>
+<ol start="11">
+<li>hincrby：将键中指定字段的值，增加指定的数字</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hincrby user2 age 5</span><br><span class="line">(integer) 41</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; HINCRBY user2 name 5</span><br><span class="line">(error) ERR hash value is not an integer	//值不是数字的字段，不能加数字</span><br></pre></td></tr></table></figure>
+<ol start="12">
+<li>hdel 键 字段1 字段2<blockquote>
+<p>   删除键中的一个或多个字段</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hdel user2 age interest</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; hkeys user2</span><br><span class="line">1) &quot;name&quot;</span><br><span class="line">	//删除一个键，还是要使用del命令</span><br></pre></td></tr></table></figure>
+<h2 id="list类型（双向链表结构）"><a href="#list类型（双向链表结构）" class="headerlink" title="list类型（双向链表结构）"></a>list类型（双向链表结构）</h2><p>List是一个链表结构，主要功能是push、pop、获取一个范围的所有值等等，操作中key理解为链表的名字。Redis的list类型其实就是一个每个子元素都是string类型的双向链表。列表允许有重复值</p>
+<ol>
+<li>lpush 键 值1 [值2…]<blockquote>
+<p>从队列左边向队列写入一个或多个值（认为队列的左面为队列头，右边为队列尾）</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; lpush list1 1</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; lpush list1 2</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; lpush list1 3</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; lpush list1 4</span><br><span class="line">(integer) 4</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; lpush list2 one two three four</span><br><span class="line">(integer) 4</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>lrange 键 起始下标 终止下标<blockquote>
+<p>   从队列中获取指定的返回值（从队列左边向右获取）<br>下标：</p>
+<ul>
+<li>0代表队列中第一个元素，1代表第二个元素，依次类推</li>
+<li>-1代表队列中最后一个元素，-2代表倒数第二个元素</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; LRANGE list1 0 -1</span><br><span class="line">1) &quot;4&quot;		//4是从左面写入队列的最后一个值，所以在队列的开头</span><br><span class="line">2) &quot;3&quot;</span><br><span class="line">3) &quot;2&quot;</span><br><span class="line">4) &quot;1&quot;		//1是从左面写入队列的第一个值，所以直接放到了队列尾。</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; LRANGE list2 0 -1</span><br><span class="line">1) &quot;four&quot;</span><br><span class="line">2) &quot;three&quot;</span><br><span class="line">3) &quot;two&quot;</span><br><span class="line">4) &quot;one&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; LRANGE list1 0 1</span><br><span class="line">1) &quot;4&quot;</span><br><span class="line">2) &quot;3&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; LRANGE list2 -4 3</span><br><span class="line">1) &quot;four&quot;		//-4代表从队列右边数第四个元素</span><br><span class="line">2) &quot;three&quot;</span><br><span class="line">3) &quot;two&quot;</span><br><span class="line">4) &quot;one&quot;		//3代表从队列左边数第四个元素</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>rpush 键 值1 [值2…]<blockquote>
+<p>   从队列右边向队列写入一个或多个值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; RPUSH list3 1 2 3 4</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; LRANGE list3 0 -1</span><br><span class="line">1) &quot;1&quot;		//从队列右边向队列写入值，第一个值就会写到队列的开头</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">4) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>linsert  键  before|after  原值  新值<blockquote>
+<p>   在队列中指定元素之前或之后插入新值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; LINSERT list3 before 3 hello</span><br><span class="line">(integer) 5</span><br><span class="line">127.0.0.1:6379&gt; LRANGE list3 0 -1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;hello&quot;</span><br><span class="line">4) &quot;3&quot;</span><br><span class="line">5) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>lset  键  下标  新值<blockquote>
+<p>   给队列中指定元素设定新值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; lset list3 2 &quot;5&quot;</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; LRANGE list3 0 -1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;5&quot;</span><br><span class="line">4) &quot;3&quot;</span><br><span class="line">5) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>lerm  键  n  指定值<blockquote>
+<p>从队列中删除n个值为“指定值”的元素</p>
+<ul>
+<li>n &gt; 0     从队列头向尾删除n个元素</li>
+<li>n &lt; 0     从队列尾向头删除n个元素</li>
+<li>n = 0    删除所有值为“指定值”的元素</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; rpush list4 hello 1 hello 2 hello 3 hello</span><br><span class="line">(integer) 7</span><br><span class="line">127.0.0.1:6379&gt; lrange list4 0 -1</span><br><span class="line">1) &quot;hello&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;hello&quot;</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;hello&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line">7) &quot;hello&quot;</span><br><span class="line">127.0.0.1:6379&gt; lrem list4 -2 hello			//删除后两个hello</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; lrange list4 0 -1</span><br><span class="line">1) &quot;hello&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;hello&quot;</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;3&quot;</span><br><span class="line">127.0.0.1:6379&gt; lrem list4 0 hello			//删除所有hello</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; lrange list4 0 -1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="7">
+<li>ltrim  键  起始下标  结束下标<blockquote>
+<p>   修剪队列，让队列只保留指定指定范围内的元素</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; RPUSH list5 1 2 3 4</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; ltrim list5 1 2</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; lrange list5 0 -1</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">2) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="8">
+<li>lpop  键<blockquote>
+<p>   从指定的队列左面移除一个值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; lrange list1 0 -1</span><br><span class="line">1) &quot;4&quot;</span><br><span class="line">2) &quot;3&quot;</span><br><span class="line">3) &quot;2&quot;</span><br><span class="line">4) &quot;1&quot;</span><br><span class="line">127.0.0.1:6379&gt; lpop list1</span><br><span class="line">&quot;4&quot;</span><br><span class="line">127.0.0.1:6379&gt; lrange list1 0 -1</span><br><span class="line">1) &quot;3&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;1&quot;</span><br></pre></td></tr></table></figure>
+<ol start="9">
+<li>rpop  键<blockquote>
+<p>   从指定队列的右边移除一个值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; lrange list1 0 -1</span><br><span class="line">1) &quot;3&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;1&quot;</span><br><span class="line">127.0.0.1:6379&gt; rpop list1</span><br><span class="line">&quot;1&quot;</span><br><span class="line">127.0.0.1:6379&gt; lrange list1 0 -1</span><br><span class="line">1) &quot;3&quot;</span><br><span class="line">2) &quot;2&quot;</span><br></pre></td></tr></table></figure>
+<ol start="10">
+<li>rpoplpush  源队列  目标队列<blockquote>
+<p>   移除源队列的最后一个元素，并把该元素写入目标队列</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; lrange list1 0 -1</span><br><span class="line">1) &quot;3&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">127.0.0.1:6379&gt; lrange list5 0 -1</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">2) &quot;3&quot;</span><br><span class="line">127.0.0.1:6379&gt; RPOPLPUSH list1 list5</span><br><span class="line">&quot;2&quot;</span><br><span class="line">127.0.0.1:6379&gt; lrange list1 0 -1</span><br><span class="line">1) &quot;3&quot;</span><br><span class="line">127.0.0.1:6379&gt; lrange list5 0 -1</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="11">
+<li>lindex  键  下标<blockquote>
+<p>   获取队列中指定下标元素的值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; lrange list2 0 -1</span><br><span class="line">1) &quot;four&quot;</span><br><span class="line">2) &quot;three&quot;</span><br><span class="line">3) &quot;two&quot;</span><br><span class="line">4) &quot;one&quot;</span><br><span class="line">127.0.0.1:6379&gt; lindex list2 1</span><br><span class="line">&quot;three&quot;</span><br><span class="line">127.0.0.1:6379&gt; lindex list2 3</span><br><span class="line">&quot;one&quot;</span><br></pre></td></tr></table></figure>
+<ol start="12">
+<li>llen  键<blockquote>
+<p>   获得队列的长度</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; llen list2</span><br><span class="line">(integer) 4</span><br></pre></td></tr></table></figure>
+<h2 id="sets类型和操作"><a href="#sets类型和操作" class="headerlink" title="sets类型和操作"></a>sets类型和操作</h2><p>Set是集合，它是string类型的无序集合。对集合我们可以取并集、交集、差集。通过这些操作我们可以实现社交网站中的好友推荐和blog的tag功能。集合不允许有重复值。</p>
+<ol>
+<li>sadd  键  值1[值2…]<blockquote>
+<p>   添加一个或多个元素到集合中</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sadd mset1 1</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; sadd mset1 2 3 4</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>smembers  键<blockquote>
+<p>   获取集合里面所有的元素</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; smembers mset1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">4) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>srem  键  值1[值2…]<blockquote>
+<p>   从集合中删除指定的一个或多个元素</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; srem mset1 3 4</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; smembers mset1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line"></span><br><span class="line">（删除键，依然使用“del 键” 命令）</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>spop  键  <blockquote>
+<p>   随机从集合中删除一个元素，并返回</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sadd mset2 4 5 6 7 8</span><br><span class="line">(integer) 5</span><br><span class="line">127.0.0.1:6379&gt; spop mset2</span><br><span class="line">&quot;4&quot;</span><br><span class="line">127.0.0.1:6379&gt; spop mset2</span><br><span class="line">&quot;5&quot;</span><br><span class="line">127.0.0.1:6379&gt; spop mset2</span><br><span class="line">&quot;8&quot;</span><br><span class="line">127.0.0.1:6379&gt; smembers mset2</span><br><span class="line">1) &quot;6&quot;</span><br><span class="line">2) &quot;7&quot;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>srandmember  键  值<blockquote>
+<p>   随机返回集合中一个元素，但不删除</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sadd mset3 4 5 6 7 8</span><br><span class="line">(integer) 5</span><br><span class="line">127.0.0.1:6379&gt; srandmember mset3</span><br><span class="line">&quot;5&quot;</span><br><span class="line">127.0.0.1:6379&gt; srandmember mset3</span><br><span class="line">&quot;5&quot;</span><br><span class="line">127.0.0.1:6379&gt; srandmember mset3</span><br><span class="line">&quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>scard  键<blockquote>
+<p>   获取集合里面元素个数</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; scard mset1</span><br><span class="line">(integer) 2</span><br></pre></td></tr></table></figure>
+<ol start="7">
+<li>sismember  键  值<blockquote>
+<p>   确定一个指定的值是否是集合中的元素</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; smembers mset1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">127.0.0.1:6379&gt; sismember mset1 3</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; sismember mset1 1</span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+<ol start="8">
+<li>sdiff  集合1  集合2<blockquote>
+<p>   返回集合1与集合2的差集。以集合1为主</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sadd mset4 1 2 3</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; sadd mset5 2 3 4</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; sdiff mset4 mset5</span><br><span class="line">1) &quot;1&quot;</span><br></pre></td></tr></table></figure>
+<ol start="9">
+<li>sdiffstore  新集合  集合1  集合2<blockquote>
+<p>   返回集合1和集合2的差集，并把结果存入新集合</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sadd mset4 1 2 3</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; sadd mset5 2 3 4</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; sdiffstore mset6 mset5 mset4</span><br><span class="line">(integer) 1				//返回值为1 ，证明成功</span><br><span class="line">127.0.0.1:6379&gt; smembers mset6</span><br><span class="line">1) &quot;4&quot;					//结果存入了mset6，值为4</span><br></pre></td></tr></table></figure>
+<ol start="10">
+<li>sinter  集合1  集合2<blockquote>
+<p>   获得两个集合的交集</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; smembers mset4</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">127.0.0.1:6379&gt; smembers mset5</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">2) &quot;3&quot;</span><br><span class="line">3) &quot;4&quot;</span><br><span class="line">127.0.0.1:6379&gt; sinter mset4 mset5</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">2) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="11">
+<li>sinterstore  新集合  集合1  集合2<blockquote>
+<p>   获得集合1和集合2的交集，并把结果存入新集合</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sinterstore mset7 mset4 mset5</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; smembers mset7</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">2) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="12">
+<li>sunion  集合1  集合2<blockquote>
+<p>   获得指定集合的并集</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sunion mset4 mset5</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">4) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="13">
+<li>sunionstore  新集合  集合1  集合2<blockquote>
+<p>   获得指定集合的并集，并把结果保存如新集合</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sunionstore mset8 mset4 mset5</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; smembers mset8</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;3&quot;</span><br><span class="line">4) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="14">
+<li>smove  源集合  目标集合  值<blockquote>
+<p>   将指定的值从源集合移动到目标集合</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; smembers mset1</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">127.0.0.1:6379&gt; smembers mset2</span><br><span class="line">1) &quot;6&quot;</span><br><span class="line">2) &quot;7&quot;</span><br><span class="line">127.0.0.1:6379&gt; smove mset1 mset2 1</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; smembers mset1</span><br><span class="line">1) &quot;2&quot;</span><br><span class="line">127.0.0.1:6379&gt; smembers mset2</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;6&quot;</span><br><span class="line">3) &quot;7&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="sorted-sets类型和操作"><a href="#sorted-sets类型和操作" class="headerlink" title="sorted sets类型和操作"></a>sorted sets类型和操作</h2><p>sorted set是set的一个升级版本，它给集合中每个元素都定义一个分数，集合中的元素按照其分数排序。也不允许有重复值</p>
+<ol>
+<li>zadd  键  分数1  值1  [分数2  值2…]<blockquote>
+<p>该命令添加指定的成员到key对应的有序集合中，每个成员都有一个分数。你可以指定多个分数/成员组合。如果一个指定的成员已经在对应的有序集合中了，那么其分数就会被更新成最新的，并且该成员会重新调整到正确的位置，以确保集合有序。分数的值必须是一个表示数字的字符串，并且可以是double类型的浮点数。</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zadd zset1 1 lm 2 sc 3 glf</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; zadd zset1 1 ymj</span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>zrange  集合  起始下标  截止下标  [withscores]<blockquote>
+<p>   返回有序集合中，指定区间内的成员。其中成员按照score（分数）值从小到大排序。具有相同score值的成员按照字典顺序来排列。</p>
+<p>   起始下标与截止下标和list类型一致：</p>
+<ul>
+<li>0代表队列中第一个元素，1代表第二个元素，依次类推</li>
+<li><p>-1代表队列中最后一个元素，-2代表倒数第二个元素</p>
+<p>withscores：返回集合中元素的同时，返回其分数（score）</p>
+</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;lm&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;ymj&quot;</span><br><span class="line">4) &quot;1&quot;</span><br><span class="line">5) &quot;sc&quot;</span><br><span class="line">6) &quot;2&quot;</span><br><span class="line">7) &quot;glf&quot;</span><br><span class="line">8) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>zrevrange  集合  起始下标  截止下标  [withscores]<blockquote>
+<p>   返回有序集合中，指定区间的成员。其成员按照score从大到小来排列。</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrevrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;glf&quot;		//下标为0</span><br><span class="line">2) &quot;3&quot;</span><br><span class="line">3) &quot;sc&quot;			//下标为1</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;ymj&quot;		//下标为2</span><br><span class="line">6) &quot;1&quot;</span><br><span class="line">7) &quot;lm&quot;			//下标为3</span><br><span class="line">8) &quot;1&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; zrevrange zset1 1 2 withscores		//查看集合中下标是1-2的值</span><br><span class="line">1) &quot;sc&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;ymj&quot;</span><br><span class="line">4) &quot;1&quot;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>zrangebyscore  集合  起始分数  截止分数  withscores<blockquote>
+<p>   返回有序集合中score（分数）在指定区间的值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zadd zset2 1 one 2 two 3 three 4 four</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; zrange zset2 0 -1 withscores		//按照下标区间返回值</span><br><span class="line">1) &quot;one&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;two&quot;</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;three&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line">7) &quot;four&quot;</span><br><span class="line">8) &quot;4&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; zrangebyscore zset2 2 3 withscores	//按照分数区间返回值</span><br><span class="line">1) &quot;two&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;three&quot;</span><br><span class="line">4) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>zrem  集合  值1  [值2…]<blockquote>
+<p>   删除有序集合中指定的值</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrem zset1 lm</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; zrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;ymj&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;sc&quot;</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;glf&quot;</span><br><span class="line">6) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>zincrby  集合  增量  值<blockquote>
+<p>   给有序集合中指定值的成员的分数（score）值加上增量（increment）。如果集合中没有这个值，则给添加一个分数是increment的值。</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zincrby zset1 2 ymj		//如果值存在，则在其分数上加增量</span><br><span class="line">&quot;3&quot;</span><br><span class="line">127.0.0.1:6379&gt; zrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;sc&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;glf&quot;</span><br><span class="line">4) &quot;3&quot;</span><br><span class="line">5) &quot;ymj&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; zincrby zset1 4 bro		//如果值不存在，则加入值。并指定分数为增&quot;4&quot;										量</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; zrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;sc&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;glf&quot;</span><br><span class="line">4) &quot;3&quot;</span><br><span class="line">5) &quot;ymj&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line">7) &quot;bro&quot;</span><br><span class="line">8) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="7">
+<li>zrank  集合  值<blockquote>
+<p>   返回有序集合中指定值的下标。值按照score从小到大排序</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrank zset1 sc</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; zrank zset1 ymj</span><br><span class="line">(integer) 2</span><br></pre></td></tr></table></figure>
+<ol start="8">
+<li>zrevrank  集合  值<blockquote>
+<p>   返回有序集合中指定值的下标，值按照score从大到小排序</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;sc&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;glf&quot;</span><br><span class="line">4) &quot;3&quot;</span><br><span class="line">5) &quot;ymj&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line">7) &quot;bro&quot;</span><br><span class="line">8) &quot;4&quot;</span><br><span class="line">127.0.0.1:6379&gt; zrevrank zset1 ymj</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; zrevrank zset1 sc</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+<ol start="9">
+<li>zcount  集合  起始分数  截止分数<blockquote>
+<p>   返回有序集合中，score值在起始分数与截止分数之间的个数</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrange zset2 0 -1 withscores</span><br><span class="line">1) &quot;one&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;two&quot;</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;three&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line">7) &quot;four&quot;</span><br><span class="line">8) &quot;4&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; zcount zset2 2 4</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+<ol start="10">
+<li>zcard  集合<blockquote>
+<p>   返回有序集合元素的个数</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zcard zset2</span><br><span class="line">(integer) 4</span><br></pre></td></tr></table></figure>
+<ol start="11">
+<li>zremrangebyrank  集合  起始下标  结束下标<blockquote>
+<p>   删除有序集合中，下标在指定区间的元素</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrange zset2 0 -1 withscores</span><br><span class="line">1) &quot;one&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;two&quot;</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;three&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line">7) &quot;four&quot;</span><br><span class="line">8) &quot;4&quot;</span><br><span class="line">127.0.0.1:6379&gt; ZREMRANGEBYRANK zset2 0 1</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; zrange zset2 0 -1 withscores</span><br><span class="line">1) &quot;three&quot;</span><br><span class="line">2) &quot;3&quot;</span><br><span class="line">3) &quot;four&quot;</span><br><span class="line">4) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="12">
+<li>zremrangebyscore  集合  起始分数  截止分数<blockquote>
+<p>删除有序集合中，分数在指定区间的元素</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;sc&quot;</span><br><span class="line">2) &quot;2&quot;</span><br><span class="line">3) &quot;glf&quot;</span><br><span class="line">4) &quot;3&quot;</span><br><span class="line">5) &quot;ymj&quot;</span><br><span class="line">6) &quot;3&quot;</span><br><span class="line">7) &quot;bro&quot;</span><br><span class="line">8) &quot;4&quot;</span><br><span class="line">127.0.0.1:6379&gt; ZREMRANGEBYSCORE zset1 2 3</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; zrange zset1 0 -1 withscores</span><br><span class="line">1) &quot;bro&quot;</span><br><span class="line">2) &quot;4&quot;</span><br></pre></td></tr></table></figure>
+<ol start="13">
+<li>zinterstore  新集合  取交集的集合个数  集合1 集合2<blockquote>
+<p>   取集合1和集合2的交集，并把结果保存到新集合中。在计算交集之前，需要指定计算交集的集合的个数。交集中，值的分数是多个集合中分数的和。</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zadd zset1 1 one 2 two 3 three 4 four</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; zadd zset2  2 two 3 three 4 four 5 five</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; ZINTERSTORE zset3 2 zset1 zset2 	</span><br><span class="line">//有两个集合计算交集，所以集合个数是2</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; ZRANGE zset3 0 -1 withscores</span><br><span class="line">1) &quot;two&quot;</span><br><span class="line">2) &quot;4&quot;				//分数是两个集合中two值的分数和</span><br><span class="line">3) &quot;three&quot;</span><br><span class="line">4) &quot;6&quot;</span><br><span class="line">5) &quot;four&quot;</span><br><span class="line">6) &quot;8&quot;</span><br></pre></td></tr></table></figure>
+<ol start="14">
+<li>zunionstore  新集合  取并集的集合个数  集合1 集合2<blockquote>
+<p>   取集合1和集合2的并集，并把结果保存到新集合中。在计算并集之前，需要指定计算并集的集合的个数。并集中，值的分数是多个集合中分数的和。</p>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zadd zset1 1 one 2 two 3 three 4 four</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; zadd zset2  2 two 3 three 4 four 5 five</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; ZUNIONSTORE zset4 2 zset1 zset2</span><br><span class="line">(integer) 5</span><br><span class="line">127.0.0.1:6379&gt; ZRANGE zset4 0 -1 withscores</span><br><span class="line"> 1) &quot;one&quot;</span><br><span class="line"> 2) &quot;1&quot;</span><br><span class="line"> 3) &quot;two&quot;</span><br><span class="line"> 4) &quot;4&quot;</span><br><span class="line"> 5) &quot;five&quot;</span><br><span class="line"> 6) &quot;5&quot;</span><br><span class="line"> 7) &quot;three&quot;</span><br><span class="line"> 8) &quot;6&quot;</span><br><span class="line"> 9) &quot;four&quot;</span><br><span class="line">10) &quot;8&quot;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/09/27/Redis数据类型与操作/" title="Redis数据类型与操作">https://weizhimiao.github.io/2016/09/27/Redis数据类型与操作/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/27/Redis安装与管理/" rel="next" title="Redis安装与管理">
+                <i class="fa fa-chevron-left"></i> Redis安装与管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/27/Redis高级应用/" rel="prev" title="Redis高级应用">
+                Redis高级应用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#String（子串类型）"><span class="nav-number">1.</span> <span class="nav-text">String（子串类型）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hashs类型"><span class="nav-number">2.</span> <span class="nav-text">hashs类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#list类型（双向链表结构）"><span class="nav-number">3.</span> <span class="nav-text">list类型（双向链表结构）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sets类型和操作"><span class="nav-number">4.</span> <span class="nav-text">sets类型和操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sorted-sets类型和操作"><span class="nav-number">5.</span> <span class="nav-text">sorted sets类型和操作</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

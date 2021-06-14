@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="keepalived 源码包下载地址:http://www.keepalived.org/download.html 服务器内核要求需要服务器内核支持：  Kernel/User netlink socket  netlink是基于socket的通信机制，由于socket本身的双工性、突发性、不阻塞性等特点，能够很好地满足内核空间与用户空间小量数据的及时交互，因此在Linux 2.6内核开始被广泛">
+<meta name="keywords" content="keepalived">
+<meta property="og:type" content="article">
+<meta property="og:title" content="keepalived安装与配置">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/02/11/keepalived安装配置/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="keepalived 源码包下载地址:http://www.keepalived.org/download.html 服务器内核要求需要服务器内核支持：  Kernel/User netlink socket  netlink是基于socket的通信机制，由于socket本身的双工性、突发性、不阻塞性等特点，能够很好地满足内核空间与用户空间小量数据的及时交互，因此在Linux 2.6内核开始被广泛">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="keepalived安装与配置">
+<meta name="twitter:description" content="keepalived 源码包下载地址:http://www.keepalived.org/download.html 服务器内核要求需要服务器内核支持：  Kernel/User netlink socket  netlink是基于socket的通信机制，由于socket本身的双工性、突发性、不阻塞性等特点，能够很好地满足内核空间与用户空间小量数据的及时交互，因此在Linux 2.6内核开始被广泛">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/02/11/keepalived安装配置/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>keepalived安装与配置 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/02/11/keepalived安装配置/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">keepalived安装与配置<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/keepalived安装配置.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-02-11 20:30:00" itemprop="dateCreated datePublished" datetime="2017-02-11T20:30:00+08:00">2017-02-11</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/02/11/keepalived安装配置/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/02/11/keepalived安装配置/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">21k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">19 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="http://www.keepalived.org/download.html" target="_blank" rel="noopener">keepalived 源码包下载地址:http://www.keepalived.org/download.html</a></p>
+<h2 id="服务器内核要求"><a href="#服务器内核要求" class="headerlink" title="服务器内核要求"></a>服务器内核要求</h2><p>需要服务器内核支持：</p>
+<ul>
+<li><p>Kernel/User netlink socket</p>
+<blockquote>
+<p>netlink是基于socket的通信机制，由于socket本身的双工性、突发性、不阻塞性等特点，能够很好地满足内核空间与用户空间小量数据的及时交互，因此在Linux 2.6内核开始被广泛使用，例如内核态的netfilter与用户态的iptables的数据交换就是通过netlink机制完成的。</p>
+</blockquote>
+</li>
+<li><p>LinuxVirtualServer</p>
+<blockquote>
+<p>在大部分 linux 发行版中，ipvs 被默认安装。如果没有安装则需要安装。<br>检查当前加载的内核模块，看是否存在 ip_vs 模块。</p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@hd-4 ipvsadm-1.24]# lsmod|grep ip_vs</span><br><span class="line">ip_vs 77569 0</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h3 id="安装-ipvs"><a href="#安装-ipvs" class="headerlink" title="安装 ipvs"></a>安装 ipvs</h3><blockquote>
+<p>Ipvs 具体实现是由 ipvsadm 这个程序来完成，因此判断一个系统是否具备 ipvs 功能，也可以查看 ipvsadm 程序是否被安装。查看 ipvsadm 程序最简单的办法就是在任意路径执行命令 ipvsadm。</p>
+</blockquote>
+<p>ipvs 版本的选择：</p>
+<blockquote>
+<p>由于IPVS与用户空间的接口在不同的Linux内核版本中不同，因此在不同的Linux内核版本中有不同版本的 ipvsadm 用于IPVS。</p>
+<ul>
+<li>对于Linux内核2.6中的IPVS，需要使用ipvsadm 1.24版或更高版本。</li>
+<li>对于Linux内核2.4中的IPVS，需要使用ipvsadm 1.21系列。</li>
+<li>对于Linux内核2.2的IPVS补丁，需要使用ipvsadm版本1.15。</li>
+</ul>
+<p>当前我使用的Linux内核是 <code>2.6.32-642.6.2.el6.i686</code> ,所以选择了 <code>ipvsadm-1.26</code>.</p>
+</blockquote>
+<p><a href="http://www.linuxvirtualserver.org/software/ipvs.html" target="_blank" rel="noopener">ipvsadm 下载地址：http://www.linuxvirtualserver.org/software/ipvs.html</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# wget http://www.linuxvirtualserver.org/software/kernel-2.6/ipvsadm-1.26.tar.gz</span><br><span class="line">[root@localhost ~]# tar zxvf ipvsadm-1.26.tar.gz</span><br><span class="line">[root@localhost ~]# cd ipvsadm-1.26</span><br><span class="line">[root@localhost ipvsadm-1.26]# make</span><br><span class="line">[root@localhost ipvsadm-1.26]# make install</span><br></pre></td></tr></table></figure>
+<p>装完之后，ipvsadm 产生的文件列表：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/sbin/ipvsadm</span><br><span class="line">/sbin/ipvsadm-save</span><br><span class="line">/sbin/ipvsadm-restore</span><br><span class="line">/usr/man/man8/ipvsadm.8</span><br><span class="line">/usr/man/man8/ipvsadm-save.8</span><br><span class="line">/usr/man/man8/ipvsadm-restore.8</span><br><span class="line">/etc/rc.d/init.d/ipvsadm</span><br></pre></td></tr></table></figure></p>
+<p>执行 ipvsadm<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ipvsadm-1.26]# ipvsadm</span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line">  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn</span><br></pre></td></tr></table></figure></p>
+<p>查看当前加载的内核模块，看是否已经存在 ip_vs 模块。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ipvsadm-1.26]# lsmod | grep ip_vs</span><br><span class="line">ip_vs                 103551  0</span><br><span class="line">libcrc32c                841  1 ip_vs</span><br><span class="line">ipv6                  271777  16 ip_vs,ip6t_REJECT,nf_conntrack_ipv6,nf_defrag_ipv6</span><br></pre></td></tr></table></figure></p>
+<p>至此，ipvs 就已经安装成功。</p>
+<p><strong>安装 ipvs 时，可能会遇到的问题：</strong></p>
+<ul>
+<li>1、<code>can&#39;t find file &#39;netlink/netlink.h&#39;</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">make -C libipvs</span><br><span class="line">make[1]: Entering directory `/root/ipvsadm-1.26/libipvs&apos;</span><br><span class="line">gcc -Wall -Wunused -Wstrict-prototypes -g -fPIC -DLIBIPVS_USE_NL  -DHAVE_NET_IP_VS_H -c -o libipvs.o libipvs.c</span><br><span class="line">在包含自 libipvs.h：13 的文件中，</span><br><span class="line">                 从 libipvs.c：23:</span><br><span class="line">ip_vs.h:15:29: 错误：netlink/netlink.h：没有那个文件或目录</span><br><span class="line">ip_vs.h:16:31: 错误：netlink/genl/genl.h：没有那个文件或目录</span><br><span class="line">ip_vs.h:17:31: 错误：netlink/genl/ctrl.h：没有那个文件或目录</span><br><span class="line">In file included from libipvs.h:13,</span><br><span class="line">                 from libipvs.c:23:</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>解决方法：安装 <code>libnl</code> 和 <code>popt</code> 相关的包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># yum install libnl* popt*</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>2、</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><span class="line"># make</span><br><span class="line">make -C libipvs</span><br><span class="line">make[1]: Entering directory `/var/tmp/ipvsadm-1.24/libipvs&apos;</span><br><span class="line">gcc -Wall -Wunused -Wstrict-prototypes -g -O2 -I/usr/src/linux/include  -DHAVE_NET_IP_VS_H -c -o libipvs.o libipvs.c</span><br><span class="line">In file included from libipvs.c:23:</span><br><span class="line">libipvs.h:14:23: net/ip_vs.h: No such file or directory</span><br><span class="line">In file included from libipvs.c:23:</span><br><span class="line">libipvs.h:119: error: syntax error before &quot;fwmark&quot;</span><br><span class="line">libipvs.h:119: warning: function declaration isn&apos;t a prototype</span><br><span class="line">libipvs.c:27: error: field `svc&apos; has incomplete type</span><br><span class="line">libipvs.c:28: error: field `dest&apos; has incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_init&apos;:</span><br><span class="line">libipvs.c:40: error: invalid application of `sizeof&apos; to incomplete type `ip_vs_getinfo&apos;</span><br><span class="line">libipvs.c:44: error: `IP_VS_SO_GET_INFO&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:44: error: (Each undeclared identifier is reported only once</span><br><span class="line">libipvs.c:44: error: for each function it appears in.)</span><br><span class="line">libipvs.c: In function `ipvs_getinfo&apos;:</span><br><span class="line">libipvs.c:56: error: invalid application of `sizeof&apos; to incomplete type `ip_vs_getinfo&apos;</span><br><span class="line">libipvs.c:57: error: `IP_VS_SO_GET_INFO&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_version&apos;:</span><br><span class="line">libipvs.c:64: error: invalid use of undefined type `struct ip_vs_getinfo&apos;</span><br><span class="line">libipvs.c: In function `ipvs_flush&apos;:</span><br><span class="line">libipvs.c:70: error: `IP_VS_SO_SET_FLUSH&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_add_service&apos;:</span><br><span class="line">libipvs.c:79: error: `IP_VS_SO_SET_ADD&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:79: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_update_service&apos;:</span><br><span class="line">libipvs.c:87: error: `IP_VS_SO_SET_EDIT&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:87: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_del_service&apos;:</span><br><span class="line">libipvs.c:95: error: `IP_VS_SO_SET_DEL&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:95: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_zero_service&apos;:</span><br><span class="line">libipvs.c:103: error: `IP_VS_SO_SET_ZERO&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:103: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_add_dest&apos;:</span><br><span class="line">libipvs.c:109: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:109: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:112: error: `IP_VS_SO_SET_ADDDEST&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_update_dest&apos;:</span><br><span class="line">libipvs.c:119: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:119: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:122: error: `IP_VS_SO_SET_EDITDEST&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_del_dest&apos;:</span><br><span class="line">libipvs.c:129: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:129: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:132: error: `IP_VS_SO_SET_DELDEST&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_set_timeout&apos;:</span><br><span class="line">libipvs.c:140: error: `IP_VS_SO_SET_TIMEOUT&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:141: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_start_daemon&apos;:</span><br><span class="line">libipvs.c:148: error: `IP_VS_SO_SET_STARTDAEMON&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:149: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_stop_daemon&apos;:</span><br><span class="line">libipvs.c:156: error: `IP_VS_SO_SET_STOPDAEMON&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:157: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_get_services&apos;:</span><br><span class="line">libipvs.c:166: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:167: error: invalid application of `sizeof&apos; to incomplete type `libipvs.h&apos;</span><br><span class="line">libipvs.c:167: error: invalid use of undefined type `struct ip_vs_getinfo&apos;</span><br><span class="line">libipvs.c:172: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:172: error: invalid use of undefined type `struct ip_vs_getinfo&apos;</span><br><span class="line">libipvs.c:174: error: `IP_VS_SO_GET_SERVICES&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_cmp_services&apos;:</span><br><span class="line">libipvs.c:189: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:189: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:193: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:193: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:197: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:197: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:201: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:201: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_sort_services&apos;:</span><br><span class="line">libipvs.c:208: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:208: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:209: error: invalid application of `sizeof&apos; to incomplete type `libipvs.h&apos;</span><br><span class="line">libipvs.c: In function `ipvs_get_dests&apos;:</span><br><span class="line">libipvs.c:218: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:218: error: invalid application of `sizeof&apos; to incomplete type `libipvs.h&apos;</span><br><span class="line">libipvs.c:218: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:224: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:224: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:225: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:225: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:226: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:226: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:227: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:227: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:228: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:228: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:231: error: `IP_VS_SO_GET_DESTS&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_cmp_dests&apos;:</span><br><span class="line">libipvs.c:243: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:243: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:247: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:247: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c: In function `ipvs_sort_dests&apos;:</span><br><span class="line">libipvs.c:253: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:253: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:254: error: invalid application of `sizeof&apos; to incomplete type `libipvs.h&apos;</span><br><span class="line">libipvs.c: At top level:</span><br><span class="line">libipvs.c:259: error: syntax error before &quot;fwmark&quot;</span><br><span class="line">libipvs.c:260: warning: function declaration isn&apos;t a prototype</span><br><span class="line">libipvs.c: In function `ipvs_get_service&apos;:</span><br><span class="line">libipvs.c:264: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:270: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:270: error: `fwmark&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:271: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:271: error: `protocol&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:272: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:272: error: `addr&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:273: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:273: error: `port&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c:274: error: `IP_VS_SO_GET_SERVICE&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_get_timeout&apos;:</span><br><span class="line">libipvs.c:288: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:293: error: `IP_VS_SO_GET_TIMEOUT&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: In function `ipvs_get_daemon&apos;:</span><br><span class="line">libipvs.c:309: error: dereferencing pointer to incomplete type</span><br><span class="line">libipvs.c:315: error: `IP_VS_SO_GET_DAEMON&apos; undeclared (first use in this function)</span><br><span class="line">libipvs.c: At top level:</span><br><span class="line">libipvs.c:33: error: storage size of `ipvs_info&apos; isn&apos;t known</span><br><span class="line">make[1]: *** [libipvs.o] Error 1</span><br><span class="line">make[1]: Leaving directory `/var/tmp/ipvsadm-1.24/libipvs&apos;</span><br><span class="line">make: *** [libs] Error 2</span><br></pre></td></tr></table></figure>
+<p>这个问题一般是编译器找不到 服务器 kernel 的源码路径。解决方法是，创建一个当前系统的 kernel 源码路径的 连接到 <code>/usr/src/linux</code>。如，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln –sv /usr/src/kernels/2.6.32-642.6.2.el6.i686 /usr/src/linux</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注意一定要与当前的运行的内核相一致，因为 <code>/usr/src/kernels</code> 目录下可多个目录。</p>
+<p>若<code>/usr/src/kernel</code>目录下没有内核目录，则需要安装内核开发包：</p>
+<ul>
+<li>用命令<code>uname -a</code>查看内核版本，</li>
+<li>然后可以在这里查找对应的 <code>kernel</code> 开发包(<a href="https://www.kernel.org/pub/linux/kernel/v2.6/" target="_blank" rel="noopener">https://www.kernel.org/pub/linux/kernel/v2.6/</a>)</li>
+</ul>
+<p>不推荐使用 <code>yum install -y kernel-devel</code> 安装</p>
+</blockquote>
+<h2 id="依赖："><a href="#依赖：" class="headerlink" title="依赖："></a>依赖：</h2><ul>
+<li>gcc、gcc-c++</li>
+<li>openssl-dev</li>
+</ul>
+<p>报错：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">configure: error:</span><br><span class="line">  !!! OpenSSL is not properly installed on your system. !!!</span><br><span class="line">  !!! Can not include OpenSSL headers files.            !!!</span><br></pre></td></tr></table></figure></p>
+<p>安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install openssl-devel -y</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>libnfnetlink-devel</li>
+</ul>
+<p>报错：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">configure: error:</span><br><span class="line">    !!! Please install libnfnetlink headers.              !!!</span><br></pre></td></tr></table></figure></p>
+<p>安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y libnfnetlink-devel</span><br></pre></td></tr></table></figure></p>
+<h2 id="keepalived-安装"><a href="#keepalived-安装" class="headerlink" title="keepalived 安装"></a>keepalived 安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# wget http://www.keepalived.org/software/keepalived-1.3.2.tar.gz</span><br><span class="line">[root@localhost ~]# tar zxvf keepalived-1.3.2.tar.gz</span><br><span class="line">[root@localhost ~]# cd keepalived-1.3.2</span><br><span class="line">[root@localhost keepalived-1.3.2]# ./configure --prefix=/usr/local/keepalived</span><br><span class="line">...</span><br><span class="line">Keepalived configuration</span><br><span class="line">------------------------</span><br><span class="line">Keepalived version       : 1.3.2</span><br><span class="line">Compiler                 : gcc</span><br><span class="line">Preprocessor flags       :  -I/usr/include/libnl3  </span><br><span class="line">Compiler flags           : -Wall -Wunused -Wstrict-prototypes -Wextra -g -O2   </span><br><span class="line">Linker flags             :</span><br><span class="line">Extra Lib                : -ldl -lssl -lcrypto  -lnl-3 -lnl-genl-3 -lnl-route-3</span><br><span class="line">Use IPVS Framework       : Yes</span><br><span class="line">IPVS use libnl           : Yes</span><br><span class="line">IPVS syncd attributes    : No</span><br><span class="line">IPVS 64 bit stats        : No</span><br><span class="line">fwmark socket support    : Yes</span><br><span class="line">Use VRRP Framework       : Yes</span><br><span class="line">Use VRRP VMAC            : Yes</span><br><span class="line">Use VRRP authentication  : Yes</span><br><span class="line">With ip rules/routes     : Yes</span><br><span class="line">SNMP vrrp support        : No</span><br><span class="line">SNMP checker support     : No</span><br><span class="line">SNMP RFCv2 support       : No</span><br><span class="line">SNMP RFCv3 support       : No</span><br><span class="line">DBUS support             : No</span><br><span class="line">SHA1 support             : No</span><br><span class="line">Use Debug flags          : No</span><br><span class="line">Stacktrace support       : No</span><br><span class="line">Memory alloc check       : No</span><br><span class="line">libnl version            : 3</span><br><span class="line">Use IPv4 devconf         : No</span><br><span class="line">Use libiptc              : No</span><br><span class="line">Use libipset             : No</span><br><span class="line">init type                : upstart</span><br><span class="line">Build genhash            : Yes</span><br><span class="line">Build documentation      : No</span><br><span class="line">[root@localhost keepalived-1.3.2]# make &amp;&amp; make install</span><br><span class="line"></span><br><span class="line">[root@localhost keepalived-1.3.2]# cd /usr/local/keepalived/</span><br><span class="line">[root@localhost keepalived]# tree .</span><br><span class="line">.</span><br><span class="line">├── bin</span><br><span class="line">│   └── genhash</span><br><span class="line">├── etc</span><br><span class="line">│   ├── init</span><br><span class="line">│   │   └── keepalived.conf</span><br><span class="line">│   ├── keepalived</span><br><span class="line">│   │   ├── keepalived.conf</span><br><span class="line">│   │   └── samples</span><br><span class="line">│   │       ├── client.pem</span><br><span class="line">│   │       ├── dh1024.pem</span><br><span class="line">│   │       ├── keepalived.conf.fwmark</span><br><span class="line">│   │       ├── keepalived.conf.HTTP_GET.port</span><br><span class="line">│   │       ├── keepalived.conf.inhibit</span><br><span class="line">│   │       ├── keepalived.conf.IPv6</span><br><span class="line">│   │       ├── keepalived.conf.misc_check</span><br><span class="line">│   │       ├── keepalived.conf.misc_check_arg</span><br><span class="line">│   │       ├── keepalived.conf.quorum</span><br><span class="line">│   │       ├── keepalived.conf.sample</span><br><span class="line">│   │       ├── keepalived.conf.SMTP_CHECK</span><br><span class="line">│   │       ├── keepalived.conf.SSL_GET</span><br><span class="line">│   │       ├── keepalived.conf.status_code</span><br><span class="line">│   │       ├── keepalived.conf.track_interface</span><br><span class="line">│   │       ├── keepalived.conf.virtualhost</span><br><span class="line">│   │       ├── keepalived.conf.virtual_server_group</span><br><span class="line">│   │       ├── keepalived.conf.vrrp</span><br><span class="line">│   │       ├── keepalived.conf.vrrp.localcheck</span><br><span class="line">│   │       ├── keepalived.conf.vrrp.lvs_syncd</span><br><span class="line">│   │       ├── keepalived.conf.vrrp.routes</span><br><span class="line">│   │       ├── keepalived.conf.vrrp.rules</span><br><span class="line">│   │       ├── keepalived.conf.vrrp.scripts</span><br><span class="line">│   │       ├── keepalived.conf.vrrp.static_ipaddress</span><br><span class="line">│   │       ├── keepalived.conf.vrrp.sync</span><br><span class="line">│   │       ├── root.pem</span><br><span class="line">│   │       └── sample.misccheck.smbcheck.sh</span><br><span class="line">│   └── sysconfig</span><br><span class="line">│       └── keepalived</span><br><span class="line">├── sbin</span><br><span class="line">│   └── keepalived</span><br><span class="line">└── share</span><br><span class="line">    ├── man</span><br><span class="line">    │   ├── man1</span><br><span class="line">    │   │   └── genhash.1</span><br><span class="line">    │   ├── man5</span><br><span class="line">    │   │   └── keepalived.conf.5</span><br><span class="line">    │   └── man8</span><br><span class="line">    │       └── keepalived.8</span><br><span class="line">    └── snmp</span><br><span class="line">        └── mibs</span><br><span class="line"></span><br><span class="line">14 directories, 34 files</span><br></pre></td></tr></table></figure>
+<h2 id="keepalived-配置与管理"><a href="#keepalived-配置与管理" class="headerlink" title="keepalived 配置与管理"></a>keepalived 配置与管理</h2><p>简单的配置示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br></pre></td><td class="code"><pre><span class="line"># cat keepalived.conf</span><br><span class="line">! Configuration File for keepalived</span><br><span class="line"># 全局配置</span><br><span class="line">global_defs &#123;</span><br><span class="line">   #指定keepalived在发生切换时需要发送email到的对象，一行一个</span><br><span class="line">   notification_email &#123;</span><br><span class="line">     acassen@firewall.loc</span><br><span class="line">     failover@firewall.loc</span><br><span class="line">     sysadmin@firewall.loc</span><br><span class="line">   &#125;</span><br><span class="line">   notification_email_from Alexandre.Cassen@firewall.loc #指定发件人</span><br><span class="line">   smtp_server 192.168.200.1  #指定smtp服务器地址</span><br><span class="line">   smtp_connect_timeout 30  #指定smtp连接超时时间</span><br><span class="line">   router_id LVS_DEVEL  #运行keepalived机器的一个标识</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">    state MASTER  #指定那个为master，那个为backup，如果设置了nopreempt这个值不起作用，主备考priority决定</span><br><span class="line">    interface eth0  #设置实例绑定的网卡</span><br><span class="line">    virtual_router_id 51  #VPID标记</span><br><span class="line">    priority 100  #优先级，高优先级竞选为master</span><br><span class="line">    advert_int 1  #检查间隔，默认1秒</span><br><span class="line">    authentication &#123;  #设置认证</span><br><span class="line">        auth_type PASS   #认证方式</span><br><span class="line">        auth_pass 1111   #认证密码</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;  #设置vip</span><br><span class="line">        192.168.200.16</span><br><span class="line">        192.168.200.17</span><br><span class="line">        192.168.200.18</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">virtual_server 192.168.200.100 443 &#123;</span><br><span class="line">    delay_loop 6   #健康检查时间间隔</span><br><span class="line">    lb_algo rr  #lvs调度算法rr|wrr|lc|wlc|lblc|sh|dh</span><br><span class="line">    lb_kind NAT  #负载均衡转发规则NAT|DR|RUN</span><br><span class="line">    nat_mask 255.255.255.0</span><br><span class="line">    persistence_timeout 50   #会话保持时间</span><br><span class="line">    protocol TCP  #使用的协议</span><br><span class="line"></span><br><span class="line">    real_server 192.168.201.100 443 &#123;</span><br><span class="line">        weight 1</span><br><span class="line">        SSL_GET &#123;</span><br><span class="line">            url &#123; #检查url，可以指定多个</span><br><span class="line">              path /</span><br><span class="line">              digest ff20ad2481f97b1754ef3e12ecd3a9cc</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /mrtg/</span><br><span class="line">              digest 9b3a0c85a887a256d6939da88aabd8cd</span><br><span class="line">            &#125;</span><br><span class="line">            connect_timeout 3 #连接超时时间</span><br><span class="line">            nb_get_retry 3  #重连次数</span><br><span class="line">            delay_before_retry 3   #重连间隔时间</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">virtual_server 10.10.10.2 1358 &#123;</span><br><span class="line">    delay_loop 6</span><br><span class="line">    lb_algo rr</span><br><span class="line">    lb_kind NAT</span><br><span class="line">    persistence_timeout 50</span><br><span class="line">    protocol TCP</span><br><span class="line"></span><br><span class="line">    sorry_server 192.168.200.200 1358</span><br><span class="line"></span><br><span class="line">    real_server 192.168.200.2 1358 &#123;</span><br><span class="line">        weight 1</span><br><span class="line">        HTTP_GET &#123;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl2/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl3/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            connect_timeout 3</span><br><span class="line">            nb_get_retry 3</span><br><span class="line">            delay_before_retry 3</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    real_server 192.168.200.3 1358 &#123;</span><br><span class="line">        weight 1</span><br><span class="line">        HTTP_GET &#123;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334c</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl2/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334c</span><br><span class="line">            &#125;</span><br><span class="line">            connect_timeout 3</span><br><span class="line">            nb_get_retry 3</span><br><span class="line">            delay_before_retry 3</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">virtual_server 10.10.10.3 1358 &#123;</span><br><span class="line">    delay_loop 3</span><br><span class="line">    lb_algo rr</span><br><span class="line">    lb_kind NAT</span><br><span class="line">    nat_mask 255.255.255.0</span><br><span class="line">    persistence_timeout 50</span><br><span class="line">    protocol TCP</span><br><span class="line"></span><br><span class="line">    real_server 192.168.200.4 1358 &#123;</span><br><span class="line">        weight 1</span><br><span class="line">        HTTP_GET &#123;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl2/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl3/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            connect_timeout 3</span><br><span class="line">            nb_get_retry 3</span><br><span class="line">            delay_before_retry 3</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    real_server 192.168.200.5 1358 &#123;</span><br><span class="line">        weight 1</span><br><span class="line">        HTTP_GET &#123;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl2/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            url &#123;</span><br><span class="line">              path /testurl3/test.jsp</span><br><span class="line">              digest 640205b7b0fc66c1ea91c463fac6334d</span><br><span class="line">            &#125;</span><br><span class="line">            connect_timeout 3</span><br><span class="line">            nb_get_retry 3</span><br><span class="line">            delay_before_retry 3</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="管理"><a href="#管理" class="headerlink" title="管理"></a>管理</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"># keepalived -h</span><br><span class="line">Usage: keepalived [OPTION...]</span><br><span class="line">  -f, --use-file=FILE          使用指定的配置文件</span><br><span class="line">  -P, --vrrp                   只能使用VRRP子系统运行</span><br><span class="line">  -C, --check                  只能使用Health-checker子系统运行</span><br><span class="line">  -l, --log-console            将消息记录到本地控制台</span><br><span class="line">  -D, --log-detail             详细日志消息 /var/log/messages</span><br><span class="line">  -S, --log-facility=[0-7]     将syslog设置设置为LOG_LOCAL [0-7]</span><br><span class="line">  -V, --dont-release-vrrp      不要在守护程序停止时删除VRRP VIP和VROUTE</span><br><span class="line">  -I, --dont-release-ipvs      不要在守护程序停止时删除IPVS拓扑</span><br><span class="line">  -R, --dont-respawn           不要重新生成子进程</span><br><span class="line">  -n, --dont-fork              D不要fork守护进程</span><br><span class="line">  -d, --dump-conf              转储配置数据</span><br><span class="line">  -p, --pid=FILE               对父进程使用指定的pidfile</span><br><span class="line">  -r, --vrrp_pid=FILE          对VRRP子进程使用指定的pidfile</span><br><span class="line">  -c, --checkers_pid=FILE      使用指定的pidfile进行checkers子进程</span><br><span class="line">  -x, --snmp                   启用SNMP子系统</span><br><span class="line">  -v, --version                显示版本号</span><br><span class="line">  -h, --help                   显示此帮助消息</span><br></pre></td></tr></table></figure>
+<p>示例，启动 keepalived<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># keepalived -D -f /xxx/keepalived.conf</span><br></pre></td></tr></table></figure></p>
+<p>查看进程列表，keepalived 是否已经启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">]# ps aux | grep keepalived</span><br><span class="line">root      1371  0.0  0.1  17200  1092 ?        Ss   18:00   0:00 keepalived -D -f /etc/keepalived/keepalived.conf</span><br><span class="line">root      1372  0.0  0.2  17256  2632 ?        S    18:00   0:00 keepalived -D -f /etc/keepalived/keepalived.conf</span><br><span class="line">root      1373  0.0  0.1  17256  1840 ?        S    18:00   0:00 keepalived -D -f /etc/keepalived/keepalived.conf</span><br><span class="line">root      1390  0.0  0.0   6052   776 pts/0    S+   18:02   0:00 grep keepalived</span><br></pre></td></tr></table></figure></p>
+<p>查看网络设置，虚拟IP是否已经设置</p>
+<blockquote>
+<p>使用 ifconfig 是看不到 虚拟IP 配置的</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># ip add</span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN</span><br><span class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">    inet 127.0.0.1/8 scope host lo</span><br><span class="line">    inet6 ::1/128 scope host</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000</span><br><span class="line">    link/ether 08:00:27:bf:25:88 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 192.168.1.103/24 brd 192.168.1.255 scope global eth0</span><br><span class="line">    inet 192.168.200.16/32 scope global eth0</span><br><span class="line">    inet 192.168.200.17/32 scope global eth0</span><br><span class="line">    inet 192.168.200.18/32 scope global eth0</span><br><span class="line">    inet6 fe80::a00:27ff:febf:2588/64 scope link</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/02/11/keepalived安装配置/" title="keepalived安装与配置">https://weizhimiao.github.io/2017/02/11/keepalived安装配置/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/keepalived/" rel="tag"># keepalived</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/03/Github中webhooks应用/" rel="next" title="Github中Webhooks的应用">
+                <i class="fa fa-chevron-left"></i> Github中Webhooks的应用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/11/keepalived配置整理/" rel="prev" title="keepalived配置整理">
+                keepalived配置整理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#服务器内核要求"><span class="nav-number">1.</span> <span class="nav-text">服务器内核要求</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-ipvs"><span class="nav-number">1.1.</span> <span class="nav-text">安装 ipvs</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#依赖："><span class="nav-number">2.</span> <span class="nav-text">依赖：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#keepalived-安装"><span class="nav-number">3.</span> <span class="nav-text">keepalived 安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#keepalived-配置与管理"><span class="nav-number">4.</span> <span class="nav-text">keepalived 配置与管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#管理"><span class="nav-number">4.1.</span> <span class="nav-text">管理</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

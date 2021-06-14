@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="keywords" content="进程管理,服务管理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux服务和进程管理">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/09/28/Linux服务和进程管理/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20160929/LinuxFuWuHeJinChengGuanLi.png?1">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux服务和进程管理">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20160929/LinuxFuWuHeJinChengGuanLi.png?1">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/09/28/Linux服务和进程管理/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>linux服务和进程管理 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/09/28/Linux服务和进程管理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">linux服务和进程管理<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Linux服务和进程管理.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-09-28 18:30:00" itemprop="dateCreated datePublished" datetime="2016-09-28T18:30:00+08:00">2016-09-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/09/28/Linux服务和进程管理/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/09/28/Linux服务和进程管理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">6.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">6 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="http://n.sinaimg.cn/games/3ece443e/20160929/LinuxFuWuHeJinChengGuanLi.png?1" alt="Linux服务和进程管理"></p>
+<a id="more"></a>
+<h2 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h2><p>进程管理的三个主要任务</p>
+<ul>
+<li>判断服务器的健康状态</li>
+<li>查看所有正在运行的进程</li>
+<li>强制终止进程</li>
+</ul>
+<h3 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h3><h4 id="ps-aux"><a href="#ps-aux" class="headerlink" title="ps aux"></a>ps aux</h4><blockquote>
+<p>查看当前系统所有运行的进程（可以不加-）</p>
+<ul>
+<li>-a 显示前台所有进程</li>
+<li>-u 显示用户名</li>
+<li>-x 显示后台进程</li>
+</ul>
+</blockquote>
+<p>命令执行结果示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ps aux</span><br><span class="line">USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND</span><br><span class="line">root         1  0.0  0.3  41280  3732 ?        Ss   9月26   0:02 /usr/lib/systemd/systemd --switched-root --system</span><br><span class="line">root         2  0.0  0.0      0     0 ?        S    9月26   0:00 [kthreadd]</span><br><span class="line">root         3  0.0  0.0      0     0 ?        S    9月26   0:00 [ksoftirqd/0]</span><br><span class="line">root         5  0.0  0.0      0     0 ?        S&lt;   9月26   0:00 [kworker/0:0H]</span><br><span class="line">root         6  0.0  0.0      0     0 ?        S    9月26   0:00 [kworker/u2:0]</span><br><span class="line">root         7  0.0  0.0      0     0 ?        S    9月26   0:00 [migration/0]</span><br><span class="line">root         8  0.0  0.0      0     0 ?        S    9月26   0:00 [rcu_bh]</span><br><span class="line">root         9  0.0  0.0      0     0 ?        S    9月26   0:00 [rcuob/0]</span><br><span class="line">root        10  0.0  0.0      0     0 ?        S    9月26   0:36 [rcu_sched]</span><br><span class="line">root        11  0.0  0.0      0     0 ?        S    9月26   0:32 [rcuos/0]</span><br><span class="line">···</span><br></pre></td></tr></table></figure></p>
+<p>参数说明:</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>USER</td>
+<td>用户名</td>
+</tr>
+<tr>
+<td>PID</td>
+<td>进程PID 1  init  系统启动的第一个进程</td>
+</tr>
+<tr>
+<td>%CPU</td>
+<td>cpu占用百分比</td>
+</tr>
+<tr>
+<td>%MEM</td>
+<td>内存占用百分比</td>
+</tr>
+<tr>
+<td>VSZ</td>
+<td>虚拟内存占用量（KB）</td>
+</tr>
+<tr>
+<td>RSS</td>
+<td>固定内存占有量</td>
+</tr>
+<tr>
+<td>TTY</td>
+<td>登录终端  tty1-7 本地终端1-6 字符、 7图形） pts/0-255</td>
+</tr>
+<tr>
+<td>STAT</td>
+<td>状态 （S：睡眠 D：不可唤醒 R：运行 T：停止 Z：僵死 W：进入内存交换 X：死掉的进程 &lt;:高优先级 N：低优先级 L：被锁进内存 s：含子进程 +：位于后台 l：多线程）</td>
+</tr>
+<tr>
+<td>START</td>
+<td>进程触发时间</td>
+</tr>
+<tr>
+<td>TIME</td>
+<td>占用cpu时间</td>
+</tr>
+<tr>
+<td>COMMAND</td>
+<td>进程本身</td>
+</tr>
+</tbody>
+</table>
+<h4 id="pstree"><a href="#pstree" class="headerlink" title="pstree"></a>pstree</h4><blockquote>
+<ul>
+<li>-a 查看进程树</li>
+</ul>
+</blockquote>
+<p>命令执行结果示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">pstree -a</span><br><span class="line">systemd --switched-root --system --deserialize 21</span><br><span class="line">  ├─AliHids</span><br><span class="line">  │   └─4*[&#123;AliHids&#125;]</span><br><span class="line">  ├─AliYunDun</span><br><span class="line">  │   └─8*[&#123;AliYunDun&#125;]</span><br><span class="line">  ├─AliYunDunUpdate</span><br><span class="line">  │   └─3*[&#123;AliYunDunUpdate&#125;]</span><br><span class="line">  ├─agetty --noclear tty1 linux</span><br><span class="line">  ├─aliyun-service -d</span><br><span class="line">  ├─crond -n</span><br><span class="line">  ├─dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation</span><br><span class="line">  ├─memcached -d -m 128 -u root -p 11211</span><br><span class="line">  │   └─6*[&#123;memcached&#125;]</span><br><span class="line">  ├─nginx</span><br><span class="line">  │   └─nginx</span><br><span class="line">  ├─ntpd -u ntp:ntp -g</span><br><span class="line">  ├─php-fpm</span><br><span class="line">  │   ├─php-fpm</span><br><span class="line">  │   └─php-fpm</span><br><span class="line">  ├─rsyslogd -n</span><br><span class="line">  │   └─2*[&#123;rsyslogd&#125;]</span><br><span class="line">  ├─sshd -D</span><br><span class="line">  │   └─sshd</span><br><span class="line">  │       └─bash</span><br><span class="line">  │           └─pstree -a</span><br><span class="line">  ├─systemd-journal</span><br><span class="line">  ├─systemd-logind</span><br><span class="line">  └─systemd-udevd</span><br></pre></td></tr></table></figure></p>
+<h4 id="top"><a href="#top" class="headerlink" title="top"></a>top</h4><blockquote>
+<p>实时显示进程状态</p>
+</blockquote>
+<p>命令执行结果示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">top - 15:04:52 up 2 days,  5:25,  1 user,  load average: 0.00, 0.01, 0.05</span><br><span class="line">Tasks:  70 total,   2 running,  68 sleeping,   0 stopped,   0 zombie</span><br><span class="line">%Cpu(s):  0.3 us,  0.3 sy,  0.0 ni, 99.3 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st</span><br><span class="line">KiB Mem :  1016796 total,   599400 free,    41948 used,   375448 buff/cache</span><br><span class="line">KiB Swap:        0 total,        0 free,        0 used.   838500 avail Mem</span><br><span class="line"></span><br><span class="line">  PID USER      PR  NI    VIRT    RES    SHR S %CPU %MEM     TIME+ COMMAND</span><br><span class="line">  917 root      20   0   82696   9152   5456 S  0.3  0.9   5:50.76 AliHids</span><br><span class="line">    1 root      20   0   41280   3732   2388 S  0.0  0.4   0:02.36 systemd</span><br><span class="line">    2 root      20   0       0      0      0 S  0.0  0.0   0:00.01 kthreadd</span><br><span class="line">    3 root      20   0       0      0      0 S  0.0  0.0   0:00.00 ksoftirqd/0</span><br><span class="line">    5 root       0 -20       0      0      0 S  0.0  0.0   0:00.00 kworker/0:0H</span><br><span class="line">    6 root      20   0       0      0      0 S  0.0  0.0   0:00.26 kworker/u2:0</span><br><span class="line">    7 root      rt   0       0      0      0 S  0.0  0.0   0:00.00 migration/0</span><br><span class="line">    ···</span><br></pre></td></tr></table></figure></p>
+<p>参数说明</p>
+<ul>
+<li>第一行：系统当前时间，系统持续时间， 登录用户，1,5,15分钟之前的平均负载</li>
+<li>第二行：进程总数</li>
+<li>第三行：CPU占用率</li>
+<li>第四行：内存使用：总共，空闲，已使用，缓存</li>
+<li>第五行：swap使用情况</li>
+</ul>
+<p>操作命令：</p>
+<ul>
+<li>M,按内存占用排序</li>
+<li>P,安CPU占用排序</li>
+<li>q,退出</li>
+</ul>
+<h3 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h3><h4 id="kill-结束单个进程"><a href="#kill-结束单个进程" class="headerlink" title="kill 结束单个进程"></a>kill 结束单个进程</h4><blockquote>
+<p>kill命令是通过向进程发送指定的信号来结束相应进程的。在默认情况下，采用编号为15的TERM信号。TERM信号将终止所有不能捕获该信号的进程。对于那些可以捕获该信号的进程就要用编号为9的kill信号，强行“杀掉”该进程。</p>
+<p>命令格式：kill 信号  PID</p>
+</blockquote>
+<p>信号，进程间的通信方式</p>
+<p>我们常用的信号有</p>
+<table>
+<thead>
+<tr>
+<th>信号名称</th>
+<th>信号</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HUP</td>
+<td>1</td>
+<td>终端断线</td>
+</tr>
+<tr>
+<td>INT</td>
+<td>2</td>
+<td>中断（同 Ctrl + C）</td>
+</tr>
+<tr>
+<td>QUIT</td>
+<td>3</td>
+<td>退出（同 Ctrl + \）</td>
+</tr>
+<tr>
+<td>TERM</td>
+<td>15</td>
+<td>终止</td>
+</tr>
+<tr>
+<td>KILL</td>
+<td>9</td>
+<td>强制终止</td>
+</tr>
+<tr>
+<td>CONT</td>
+<td>18</td>
+<td>继续（与STOP相反， fg/bg命令）</td>
+</tr>
+<tr>
+<td>STOP</td>
+<td>19</td>
+<td>暂停（同 Ctrl + Z）</td>
+</tr>
+</tbody>
+</table>
+<p>示例：结束 memcached 进程</p>
+<p>获取memcached进程pid（24428，即为memcached进程PID）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ps -aux | grep memcache</span><br><span class="line">root     24428  0.0  0.0 323120   864 ?        Ssl  11:00   0:02 /usr/local/memcached/bin/memcached -d -m 128 -u root -p 11211</span><br><span class="line">root     24727  0.0  0.0 112664   984 pts/0    S+   15:54   0:00 grep --color=auto memcache</span><br><span class="line">#</span><br><span class="line">ps -ef | grep memcache</span><br><span class="line">root     24428     1  0 11:00 ?        00:00:02 /usr/local/memcached/bin/memcached -d -m 128 -u root -p 11211</span><br><span class="line">root     24708 24568  0 15:49 pts/0    00:00:00 grep --color=auto memcache</span><br></pre></td></tr></table></figure></p>
+<p>或者使用pidof查看 （ pid + of ）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@...]# pidof memcached</span><br><span class="line">24428</span><br></pre></td></tr></table></figure></p>
+<p>终止 memcached<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kill -9 24428</span><br><span class="line">ps -aux | grep memcache</span><br><span class="line">root     24729  0.0  0.0 112664   984 pts/0    S+   15:55   0:00 grep --color=auto memcache</span><br></pre></td></tr></table></figure></p>
+<h4 id="killall"><a href="#killall" class="headerlink" title="killall"></a>killall</h4><blockquote>
+<p>杀死指定名字的进程</p>
+<p>命令格式：killall 信号  进程名</p>
+</blockquote>
+<p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">killall -9 memcached</span><br></pre></td></tr></table></figure></p>
+<h4 id="pkill"><a href="#pkill" class="headerlink" title="pkill"></a>pkill</h4><blockquote>
+<p>支持按照一定规则匹配来杀死进程</p>
+<p>命令格式：pkill [options] <pattern></pattern></p>
+</blockquote>
+<p>示例：杀死用户 wahaha 下的所有进程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pkill -u wahaha</span><br></pre></td></tr></table></figure></p>
+<p>把某个终端登陆的用户踢出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pkill -9 -t 终端号</span><br></pre></td></tr></table></figure></p>
+<p>把本地登陆终端1登陆用户踢出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pkill -9 -t tty1</span><br></pre></td></tr></table></figure></p>
+<h2 id="服务管理"><a href="#服务管理" class="headerlink" title="服务管理"></a>服务管理</h2><h3 id="Linux中服务的分类"><a href="#Linux中服务的分类" class="headerlink" title="Linux中服务的分类"></a>Linux中服务的分类</h3><h4 id="系统默认安装的服务-RPM"><a href="#系统默认安装的服务-RPM" class="headerlink" title="系统默认安装的服务(RPM)"></a>系统默认安装的服务(RPM)</h4><ul>
+<li>独立的服务</li>
+<li>基于xinetd的服务，xinetd是系统超级守护进程<blockquote>
+<p>xinetd服务其本身就是一个独立的服务。</p>
+<p>当程序调用xinetd服务时，它先调用的事xinetd服务，让后xinetd服务在调用索要调用的服务进行相应。</p>
+<p>Linux系统默认是没有安装xinetd服务的，需要进行安装后才能使用。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="源码包安装的服务"><a href="#源码包安装的服务" class="headerlink" title="源码包安装的服务"></a>源码包安装的服务</h4><h3 id="系统默认安装的服务"><a href="#系统默认安装的服务" class="headerlink" title="系统默认安装的服务"></a>系统默认安装的服务</h3><h4 id="如何区分服务的分类"><a href="#如何区分服务的分类" class="headerlink" title="如何区分服务的分类"></a>如何区分服务的分类</h4><p>查看服务的自启动状态<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig  --list</span><br></pre></td></tr></table></figure></p>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">chkconfig  --list</span><br><span class="line">注意：该输出结果只显示 SysV 服务，并不包含原生 systemd 服务。SysV 配置数据可能被原生 systemd 配置覆盖。</span><br><span class="line">      如果您想列出 systemd 服务,请执行 &apos;systemctl list-unit-files&apos;。</span><br><span class="line">      欲查看对特定 target 启用的服务请执行</span><br><span class="line">      &apos;systemctl list-dependencies [target]&apos;。</span><br><span class="line">aegis          	0:关	1:关	2:开	3:开	4:开	5:开	6:关</span><br><span class="line">agentwatch     	0:关	1:关	2:开	3:开	4:开	5:开	6:关</span><br><span class="line">netconsole     	0:关	1:关	2:关	3:关	4:关	5:关	6:关</span><br><span class="line">network        	0:关	1:关	2:开	3:开	4:开	5:开	6:关</span><br></pre></td></tr></table></figure></p>
+<p>Linux的运行级别：0-6</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>关机</td>
+</tr>
+<tr>
+<td>1</td>
+<td>单用户模式</td>
+</tr>
+<tr>
+<td>2</td>
+<td>不完全多用户，不包含NFS服务</td>
+</tr>
+<tr>
+<td>3</td>
+<td>完全多用户,字符界面</td>
+</tr>
+<tr>
+<td>4</td>
+<td>未分配</td>
+</tr>
+<tr>
+<td>5</td>
+<td>图形界面</td>
+</tr>
+<tr>
+<td>6</td>
+<td>重启</td>
+</tr>
+</tbody>
+</table>
+<p>查看当前系统的运行级别：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">runlevel</span><br><span class="line">N 3</span><br></pre></td></tr></table></figure></p>
+<p>切换系统当前的运行级别：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>init  0</td>
+<td>关机                   </td>
+</tr>
+<tr>
+<td>init  5</td>
+<td>切换到图形界面（前提图形界面已经安装）</td>
+</tr>
+<tr>
+<td>init  3</td>
+<td>切换到字符界面</td>
+</tr>
+<tr>
+<td>init  6</td>
+<td>重启</td>
+</tr>
+</tbody>
+</table>
+<h4 id="独立的服务管理"><a href="#独立的服务管理" class="headerlink" title="独立的服务管理"></a>独立的服务管理</h4><ul>
+<li>启动</li>
+</ul>
+<p>第一种方式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/etc/rc.d/init.d/服务名 start| stop | restart | status</span><br><span class="line"># 例：</span><br><span class="line">/etc/rc.d/init.d/httpd start</span><br></pre></td></tr></table></figure></p>
+<p>第二种方式：（只支持RedHat系列的Linux）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service 服务名 tart| stop | restart | status</span><br></pre></td></tr></table></figure></p>
+<p><strong><em>service命令其本质是当命令运行时直接在/etc/rc.d/init.d目录下查找相应的服务，并进行相应的操作。）</em></strong></p>
+<ul>
+<li>自启动<br>-<br>第一种方式：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --level 2345 服务名 on|off</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>第二种方式：（推荐）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi  /etc/rc.local (系统启动时会运行该文件)</span><br></pre></td></tr></table></figure></p>
+<p>修改文件内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">touch /var/lock/subsys/local （更新系统的开机时间）</span><br><span class="line"># 在下一行，写入自己要启动的服务名，比如我要开机自启动httpd服务：</span><br><span class="line"># 就加入/etc/rc.d/init.d/httpd start</span><br><span class="line"># 更改后文件就是：</span><br><span class="line">touch /var/lock/subsys/local</span><br><span class="line">/etc/rc.d/init.d/httpd start</span><br></pre></td></tr></table></figure></p>
+<h4 id="ntsysv自启动管理工具"><a href="#ntsysv自启动管理工具" class="headerlink" title="ntsysv自启动管理工具"></a>ntsysv自启动管理工具</h4><p>所有系统默认安装服务都可以使用ntsysv命令进行自启动管理。rpm包安装服务，自启动管理工具（只要rpm安装的，都可进行管理）</p>
+<h3 id="源码包安装的服务-1"><a href="#源码包安装的服务-1" class="headerlink" title="源码包安装的服务"></a>源码包安装的服务</h3><p>启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/apache2/bin/apachectl  start</span><br></pre></td></tr></table></figure></p>
+<p>自启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/rc.local         </span><br><span class="line">加入</span><br><span class="line">/usr/local/apache2/bin/apachectl  start</span><br></pre></td></tr></table></figure></p>
+<h2 id="计划任务"><a href="#计划任务" class="headerlink" title="计划任务"></a>计划任务</h2><blockquote>
+<p>首先保证crond服务时启动的（crond默认是自启动的）</p>
+</blockquote>
+<p>命令：crontab</p>
+<p>编辑格式： <em> </em> <em> </em> *  命令</p>
+<p>说明：</p>
+<ul>
+<li>第一个*：一小时中第几分钟  0-59</li>
+<li>第二个*：一天中第几个小时  0-23</li>
+<li>第三个*：一个月中第几天    1-31</li>
+<li>第四个*：一年第几个月      1-12</li>
+<li>第五个*：一周中星期几       0-6             </li>
+</ul>
+<p>例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">10  *  31  *  *  命令</span><br><span class="line">10  *  *  *  *  命令</span><br><span class="line">5  4  *  5-10  *  命令</span><br><span class="line">*/10  *  *  *  *  命令</span><br><span class="line">5 4  1,15  *  *  命令  #日期和星期不要同时指定，会超出预期</span><br><span class="line">5 4 10 * 5 命令</span><br><span class="line">*/20 4 * 5 2   命令    #每隔二十分钟</span><br></pre></td></tr></table></figure></p>
+<p>查看系统定时任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crontab  -l</span><br></pre></td></tr></table></figure></p>
+<p>删除定时任务(慎用，删除之前记得备份数据)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crontab  -r</span><br></pre></td></tr></table></figure></p>
+<p><strong>注意事项：</strong></p>
+<ul>
+<li>选项都不能为空，必须填入，不知道的值使用通配符*表示任何时间</li>
+<li>每个时间字段都可以指定多个值，不连续的值用,间隔，连续的值用-间隔</li>
+<li>间隔固定时间执行书写为*/n格式</li>
+<li>命令应该给出绝对路径</li>
+<li>星期几何第几天不能同时出现</li>
+<li>最小时间范围是分钟，最大时间范围是月</li>
+</ul>
+<h2 id="查看系统启动信息"><a href="#查看系统启动信息" class="headerlink" title="查看系统启动信息"></a>查看系统启动信息</h2><p>查看系统启动信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dmesg</span><br></pre></td></tr></table></figure></p>
+<p>系统启动信息日志<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat  /var/log/dmesg</span><br></pre></td></tr></table></figure></p>
+<p>查看eth0信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dmesg | grep eth0</span><br></pre></td></tr></table></figure></p>
+<p>查看cpu信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dmesg | grep CPU</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/09/28/Linux服务和进程管理/" title="linux服务和进程管理">https://weizhimiao.github.io/2016/09/28/Linux服务和进程管理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/进程管理/" rel="tag"># 进程管理</a>
+          
+            <a href="/tags/服务管理/" rel="tag"># 服务管理</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/27/Nginx运行状态监控/" rel="next" title="Nginx运行状态监控">
+                <i class="fa fa-chevron-left"></i> Nginx运行状态监控
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/29/memcache高速缓存的工作原理及应用小结/" rel="prev" title="memcache高速缓存工作原理及应用">
+                memcache高速缓存工作原理及应用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#进程管理"><span class="nav-number">1.</span> <span class="nav-text">进程管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#进程查看"><span class="nav-number">1.1.</span> <span class="nav-text">进程查看</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ps-aux"><span class="nav-number">1.1.1.</span> <span class="nav-text">ps aux</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pstree"><span class="nav-number">1.1.2.</span> <span class="nav-text">pstree</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#top"><span class="nav-number">1.1.3.</span> <span class="nav-text">top</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#终止进程"><span class="nav-number">1.2.</span> <span class="nav-text">终止进程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#kill-结束单个进程"><span class="nav-number">1.2.1.</span> <span class="nav-text">kill 结束单个进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#killall"><span class="nav-number">1.2.2.</span> <span class="nav-text">killall</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pkill"><span class="nav-number">1.2.3.</span> <span class="nav-text">pkill</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务管理"><span class="nav-number">2.</span> <span class="nav-text">服务管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux中服务的分类"><span class="nav-number">2.1.</span> <span class="nav-text">Linux中服务的分类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#系统默认安装的服务-RPM"><span class="nav-number">2.1.1.</span> <span class="nav-text">系统默认安装的服务(RPM)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#源码包安装的服务"><span class="nav-number">2.1.2.</span> <span class="nav-text">源码包安装的服务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统默认安装的服务"><span class="nav-number">2.2.</span> <span class="nav-text">系统默认安装的服务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#如何区分服务的分类"><span class="nav-number">2.2.1.</span> <span class="nav-text">如何区分服务的分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#独立的服务管理"><span class="nav-number">2.2.2.</span> <span class="nav-text">独立的服务管理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ntsysv自启动管理工具"><span class="nav-number">2.2.3.</span> <span class="nav-text">ntsysv自启动管理工具</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源码包安装的服务-1"><span class="nav-number">2.3.</span> <span class="nav-text">源码包安装的服务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计划任务"><span class="nav-number">3.</span> <span class="nav-text">计划任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查看系统启动信息"><span class="nav-number">4.</span> <span class="nav-text">查看系统启动信息</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

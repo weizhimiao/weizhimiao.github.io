@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="普通权限文件的权限：    - r  w  -  -  w  x  r  -  x12345678910111213141516171819第一位：文件的类型    -：文件    d：文件夹    l：连接    c：字符设备文件    b：块设备    s：套接口文件第二位：所有者读权限第三位：所有者写权限第四位：所有者执行权限第五位：所有者组读权限第六位：所有者组写权限第七位：所有者组执行权">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux文件和目录权限小结">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/06/Linux文件和目录权限小结/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="普通权限文件的权限：    - r  w  -  -  w  x  r  -  x12345678910111213141516171819第一位：文件的类型    -：文件    d：文件夹    l：连接    c：字符设备文件    b：块设备    s：套接口文件第二位：所有者读权限第三位：所有者写权限第四位：所有者执行权限第五位：所有者组读权限第六位：所有者组写权限第七位：所有者组执行权">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux文件和目录权限小结">
+<meta name="twitter:description" content="普通权限文件的权限：    - r  w  -  -  w  x  r  -  x12345678910111213141516171819第一位：文件的类型    -：文件    d：文件夹    l：连接    c：字符设备文件    b：块设备    s：套接口文件第二位：所有者读权限第三位：所有者写权限第四位：所有者执行权限第五位：所有者组读权限第六位：所有者组写权限第七位：所有者组执行权">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/06/Linux文件和目录权限小结/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Linux文件和目录权限小结 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/06/Linux文件和目录权限小结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux文件和目录权限小结<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Linux文件和目录权限小结.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-06 22:30:00" itemprop="dateCreated datePublished" datetime="2016-10-06T22:30:00+08:00">2016-10-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/06/Linux文件和目录权限小结/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/06/Linux文件和目录权限小结/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">9.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="普通权限"><a href="#普通权限" class="headerlink" title="普通权限"></a>普通权限</h2><p>文件的权限：    - r  w  -  -  w  x  r  -  x<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">第一位：文件的类型</span><br><span class="line">    -：文件</span><br><span class="line">    d：文件夹</span><br><span class="line">    l：连接</span><br><span class="line">    c：字符设备文件</span><br><span class="line">    b：块设备</span><br><span class="line">    s：套接口文件</span><br><span class="line">第二位：所有者读权限</span><br><span class="line">第三位：所有者写权限</span><br><span class="line">第四位：所有者执行权限</span><br><span class="line">第五位：所有者组读权限</span><br><span class="line">第六位：所有者组写权限</span><br><span class="line">第七位：所有者组执行权限</span><br><span class="line">第八位：其他组读权限</span><br><span class="line">第九位：其他组写权限</span><br><span class="line">第十位：其他组执行权限</span><br><span class="line">r		4</span><br><span class="line">w		2</span><br><span class="line">x		1</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
+<h2 id="特殊权限（SUID-SGID-SBIT）"><a href="#特殊权限（SUID-SGID-SBIT）" class="headerlink" title="特殊权限（SUID/SGID/SBIT）"></a>特殊权限（SUID/SGID/SBIT）</h2><p>先来看看两个特殊的文件与目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei ~]# ls -l /usr/bin/passwd</span><br><span class="line">-rwsr-xr-x. 1 root root 26968 Jan 29  2010 /usr/bin/passwd</span><br><span class="line">[root@yufei ~]# ls -l /usr/bin/wall</span><br><span class="line">-r-xr-sr-x. 1 root tty 10932 Apr 27  2010 /usr/bin/wall</span><br><span class="line">[root@yufei ~]# ls -ld /tmp/</span><br><span class="line">drwxrwxrwt. 7 root root 4096 Jan 20 11:00 /tmp/</span><br></pre></td></tr></table></figure></p>
+<p>第一个passwd命令在所有者的地方多了一个s，<br>第二个wall命令在用户组的位置多了一个s，<br>第三个tmp目录，多了一个t。</p>
+<p>这是为什么呢？下面我们就来具体看看，这些特殊的权限是什么意思？如何设置？</p>
+<h3 id="特殊权限的介绍Set-UID"><a href="#特殊权限的介绍Set-UID" class="headerlink" title="特殊权限的介绍Set UID**"></a>特殊权限的介绍Set UID**</h3><p>当s这个标志出现在文件所有者的x权限上时，如/usr/bin/passwd这个文件的权限状态：“-rwsr-xr-x.”，此时就被称为Set UID，简称为SUID。那么这个特殊权限的特殊性的作用是什么呢？</p>
+<ul>
+<li>1、SUID权限仅对二进制程序(binary program)有效；</li>
+<li>2、执行者对于该程序需要具有x的可执行权限；</li>
+<li>3、本权限仅在执行该程序的过程中有效(run-time)；</li>
+<li>4、执行者将具有该程序拥有者(owner)的权限。</li>
+</ul>
+<p>SUID的目的就是：让本来没有相应权限的用户运行这个程序时，可以访问他没有权限访问的资源。passwd就是一个很鲜明的例子，下面我们就来了解一下这相passwd执行的过程。</p>
+<p>我们知道，系统中的用户密码是保存在/etc/shadow中的，而这个文件的权限是———-. （这个权限和以前版本的RHEL也有差别，以前的是-r——–）。其实有没有r权限不重要，因为我们的root用户是拥有最高的权限，什么都能干了。关键是要把密码写入到/etc/shadow中。我们知道，除了root用户能修改密码外，用户自己同样也能修改密码，为什么没有写入权限，还能修改密码，就是因为这个SUID功能。</p>
+<p>下面就是passwd这个命令的执行过程</p>
+<ul>
+<li>1、因为/usr/bin/passwd的权限对任何的用户都是可以执行的，所以系统中每个用户都可以执行此命令。</li>
+<li>2、而/usr/bin/passwd这个文件的权限是属于root的。</li>
+<li>3、当某个用户执行/usr/bin/passwd命令的时候，就拥有了root的权限了。</li>
+<li>4、于是某个用户就可以借助root用户的权力，来修改了/etc/shadow文件了。</li>
+<li>5、最后，把密码修改成功。</li>
+</ul>
+<p>注：这个SUID只能运行在二进制的程序上（系统中的一些命令），不能用在脚本上（script），因为脚本还是把很多的程序集合到一起来执行，而不是脚本自身在执行。同样，这个SUID也不能放到目录上，放上也是无效的。</p>
+<h3 id="Set-GID"><a href="#Set-GID" class="headerlink" title="Set GID"></a>Set GID</h3><p>我们前面讲过，当s这个标志出现在文件所有者的x权限上时，则就被称为Set UID。那么把这个s放到文件的所属用户组x位置上的话，就是SGID。如开头的/usr/bin/wall命令。<br>那么SGID的功能是什么呢？和SUID一样，只是SGID是获得该程序所属用户组的权限。</p>
+<p>这相SGID有几点需要我们注意：</p>
+<ul>
+<li>1、SGID对二进制程序有用；</li>
+<li>2、程序执行者对于该程序来说，需具备x的权限；</li>
+<li>3、SGID主要用在目录上；<br>理解了SUID，我想SGID也很容易理解。如果用户在此目录下具有w权限的话，若使用者在此目录下建立新文件，则新文件的群组与此目录的群组相同。</li>
+</ul>
+<h3 id="Sticky-Bit"><a href="#Sticky-Bit" class="headerlink" title="Sticky Bit"></a>Sticky Bit</h3><p>这个就是针对others来设置的了，和上面两个一样，只是功能不同而已。</p>
+<p>SBIT（Sticky Bit）目前只针对目录有效，对于目录的作用是：当用户在该目录下建立文件或目录时，仅有自己与 root才有权力删除。</p>
+<p>最具有代表的就是/tmp目录，任何人都可以在/tmp内增加、修改文件（因为权限全是rwx），但仅有该文件/目录建立者与 root能够删除自己的目录或文件。</p>
+<p><strong>注：这个SBIT对文件不起作用。</strong></p>
+<h3 id="SUID-SGID-SBIT权限设置"><a href="#SUID-SGID-SBIT权限设置" class="headerlink" title="SUID/SGID/SBIT权限设置"></a>SUID/SGID/SBIT权限设置</h3><p>和我们前面说的rwx差不多，也有两种方式，一种是以字符，一种是以数字。</p>
+<ul>
+<li>4 为 SUID ＝ u+s</li>
+<li>2 为 SGID ＝ g+s</li>
+<li>1 为 SBIT ＝ o+t</li>
+</ul>
+<p>下面我们就来看看如何设置，并看看达到的效果。</p>
+<h4 id="先看SUID的作用及设置"><a href="#先看SUID的作用及设置" class="headerlink" title="先看SUID的作用及设置"></a>先看SUID的作用及设置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei ~]# cd /tmp/</span><br><span class="line">[root@yufei tmp]# cp /usr/bin/passwd ./</span><br><span class="line">[root@yufei tmp]# mkdir testdir</span><br></pre></td></tr></table></figure>
+<p>上面两步是在/tmp目录下创建passwd文件和testdir目录</p>
+<p>下面看看这两个的权限<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# ls -l passwd ; ls -ld testdir/</span><br><span class="line">-rwxr-xr-x. 1 root root 26968 Jan 20 23:27 passwd</span><br><span class="line">drwxr-xr-x. 2 root root 4096 Jan 20 19:25 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>我们切换到yufei用户，然后修改自己的密码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# su yufei</span><br><span class="line">[yufei@yufei tmp]$ ./passwd</span><br><span class="line">Changing password for user yufei.</span><br><span class="line">Changing password for yufei.</span><br><span class="line">(current) UNIX password:</span><br><span class="line">New password:           </span><br><span class="line">Retype new password:</span><br><span class="line">passwd: Authentication token manipulation error</span><br></pre></td></tr></table></figure></p>
+<p>发现上面的yufei改不了自己的密码，为什么呢？就是因为没有权限把密码写入到/etc/shadow中。想让普通用户能修改/etc/shadow的话，那就需要用到SUID了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[yufei@yufei tmp]$ su root</span><br><span class="line">Password:</span><br><span class="line">[root@yufei tmp]# chmod u+s passwd</span><br><span class="line">[root@yufei tmp]# ls -l passwd</span><br><span class="line">-rwsr-xr-x. 1 root root 26968 Jan 20 23:27 passwd</span><br></pre></td></tr></table></figure></p>
+<p>看到有SUID权限了，下面再来修改yufei自己的密码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[yufei@yufei tmp]$ ./passwd</span><br><span class="line">Changing password for user yufei.</span><br><span class="line">Changing password for yufei.</span><br><span class="line">(current) UNIX password:</span><br><span class="line">New password:</span><br><span class="line">Retype new password:</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br></pre></td></tr></table></figure></p>
+<p>我们发现已经成功了。</p>
+<p>我想这一下，你对SUID的作用已经了解了吧。</p>
+<p>如果想把这个改回来（就是把SUID的权限去掉），我们用数字方式来设置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# chmod 0755 passwd</span><br><span class="line">[root@yufei tmp]# ls -l passwd</span><br><span class="line">-rwxr-xr-x. 1 root root 26968 Jan 20 23:27 passwd</span><br></pre></td></tr></table></figure></p>
+<p>OK这样就改过来了，这个数字的原理和我们前面讲的rwx是一样的，只是在最前面设置相应的数字而已。</p>
+<p><strong>注：在普通用户修改自己的密码是，密码要设置的复杂点，否则的话，通过不了认证，普通用户和root用户的权限是不同的。</strong></p>
+<h4 id="再看SGID的作用及设置"><a href="#再看SGID的作用及设置" class="headerlink" title="再看SGID的作用及设置"></a>再看SGID的作用及设置</h4><p>我们以前面建立的/tmp/testdir为例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# ls -ld testdir/</span><br><span class="line">[root@yufei tmp]# chmod 757 testdir/</span><br><span class="line">[root@yufei tmp]# ls -ld testdir/</span><br><span class="line">drwxr-xrwx. 2 root root 4096 Jan 20 19:25 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>这时候，任何用户对此目录都有写入权限，那么我们就在这个目录里面创建文件与目录，并看看他们的权限如何<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# su yufei</span><br><span class="line">[yufei@yufei tmp]$ touch testdir/file1</span><br><span class="line">[yufei@yufei tmp]$ mkdir testdir/dir1</span><br><span class="line">[yufei@yufei tmp]$ ls -l testdir</span><br><span class="line">total 0</span><br><span class="line">drw-rw-r–. 1 yufei yufei 0 Jan 21 10:33 dir1</span><br><span class="line">-rw-rw-r–. 1 yufei yufei 0 Jan 21 10:33 file1</span><br></pre></td></tr></table></figure></p>
+<p>这时候的文件与目录权限都是创建者的本身<br>下面我们就来看看，把这个目录加上SGID权限后，再创建文件与目录，会是什么样的效果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[yufei@yufei tmp]$ su root</span><br><span class="line">Password:</span><br><span class="line">[root@yufei tmp]# chmod g+s testdir/</span><br><span class="line">[root@yufei tmp]# ls -ld testdir/</span><br><span class="line">drwxr-srwx. 2 root root 4096 Jan 21 10:33 testdir/</span><br><span class="line">[root@yufei tmp]# su yufei</span><br><span class="line">[yufei@yufei tmp]$ touch testdir/file2</span><br><span class="line">[yufei@yufei tmp]$ mkdir testdir/dir2</span><br><span class="line">[yufei@yufei tmp]$ ls -l testdir/</span><br><span class="line">total 0</span><br><span class="line">drw-rw-r–. 1 yufei yufei 0 Jan 21 10:33 dir1</span><br><span class="line">drw-rw-r–. 1 yufei root  0 Jan 21 10:36 dir2</span><br><span class="line">-rw-rw-r–. 1 yufei yufei 0 Jan 21 10:33 file1</span><br><span class="line">-rw-rw-r–. 1 yufei root  0 Jan 21 10:35 file2</span><br><span class="line">[yufei@yufei tmp]$ ls -ld testdir/</span><br><span class="line">drwxr-srwx. 2 root root 4096 Jan 21 10:36 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>这时候我们就发现，file2和dir2的用户组变成了root了，也就是他们上层目录testdir这个目录的所属用户组。<br>这个应用，应用在一个项目的共同开发上，是很方便的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[yufei@yufei tmp]$ su root</span><br><span class="line">Password:</span><br><span class="line">[root@yufei tmp]# chmod g-s testdir/</span><br><span class="line">[yufei@yufei tmp]$ ls -ld testdir/</span><br><span class="line">drwxr-xrwx. 2 root root 4096 Jan 21 10:36 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>这样就还原了</p>
+<h4 id="最后我们来看SBIT的作用及设置"><a href="#最后我们来看SBIT的作用及设置" class="headerlink" title="最后我们来看SBIT的作用及设置"></a>最后我们来看SBIT的作用及设置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# rm -fr testdir/*</span><br><span class="line">[root@yufei tmp]# ls -ld testdir/</span><br><span class="line">drwxr-xrwx. 2 root root 4096 Jan 21 11:42 testdir/</span><br></pre></td></tr></table></figure>
+<p>清空/tmp/testdir/目录里面的全部内容。</p>
+<p>我们切换成普通用户，然后再里面创建文件，至少需要两个普通用户来测试这个，如果没有的话，就自己建立。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# su yufei</span><br><span class="line">[yufei@yufei tmp]$ touch testdir/yufei_file</span><br><span class="line">[yufei@yufei tmp]$ ls -l testdir/</span><br><span class="line">total 0</span><br><span class="line">-rw-rw-r– 1 yufei yufei 0 Jan 21 11:45 yufei_file</span><br></pre></td></tr></table></figure></p>
+<p>这时候我们建立了一个文件，我们换成另外一个用户<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[yufei@yufei tmp]$ suopsers</span><br><span class="line">Password:</span><br><span class="line">[opsers@yufei tmp]$ ls -ld testdir/</span><br><span class="line">drwxr-xrwx. 2 root root 4096 Jan 21 11:45 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>我们看到，虽然其他用户对yufei_file只有只读权限，但由于yufei_file所在的目录，对其他人是全部的权限，所以，我们换其他用户还是可以删除这个文件的，看操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[opsers@yufei tmp]$ rm -f testdir/yufei_file</span><br><span class="line">[opsers@yufei tmp]$ ls testdir/</span><br></pre></td></tr></table></figure></p>
+<p>发现我们已经删除了这个不属于我们的权限。<br>下面我们就给这个目录加上SBIT权限，再来看看效果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[opsers@yufei tmp]$ su root</span><br><span class="line">Password:</span><br><span class="line">[root@yufei tmp]# chmod o+t testdir</span><br><span class="line">[root@yufei tmp]# ls -ld testdir/</span><br><span class="line">drwxr-xrwt. 2 root root 4096 Jan 21 11:49 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>再一次切换普通用户，创建文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# su yufei</span><br><span class="line">[yufei@yufei tmp]$ touch testdir/yufei_file</span><br><span class="line">[yufei@yufei tmp]$ ls -l testdir/yufei_file</span><br><span class="line">-rw-rw-r– 1 yufei yufei 0 Jan 21 11:51 testdir/yufei_file</span><br></pre></td></tr></table></figure></p>
+<p>这个文件的权限还是和第一次创建的时候是一样的，我们再换成其他的用户，看看能不能再次删除这个文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[yufei@yufei tmp]$ su opsers</span><br><span class="line">Password:</span><br><span class="line">[opsers@yufei tmp]$ rm -f testdir/yufei_file</span><br><span class="line">rm: cannot remove `testdir/yufei_file’: Operation not permitted</span><br></pre></td></tr></table></figure></p>
+<p>看到提示，说权限不够了，只能由这个文件的创建者或root用户才能删除。这个我们就不演示了。<br>如果要还原权限的话，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[opsers@yufei tmp]$ su root</span><br><span class="line">Password:</span><br><span class="line">[root@yufei tmp]# chmod o-t testdir</span><br><span class="line">[root@yufei tmp]# ls -ld testdir/</span><br><span class="line">drwxr-xrwx. 2 root root 4096 Jan 21 11:51 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>两个需要注意的问题</p>
+<p>OK，关于SUID/SGID/SBIT这些特殊权限的应用和作用我们已经完了。但如果你仔细一点的话，会发现，我并没有用数字方式来更改这个特殊的权限，为什么呢？且看下面的分析。</p>
+<h3 id="question"><a href="#question" class="headerlink" title="question"></a>question</h3><h4 id="问题1：用数字改变目录的特殊权限，不起作用。"><a href="#问题1：用数字改变目录的特殊权限，不起作用。" class="headerlink" title="问题1：用数字改变目录的特殊权限，不起作用。**"></a>问题1：用数字改变目录的特殊权限，不起作用。**</h4><p>我们把/tmp/下面，我们自己建立的实验文件删除<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# rm -fr testdir/</span><br><span class="line">[root@yufei tmp]# rm -fr passwd</span><br></pre></td></tr></table></figure></p>
+<p>然后再重新创建一个文件和目录，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# cp /usr/bin/passwd ./</span><br><span class="line">[root@yufei tmp]# mkdir testdir</span><br><span class="line">[root@yufei tmp]# ls -l passwd ;ls -ld testdir/</span><br><span class="line">-rwxr-xr-x 1 root root 26968 Jan 21 12:00 passwd</span><br><span class="line">drwxr-xr-x 2 root root 4096 Jan 21 12:00 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>下面我们就来用数字方式来更改这三个特殊的权限，看看会有什么样的结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# chmod 4755 passwd</span><br><span class="line">[root@yufei tmp]# chmod 3755 testdir/</span><br><span class="line">[root@yufei tmp]# ls -l passwd ;ls -ld testdir/</span><br><span class="line">-rwsr-xr-x 1 root root 26968 Jan 21 12:00 passwd</span><br><span class="line">drwxr-sr-x 2 root root 4096 Jan 21 12:00 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>发现用这种方式增加这三个特殊权限没有问题，那么我们再把权限改回去看看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# chmod 0755 passwd</span><br><span class="line">[root@yufei tmp]# chmod 0755 testdir/</span><br><span class="line">[root@yufei tmp]# ls -l passwd ;ls -ld testdir/</span><br><span class="line">-rwxr-xr-x 1 root root 26968 Jan 21 12:00 passwd</span><br><span class="line">drwxr-sr-x 2 root root 4096 Jan 21 12:00 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>我们发现，对文件，权限是改回去了，而对于目录，只改回去了SBIT的权限，对SUID和SGID改不回去。这是RHEL6上的实验结果，可能是出于安全性的考虑吗？这个我就不清楚了，也找不到相关的资料。</p>
+<p>所以说，建议大家还是用最明了的方式，直接用+-来更改，无论方法如何，最终能得到结果就OK了。哈哈……</p>
+<h4 id="问题2：为什么会有大写的S和T。"><a href="#问题2：为什么会有大写的S和T。" class="headerlink" title="问题2：为什么会有大写的S和T。"></a>问题2：为什么会有大写的S和T。</h4><p>还是用上面的文件和目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# ls -l passwd ;ls -ld testdir/</span><br><span class="line">-rwxr-xr-x 1 root root 26968 Jan 21 12:00 passwd</span><br><span class="line">drwxr-sr-x 2 root root 4096 Jan 21 12:00 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>我们把passwd和testdir的x权限去掉<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# chmod u-x passwd</span><br><span class="line">[root@yufei tmp]# chmod o-x testdir/</span><br><span class="line">[root@yufei tmp]# ls -l passwd ;ls -ld testdir/</span><br><span class="line">-rw-r-xr-x 1 root root 26968 Jan 21 12:00 passwd</span><br><span class="line">drwxr-sr– 2 root root 4096 Jan 21 12:00 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>再给他们加上SUID和SBIT权限<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@yufei tmp]# chmod u+s passwd</span><br><span class="line">[root@yufei tmp]# chmod o+t testdir/</span><br><span class="line">[root@yufei tmp]# ls -l passwd ;ls -ld testdir/</span><br><span class="line">-rwSr-xr-x 1 root root 26968 Jan 21 12:00 passwd</span><br><span class="line">drwxr-sr-T 2 root root 4096 Jan 21 12:00 testdir/</span><br></pre></td></tr></table></figure></p>
+<p>我们看到，这时候的小s和小t已经变成了大S和大T了，为什么呢？因为他们这个位置没有了x权限，如果没有了x权限，根据我们上面讲的内容，其实，这个特殊的权限就相当于一个空的权限，没有意义。也就是说，如果你看到特殊权限位置上变成了大写的了，那么，就说明，这里有问题，需要排除。</p>
+<h2 id="ACL权限（用来解决用户权限身份不足的问题）"><a href="#ACL权限（用来解决用户权限身份不足的问题）" class="headerlink" title="ACL权限（用来解决用户权限身份不足的问题）"></a>ACL权限（用来解决用户权限身份不足的问题）</h2><p>问题：只要使用ACL权限递归赋予权限，就很有可能出现权限溢出的危险（应为文件和目录的wrx权限含义是不同的）</p>
+<p>举例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/www</span><br><span class="line">	sc --&gt; root</span><br><span class="line">	61 --&gt;  fgroup</span><br><span class="line">	o</span><br><span class="line">	770</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# mkdir /www</span><br><span class="line">[root@localhost ~]# chmod 770 /www/</span><br><span class="line">[root@localhost ~]# groupadd fgroup</span><br><span class="line">[root@localhost ~]# gpasswd -a sc fgroup</span><br></pre></td></tr></table></figure>
+<p>正在将用户“sc”加入到“fgroup”组中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# gpasswd -a aa fgroup</span><br></pre></td></tr></table></figure></p>
+<p>正在将用户“aa”加入到“fgroup”组中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# chown root:fgroup  /www</span><br><span class="line">[root@localhost ~]# ll -d  /www/</span><br><span class="line">drwxrwx--- 2 root fgroup 4096 04-25 14:56 /www/</span><br></pre></td></tr></table></figure></p>
+<h3 id="getfacl-文件名-查询文件的acl权限"><a href="#getfacl-文件名-查询文件的acl权限" class="headerlink" title="getfacl  文件名        查询文件的acl权限"></a>getfacl  文件名        查询文件的acl权限</h3><h3 id="setfacl-选项-文件名-设定acl权限"><a href="#setfacl-选项-文件名-设定acl权限" class="headerlink" title="setfacl  选项  文件名        设定acl权限"></a>setfacl  选项  文件名        设定acl权限</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">	-m			设定权限</span><br><span class="line">	-b			删除权限</span><br><span class="line">setfacl  -m  u:用户名:权限   文件名</span><br><span class="line">setfacl  -m  g:组名：权限   文件名</span><br><span class="line">setfacl  -m u:aa:rwx  /test		给test目录赋予aa是读写执行的acl权限</span><br><span class="line"></span><br><span class="line">setfacl -m u:cc:rx -R soft/		赋予递归acl权限，只能赋予目录</span><br><span class="line">		-R  递归</span><br><span class="line">setfacl  -b  /test		删除acl权限</span><br></pre></td></tr></table></figure>
+<h3 id="setfacl-m-d-u-aa-rwx-R-test-acl默认权限。"><a href="#setfacl-m-d-u-aa-rwx-R-test-acl默认权限。" class="headerlink" title="setfacl  -m d:u:aa:rwx -R /test    acl默认权限。"></a>setfacl  -m d:u:aa:rwx -R /test    acl默认权限。</h3><blockquote>
+<p>注意：默认权限只能赋予目录</p>
+<p>注意：如果给目录赋予acl权限，两条命令都要输入</p>
+</blockquote>
+<ul>
+<li>-R 递归</li>
+<li>-m  u:用户名：-R 权限        只对已经存在的文件生效</li>
+<li>-m  d:u:用户名：-R 权限        只对未来要新建的文件生效</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/06/Linux文件和目录权限小结/" title="Linux文件和目录权限小结">https://weizhimiao.github.io/2016/10/06/Linux文件和目录权限小结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/06/Linux中的用户和用户组管理/" rel="next" title="Linux中的用户和用户组管理">
+                <i class="fa fa-chevron-left"></i> Linux中的用户和用户组管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/06/PHP魔术方法小结/" rel="prev" title="PHP魔术方法小结">
+                PHP魔术方法小结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#普通权限"><span class="nav-number">1.</span> <span class="nav-text">普通权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特殊权限（SUID-SGID-SBIT）"><span class="nav-number">2.</span> <span class="nav-text">特殊权限（SUID/SGID/SBIT）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#特殊权限的介绍Set-UID"><span class="nav-number">2.1.</span> <span class="nav-text">特殊权限的介绍Set UID**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Set-GID"><span class="nav-number">2.2.</span> <span class="nav-text">Set GID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sticky-Bit"><span class="nav-number">2.3.</span> <span class="nav-text">Sticky Bit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SUID-SGID-SBIT权限设置"><span class="nav-number">2.4.</span> <span class="nav-text">SUID/SGID/SBIT权限设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#先看SUID的作用及设置"><span class="nav-number">2.4.1.</span> <span class="nav-text">先看SUID的作用及设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#再看SGID的作用及设置"><span class="nav-number">2.4.2.</span> <span class="nav-text">再看SGID的作用及设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#最后我们来看SBIT的作用及设置"><span class="nav-number">2.4.3.</span> <span class="nav-text">最后我们来看SBIT的作用及设置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#question"><span class="nav-number">2.5.</span> <span class="nav-text">question</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#问题1：用数字改变目录的特殊权限，不起作用。"><span class="nav-number">2.5.1.</span> <span class="nav-text">问题1：用数字改变目录的特殊权限，不起作用。**</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#问题2：为什么会有大写的S和T。"><span class="nav-number">2.5.2.</span> <span class="nav-text">问题2：为什么会有大写的S和T。</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ACL权限（用来解决用户权限身份不足的问题）"><span class="nav-number">3.</span> <span class="nav-text">ACL权限（用来解决用户权限身份不足的问题）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#getfacl-文件名-查询文件的acl权限"><span class="nav-number">3.1.</span> <span class="nav-text">getfacl  文件名        查询文件的acl权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setfacl-选项-文件名-设定acl权限"><span class="nav-number">3.2.</span> <span class="nav-text">setfacl  选项  文件名        设定acl权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setfacl-m-d-u-aa-rwx-R-test-acl默认权限。"><span class="nav-number">3.3.</span> <span class="nav-text">setfacl  -m d:u:aa:rwx -R /test    acl默认权限。</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

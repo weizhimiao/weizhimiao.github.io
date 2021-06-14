@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="首先，需要明确以下这两个概念  异常(exception)  PHP中的异常，是程序运行中不符合预期的情况及与正常流程不同的状况。是属于逻辑和业务流程的一种中断，而不是语法错误。   错误(error)  PHP中的错误则属于自身的问题，是一种非法的语法或者环境问题导致的、让编译器无法通过检查甚至无法运行的情况。">
+<meta name="keywords" content="异常处理,错误处理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP异常和错误处理">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/09/30/PHP异常和错误处理/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="首先，需要明确以下这两个概念  异常(exception)  PHP中的异常，是程序运行中不符合预期的情况及与正常流程不同的状况。是属于逻辑和业务流程的一种中断，而不是语法错误。   错误(error)  PHP中的错误则属于自身的问题，是一种非法的语法或者环境问题导致的、让编译器无法通过检查甚至无法运行的情况。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP异常和错误处理">
+<meta name="twitter:description" content="首先，需要明确以下这两个概念  异常(exception)  PHP中的异常，是程序运行中不符合预期的情况及与正常流程不同的状况。是属于逻辑和业务流程的一种中断，而不是语法错误。   错误(error)  PHP中的错误则属于自身的问题，是一种非法的语法或者环境问题导致的、让编译器无法通过检查甚至无法运行的情况。">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/09/30/PHP异常和错误处理/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>PHP异常和错误处理 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/09/30/PHP异常和错误处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PHP异常和错误处理<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/PHP异常和错误处理.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-09-30 23:10:00" itemprop="dateCreated datePublished" datetime="2016-09-30T23:10:00+08:00">2016-09-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/09/30/PHP异常和错误处理/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/09/30/PHP异常和错误处理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>首先，需要明确以下这两个概念</p>
+<ul>
+<li><p>异常(exception)</p>
+<blockquote>
+<p>PHP中的异常，是程序运行中不符合预期的情况及与正常流程不同的状况。<br>是属于逻辑和业务流程的一种中断，而不是语法错误。</p>
+</blockquote>
+</li>
+<li><p>错误(error)</p>
+<blockquote>
+<p>PHP中的错误则属于自身的问题，是一种非法的语法或者环境问题导致的、让编译器无法通过检查甚至无法运行的情况。</p>
+</blockquote>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h2><p>PHP中玉带任何自身问题都会触发一个错误，而不是抛出异常。所以，如果想使用异常处理来处理不可预知的问题，这是PHP办不到的。但在处理一些可以预知的错误，PHP的异常处理机制还是能够帮我们解决一些问题的。例如：</p>
+<ul>
+<li>代码冗余复杂，到处充斥着if…else</li>
+<li>代码可读性差</li>
+</ul>
+<p>而异常处理，其主要作用是将『正常执行过程的代码』和『处理问题怎么处理的代码』进行分离。</p>
+<h3 id="PHP常见的异常类"><a href="#PHP常见的异常类" class="headerlink" title="PHP常见的异常类"></a>PHP常见的异常类</h3><h4 id="Exception"><a href="#Exception" class="headerlink" title="Exception"></a>Exception</h4><blockquote>
+<p>所有异常的基类。</p>
+</blockquote>
+<p>类摘要<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="keyword">Exception</span> &#123;</span><br><span class="line">    <span class="comment">/* 属性 */</span></span><br><span class="line">    <span class="keyword">protected</span> string $message ;     <span class="comment">//异常消息内容</span></span><br><span class="line">    <span class="keyword">protected</span> int $code ;           <span class="comment">//异常代码</span></span><br><span class="line">    <span class="keyword">protected</span> string $file ;        <span class="comment">//抛出异常的文件名</span></span><br><span class="line">    <span class="keyword">protected</span> int $line ;           <span class="comment">//抛出异常在该文件中的行号</span></span><br><span class="line">    <span class="comment">/* 方法 */</span></span><br><span class="line">    <span class="keyword">public</span> __construct ([ string $message = <span class="string">""</span> [, int $code = <span class="number">0</span> [, <span class="keyword">Exception</span> $previous = <span class="keyword">NULL</span> ]]] )           <span class="comment">//异常构造函数</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">public</span> string getMessage ( void )    <span class="comment">//获取异常消息内容</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">public</span> <span class="keyword">Exception</span> getPrevious ( void )<span class="comment">//返回异常链中的前一个异常</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">public</span> int getCode ( void )          <span class="comment">//获取异常代码</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">public</span> string getFile ( void )       <span class="comment">//获取发生异常的程序文件名称</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">public</span> int getLine ( void )          <span class="comment">//获取发生异常的代码在文件中的行号</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">public</span> <span class="keyword">array</span> getTrace ( void )       <span class="comment">//获取异常追踪信息</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">public</span> string getTraceAsString ( void )<span class="comment">//获取字符串类型的异常追踪信息</span></span><br><span class="line">    <span class="keyword">public</span> string __toString ( void )            <span class="comment">//将异常对象转换为字符串</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">private</span> void __clone ( void )          <span class="comment">//异常克隆</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="错误异常类"><a href="#错误异常类" class="headerlink" title="错误异常类"></a>错误异常类</h4><p>类摘要<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  ErrorException extends <span class="keyword">Exception</span> &#123;</span><br><span class="line">      <span class="comment">/* 属性 */</span></span><br><span class="line">      <span class="keyword">protected</span> int $severity ;     <span class="comment">//异常级别</span></span><br><span class="line">      <span class="comment">/* 方法 */</span></span><br><span class="line">      <span class="keyword">public</span> __construct ([ string $message = <span class="string">""</span> [, int $code = <span class="number">0</span> [, int $severity = <span class="number">1</span> [, string $filename = <span class="keyword">__FILE__</span> [, int $lineno = <span class="keyword">__LINE__</span> [, <span class="keyword">Exception</span> $previous = <span class="keyword">NULL</span> ]]]]]] )   <span class="comment">//异常构造函数</span></span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> int getSeverity ( void )             <span class="comment">// 获取异常的严重程度</span></span><br><span class="line">      <span class="comment">/* 继承的方法 */</span></span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> string <span class="keyword">Exception</span>::getMessage ( void )</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> <span class="keyword">Exception</span> <span class="keyword">Exception</span>::getPrevious ( void )</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> int <span class="keyword">Exception</span>::getCode ( void )</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> string <span class="keyword">Exception</span>::getFile ( void )</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> int <span class="keyword">Exception</span>::getLine ( void )</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> <span class="keyword">array</span> <span class="keyword">Exception</span>::getTrace ( void )</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">public</span> string <span class="keyword">Exception</span>::getTraceAsString ( void )</span><br><span class="line">      <span class="keyword">public</span> string <span class="keyword">Exception</span>::__toString ( void )</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">private</span> void <span class="keyword">Exception</span>::__clone ( void )</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>常见使用方式（使用set_error_handle()函数讲错误信息托管至ErrorException）<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">exception_error_handler</span><span class="params">($errno, $errstr, $errfile, $errline )</span> </span>&#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> ErrorException($errstr, <span class="number">0</span>, $errno, $errfile, $errline);</span><br><span class="line">&#125;</span><br><span class="line">set_error_handler(<span class="string">"exception_error_handler"</span>);</span><br><span class="line"><span class="comment">/* Trigger exception 抛出异常 */</span></span><br><span class="line">strpos();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="自定义异常类"><a href="#自定义异常类" class="headerlink" title="自定义异常类"></a>自定义异常类</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 自定义一个异常处理类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyException</span> <span class="keyword">extends</span> <span class="title">Exception</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">// 重定义构造器使 message 变为必须被指定的属性</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($message, $code = <span class="number">0</span>, Exception $previous = null)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 自定义的代码</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 确保所有变量都被正确赋值</span></span><br><span class="line">        <span class="keyword">parent</span>::__construct($message, $code, $previous);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 自定义字符串输出的样式</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">__CLASS__</span> . <span class="string">": [&#123;$this-&gt;code&#125;]: &#123;$this-&gt;message&#125;\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">customFunction</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"A custom function for this type of exception\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="PHP中异常用法"><a href="#PHP中异常用法" class="headerlink" title="PHP中异常用法"></a>PHP中异常用法</h3><blockquote>
+</blockquote>
+<p>首先我们需要知道，<strong><em>在PHP中只有手动抛出异常后才能捕获异常，对于抛出的异常只有进行捕获并作出相应的操作抛出异常才有意义，否则没有任何意义。</em></strong></p>
+<p>抛出异常<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">check</span><span class="params">($n)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">empty</span>($n))&#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(<span class="string">"参数错误"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="try…catch"><a href="#try…catch" class="headerlink" title="try…catch"></a>try…catch</h4><p>示例：关于上传操作的异常处理</p>
+<p>方式一：异常发生时立即捕获<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">    <span class="comment">//可能出现错误的代码</span></span><br><span class="line">    <span class="keyword">if</span>(文件上传不成功)</span><br><span class="line">      <span class="keyword">throw</span> (上传异常)；</span><br><span class="line">    <span class="keyword">if</span>(更新数据库不成功)</span><br><span class="line">      <span class="keyword">throw</span> (数据库异常操作)；</span><br><span class="line">  &#125; <span class="keyword">catch</span>(异常)&#123;</span><br><span class="line">    <span class="comment">//必须的补救措施，例如删除文件、删除数据库记录</span></span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>方式二：分散抛出，集中捕获<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  上传&#123;</span><br><span class="line">    <span class="keyword">if</span>(文件上传不成功) <span class="keyword">throw</span> (上传异常)；</span><br><span class="line">    <span class="keyword">if</span>(更新数据库不成功)  <span class="keyword">throw</span> (数据库异常)；</span><br><span class="line">  &#125;</span><br><span class="line">  其他&#123;</span><br><span class="line">    <span class="keyword">if</span>(其他操作失败) <span class="keyword">throw</span> （其他操作异常）；</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//其他代码...</span></span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">      上传；</span><br><span class="line">      其他；</span><br><span class="line">  &#125; <span class="keyword">catch</span>(上传异常)&#123;</span><br><span class="line">      <span class="comment">//上传异常处理、例如删除文件</span></span><br><span class="line">  &#125; <span class="keyword">catch</span>(数据库异常)&#123;</span><br><span class="line">      <span class="comment">//数据库异常处理、比如删除数据库记录等</span></span><br><span class="line">  &#125; <span class="keyword">catch</span>(其他异常)&#123;</span><br><span class="line">      <span class="comment">//其他异常处理，比如记录异常日志等</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>需要注意，exception作为超类应该放在最后捕获</strong></p>
+<h4 id="try…catch…finally"><a href="#try…catch…finally" class="headerlink" title="try…catch…finally"></a>try…catch…finally</h4><p>示例：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">inverse</span><span class="params">($x)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (!$x) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(<span class="string">'Division by zero.'</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="number">1</span>/$x;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> inverse(<span class="number">5</span>) . <span class="string">"\n"</span>;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (<span class="keyword">Exception</span> $e) &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">'Caught exception: '</span>,  $e-&gt;getMessage(), <span class="string">"\n"</span>;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"First finally.\n"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> inverse(<span class="number">0</span>) . <span class="string">"\n"</span>;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (<span class="keyword">Exception</span> $e) &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">'Caught exception: '</span>,  $e-&gt;getMessage(), <span class="string">"\n"</span>;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Second finally.\n"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="comment">// Continue execution</span></span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"Hello World\n"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="PHP异常处理使用场景"><a href="#PHP异常处理使用场景" class="headerlink" title="PHP异常处理使用场景"></a>PHP异常处理使用场景</h3><h4 id="对程序的悲观预测"><a href="#对程序的悲观预测" class="headerlink" title="对程序的悲观预测"></a>对程序的悲观预测</h4><p>即当一个操作可能会由于一些不可控的因素（比如网络问题等），可能会出现执行不成功的情况。那么在种情况下就可以抛出异常，然后进行捕获，对异常情况进行细致的处理。</p>
+<h4 id="程序的需要和对业务的需要"><a href="#程序的需要和对业务的需要" class="headerlink" title="程序的需要和对业务的需要"></a>程序的需要和对业务的需要</h4><p>需要强调的是，异常是业务处理中必不可少的环节，我们不能对异常视而不见。<br>需要用到异常处理的情况</p>
+<ul>
+<li>不希望业务代码中充斥着大量的打印、调试等处理；</li>
+<li>业务中自定义的异常，对现实生活中各种业务进行补充；</li>
+<li>对数据一致性有要求的业务操作中；</li>
+</ul>
+<p>异常处理机制可以把每一件事当做事务来考虑，还可以把异常处理当做成一种内建的恢复系统。</p>
+<h4 id="语言级别的健壮性要求"><a href="#语言级别的健壮性要求" class="headerlink" title="语言级别的健壮性要求"></a>语言级别的健壮性要求</h4><p>我们都知道PHP在健壮性这一点是不足的。对很多异常是没有强制性限制的。所以很多异常需要我们自己来做。</p>
+<p>通过try…catch处理，我们可以把异常造成的逻辑中断破坏降低到最小的范围，并且经过补救处理后不影响业务逻辑的完整性；乱抛异常和只抛不捕获，或者捕获而不补救，都会导致数据混乱。</p>
+<h2 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h2><h3 id="PHP中的错误级别"><a href="#PHP中的错误级别" class="headerlink" title="PHP中的错误级别"></a>PHP中的错误级别</h3><p>PHP的错误有很多类，包括warning、notice、deprecated、fatal error等。</p>
+<p>常用到的错误级别</p>
+<ul>
+<li>deprecated，是最低级别的错误，表示不推荐、不建议。其虽不影响PHP正常的业务流程，但一般情况下建议修正；</li>
+<li>notice，通知级别错误。表示你语法中存在不恰当的地方。常见的是 使用未定义的变量就会报此错误。这种错误也影响PHP正常流程；</li>
+<li>warning，警告级别错误，是比较高级别的错误，表示在语法中出现很不恰当的地方，比如函数参数不匹配。这种级别的错误可能会导致出现不可预期的结果，所以建议修正；</li>
+<li>fetal error，致命错误。直接导致PHP流程终结，后面代码不在执行。</li>
+<li>prase error，语法解析错误。导致PHP代码无法通过语法检查。</li>
+</ul>
+<p>错误信息显示控制<br>方式一：<br>php.ini<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">error_reporting = E_ALL | E_STRICT  #指定显示错误级别</span><br><span class="line">display_errors = On                 #错误信息显示控制</span><br></pre></td></tr></table></figure></p>
+<p>方式二：PHP代码中</p>
+<ol>
+<li>error_reporting(0),表示屏蔽所有错误信息。正式部署时采用这样的策略，来防止错误信息泄露敏感信息。</li>
+<li>@mysql_connect(),抑制错误信息输出。</li>
+</ol>
+<h3 id="PHP错误处理机制"><a href="#PHP错误处理机制" class="headerlink" title="PHP错误处理机制"></a>PHP错误处理机制</h3><h4 id="trigger-error"><a href="#trigger-error" class="headerlink" title="trigger_error"></a>trigger_error</h4><p>该方法用于主动抛出一个错误。示例<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="keyword">if</span>(mt_rand(<span class="number">0</span>,<span class="number">1</span>) == <span class="number">1</span>)&#123;</span><br><span class="line">    triggererror(<span class="string">"random no eq 0"</span>,E_USER_ERROR);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="set-error-handler"><a href="#set-error-handler" class="headerlink" title="set_error_handler"></a>set_error_handler</h4><p>PHP中提供了set_error_handler（）函数可以用来接管PHP错误处理。</p>
+<p><strong>set_error_handler(error_function, error_type);</strong></p>
+<ul>
+<li>error_function,规定发生错误时运行的函数。（必须）</li>
+<li>error_types,规定在哪个错误级别报告级别会显示用户定义的错误，（可选，默认『E_ALL』）</li>
+</ul>
+<p>示例：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">customError</span><span class="params">($errNo, $errStr, $errFile, $errLine)</span></span>&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;b&gt;错误代码：&lt;/b&gt;[$errNo]&#123;$errStr&#125;\r\n"</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"错误所在的代码行：&#123;$errLine&#125;,文件:&#123;$errFile&#125;\r\n"</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"PHP 版本 ，"</span>.PHP_VERSION.<span class="string">"("</span>.PHP_OS.<span class="string">")\r\n"</span>;</span><br><span class="line">    <span class="keyword">die</span>();  <span class="comment">//如果有必要，用户自定义的错误处理程序必须终止（die（）；）当前脚本。</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  set_error_handler(<span class="string">"custonError"</span>, E_ALL | E_STRICT);</span><br><span class="line">  $a = <span class="keyword">array</span>(<span class="string">'o'</span> =&gt; <span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">8</span>);</span><br><span class="line">  <span class="keyword">echo</span> $a[o]</span><br></pre></td></tr></table></figure></p>
+<p>自定义的错误处理函数一定要有这四个输入变量$errno, $errstr, $errfile, $errline.</p>
+<ul>
+<li>errno,代表错误等级的一组常量。比如 E_WARNING 其二进制掩码为4，表示告警信息。</li>
+</ul>
+<p><strong>注意：</strong> 自定义的错误处理函数并不能托管所有种类的错误，比如E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING,以及E_STRICT中的部分。</p>
+<p><strong>注意：</strong> 如果使用自定义的 set_error_handler 接管PHP的错误处理，先前代码里的错误抑制 @ 也将会失效，这是这种错误也会被显示。</p>
+<h4 id="restore-error-handler"><a href="#restore-error-handler" class="headerlink" title="restore_error_handler"></a>restore_error_handler</h4><p>该函数可以取消 set_error_handler 的错误接管.</p>
+<h2 id="结合PHP错误处理主动抛出异常"><a href="#结合PHP错误处理主动抛出异常" class="headerlink" title="结合PHP错误处理主动抛出异常"></a>结合PHP错误处理主动抛出异常</h2><p>结合PHP的错误处理机制和异常处理机制，通过组合也可以实现同时捕获异常和非致命错误。<br>示例<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">customError</span><span class="params">($errNo, $errStr, $errFile, $errLine)</span></span>&#123;</span><br><span class="line">    <span class="comment">//自定义错误处理时，可以手动抛出异常</span></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>($level.<span class="string">"|"</span>.$errStr);</span><br><span class="line">  &#125;</span><br><span class="line">  set_error_handler(<span class="string">"custonError"</span>, E_ALL | E_STRICT);</span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">    $a = <span class="number">5</span>/<span class="number">0</span>;</span><br><span class="line">  &#125; <span class="keyword">catch</span>(<span class="keyword">Exception</span> $e)&#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"错误信息"</span>.$e-&gt;getMessage();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过上面示例可以捕获到异常和非致命错误，但对于 fetal error 这样的错误却捕获不到。但是通过其他的一些方法，我们还是可以做一些处理。 register_shutdown_function 该函数会在程序终止或die时触发一个函数，我们可以利用该触发函数做一些最后的收尾操作。</p>
+<p>调用时机</p>
+<ul>
+<li>当页面被用户强制停止时</li>
+<li>当程序代码运行超时时</li>
+<li>当ＰＨＰ代码执行完成时，代码执行存在异常和错误、警告</li>
+</ul>
+<p>void register_shutdown_function ( callable $callback [, mixed $parameter [, mixed $… ]] )</p>
+<p>示例<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">shutdown</span><span class="params">()</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">      <span class="comment">// This is our shutdown function, in</span></span><br><span class="line">      <span class="comment">// here we can do any last operations</span></span><br><span class="line">      <span class="comment">// before the script is complete.</span></span><br><span class="line">      <span class="keyword">echo</span> <span class="string">'Script executed with success'</span>, PHP_EOL;</span><br><span class="line">  &#125;</span><br><span class="line">  register_shutdown_function(<span class="string">'shutdown'</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>对于 prase error 级别的错误，PHP层面就没有办法做什么了。我们只能通过开启错误日志，来记录这些错误。</p>
+<p>php.ini设置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">log_errors = On</span><br><span class="line">error_log = /usr/log/log.log</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/09/30/PHP异常和错误处理/" title="PHP异常和错误处理">https://weizhimiao.github.io/2016/09/30/PHP异常和错误处理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/异常处理/" rel="tag"># 异常处理</a>
+          
+            <a href="/tags/错误处理/" rel="tag"># 错误处理</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/29/memcache高速缓存的工作原理及应用小结/" rel="next" title="memcache高速缓存工作原理及应用">
+                <i class="fa fa-chevron-left"></i> memcache高速缓存工作原理及应用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/01/Memcached分布式部署算法整理/" rel="prev" title="Memcached分布式部署算法整理">
+                Memcached分布式部署算法整理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#异常处理"><span class="nav-number">1.</span> <span class="nav-text">异常处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP常见的异常类"><span class="nav-number">1.1.</span> <span class="nav-text">PHP常见的异常类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Exception"><span class="nav-number">1.1.1.</span> <span class="nav-text">Exception</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#错误异常类"><span class="nav-number">1.1.2.</span> <span class="nav-text">错误异常类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#自定义异常类"><span class="nav-number">1.1.3.</span> <span class="nav-text">自定义异常类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP中异常用法"><span class="nav-number">1.2.</span> <span class="nav-text">PHP中异常用法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#try…catch"><span class="nav-number">1.2.1.</span> <span class="nav-text">try…catch</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#try…catch…finally"><span class="nav-number">1.2.2.</span> <span class="nav-text">try…catch…finally</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP异常处理使用场景"><span class="nav-number">1.3.</span> <span class="nav-text">PHP异常处理使用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对程序的悲观预测"><span class="nav-number">1.3.1.</span> <span class="nav-text">对程序的悲观预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#程序的需要和对业务的需要"><span class="nav-number">1.3.2.</span> <span class="nav-text">程序的需要和对业务的需要</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#语言级别的健壮性要求"><span class="nav-number">1.3.3.</span> <span class="nav-text">语言级别的健壮性要求</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#错误处理"><span class="nav-number">2.</span> <span class="nav-text">错误处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP中的错误级别"><span class="nav-number">2.1.</span> <span class="nav-text">PHP中的错误级别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP错误处理机制"><span class="nav-number">2.2.</span> <span class="nav-text">PHP错误处理机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#trigger-error"><span class="nav-number">2.2.1.</span> <span class="nav-text">trigger_error</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#set-error-handler"><span class="nav-number">2.2.2.</span> <span class="nav-text">set_error_handler</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#restore-error-handler"><span class="nav-number">2.2.3.</span> <span class="nav-text">restore_error_handler</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结合PHP错误处理主动抛出异常"><span class="nav-number">3.</span> <span class="nav-text">结合PHP错误处理主动抛出异常</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

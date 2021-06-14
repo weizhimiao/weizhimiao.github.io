@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。 Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。 在Linux生态系统中，Systemd被部署到了大多数的标准Linux发行版中(redhat、CentOS、fedora)，只有为数不多的几个发行版尚未部署。Sys">
+<meta name="keywords" content="systemctl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="systemctl 命令完全指南">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/08/15/systemctl命令完全指南/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。 Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。 在Linux生态系统中，Systemd被部署到了大多数的标准Linux发行版中(redhat、CentOS、fedora)，只有为数不多的几个发行版尚未部署。Sys">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://dn-linuxcn.qbox.me/data/attachment/album/201507/30/210221zg6czg8yogegegay.jpg">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="systemctl 命令完全指南">
+<meta name="twitter:description" content="Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。 Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。 在Linux生态系统中，Systemd被部署到了大多数的标准Linux发行版中(redhat、CentOS、fedora)，只有为数不多的几个发行版尚未部署。Sys">
+<meta name="twitter:image" content="https://dn-linuxcn.qbox.me/data/attachment/album/201507/30/210221zg6czg8yogegegay.jpg">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/08/15/systemctl命令完全指南/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>systemctl 命令完全指南 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/08/15/systemctl命令完全指南/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">systemctl 命令完全指南<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/systemctl命令完全指南.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-08-15 23:30:00" itemprop="dateCreated datePublished" datetime="2017-08-15T23:30:00+08:00">2017-08-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/08/15/systemctl命令完全指南/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/08/15/systemctl命令完全指南/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">20k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">18 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。</p>
+<p>Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。</p>
+<p>在Linux生态系统中，Systemd被部署到了大多数的标准Linux发行版中(redhat、CentOS、fedora)，只有为数不多的几个发行版尚未部署。Systemd通常是所有其它守护进程的父进程，但并非总是如此。</p>
+<p><img src="https://dn-linuxcn.qbox.me/data/attachment/album/201507/30/210221zg6czg8yogegegay.jpg" alt="使用Systemctl管理Linux服务"></p>
+<p>本文旨在阐明在运行systemd的系统上“如何控制系统和服务”。</p>
+<a id="more"></a>
+<h2 id="Systemd初体验和Systemctl基础"><a href="#Systemd初体验和Systemctl基础" class="headerlink" title="Systemd初体验和Systemctl基础"></a>Systemd初体验和Systemctl基础</h2><h3 id="1-首先检查你的系统中是否安装有systemd并确定当前安装的版本"><a href="#1-首先检查你的系统中是否安装有systemd并确定当前安装的版本" class="headerlink" title="1. 首先检查你的系统中是否安装有systemd并确定当前安装的版本"></a>1. 首先检查你的系统中是否安装有systemd并确定当前安装的版本</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl --version</span></span><br><span class="line">systemd 215</span><br><span class="line">+PAM +AUDIT +SELINUX +IMA +SYSVINIT +LIBCRYPTSETUP +GCRYPT +ACL +XZ -SECCOMP -APPARMOR</span><br></pre></td></tr></table></figure>
+<p>上例中很清楚地表明，我们安装了215版本的systemd。</p>
+<h3 id="2-检查systemd和systemctl的二进制文件和库文件的安装位置"><a href="#2-检查systemd和systemctl的二进制文件和库文件的安装位置" class="headerlink" title="2. 检查systemd和systemctl的二进制文件和库文件的安装位置"></a>2. 检查systemd和systemctl的二进制文件和库文件的安装位置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># whereis systemd</span></span><br><span class="line">systemd: /usr/lib/systemd /etc/systemd /usr/share/systemd /usr/share/man/man1/systemd.1.gz</span><br><span class="line"><span class="comment"># whereis systemctl</span></span><br><span class="line">systemctl: /usr/bin/systemctl /usr/share/man/man1/systemctl.1.gz</span><br></pre></td></tr></table></figure>
+<h3 id="3-检查systemd是否运行"><a href="#3-检查systemd是否运行" class="headerlink" title="3. 检查systemd是否运行"></a>3. 检查systemd是否运行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ps -eaf | grep [s]ystemd</span></span><br><span class="line">root         1     0  0 16:27 ?        00:00:00 /usr/lib/systemd/systemd --switched-root --system --deserialize 23</span><br><span class="line">root       444     1  0 16:27 ?        00:00:00 /usr/lib/systemd/systemd-journald</span><br><span class="line">root       469     1  0 16:27 ?        00:00:00 /usr/lib/systemd/systemd-udevd</span><br><span class="line">root       555     1  0 16:27 ?        00:00:00 /usr/lib/systemd/systemd-logind</span><br><span class="line">dbus       556     1  0 16:27 ?        00:00:00 /bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation</span><br></pre></td></tr></table></figure>
+<p><strong>注意：</strong> <code>systemd</code>是作为父进程（<code>PID=1</code>）运行的。在上面带（<code>-e</code>）参数的<code>ps</code>命令输出中，选择所有进程，（<code>-a</code>）选择除会话前导外的所有进程，并使用（<code>-f</code>）参数输出完整格式列表（即 <code>-eaf</code>）。</p>
+<p>也请注意上例中后随的方括号和例子中剩余部分。方括号表达式是<code>grep</code>的字符类表达式的一部分。</p>
+<h3 id="4-分析systemd启动进程"><a href="#4-分析systemd启动进程" class="headerlink" title="4. 分析systemd启动进程"></a>4. 分析systemd启动进程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemd-analyze</span></span><br><span class="line">Startup finished <span class="keyword">in</span> 487ms (kernel) + 2.776s (initrd) + 20.229s (userspace) = 23.493s</span><br></pre></td></tr></table></figure>
+<h3 id="5-分析启动时各个进程花费的时间"><a href="#5-分析启动时各个进程花费的时间" class="headerlink" title="5. 分析启动时各个进程花费的时间"></a>5. 分析启动时各个进程花费的时间</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemd-analyze blame</span></span><br><span class="line">8.565s mariadb.service</span><br><span class="line">7.991s webmin.service</span><br><span class="line">6.095s postfix.service</span><br><span class="line">4.311s httpd.service</span><br><span class="line">3.926s firewalld.service</span><br><span class="line">3.780s kdump.service</span><br><span class="line">3.238s tuned.service</span><br><span class="line">1.712s network.service</span><br><span class="line">1.394s lvm2-monitor.service</span><br><span class="line">1.126s systemd-logind.service</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<h3 id="6-分析启动时的关键链"><a href="#6-分析启动时的关键链" class="headerlink" title="6. 分析启动时的关键链"></a>6. 分析启动时的关键链</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemd-analyze critical-chain</span></span><br><span class="line">The time after the unit is active or started is printed after the <span class="string">"@"</span> character.</span><br><span class="line">The time the unit takes to start is printed after the <span class="string">"+"</span> character.</span><br><span class="line">multi-user.target @20.222s</span><br><span class="line">└─mariadb.service @11.657s +8.565s</span><br><span class="line">  └─network.target @11.168s</span><br><span class="line">    └─network.service @9.456s +1.712s</span><br><span class="line">      └─NetworkManager.service @8.858s +596ms</span><br><span class="line">        └─firewalld.service @4.931s +3.926s</span><br><span class="line">          └─basic.target @4.916s</span><br><span class="line">            └─sockets.target @4.916s</span><br><span class="line">              └─dbus.socket @4.916s</span><br><span class="line">                └─sysinit.target @4.905s</span><br><span class="line">                  └─systemd-update-utmp.service @4.864s +39ms</span><br><span class="line">                    └─auditd.service @4.563s +301ms</span><br><span class="line">                      └─systemd-tmpfiles-setup.service @4.485s +69ms</span><br><span class="line">                        └─rhel-import-state.service @4.342s +142ms</span><br><span class="line">                          └─<span class="built_in">local</span>-fs.target @4.324s</span><br><span class="line">                            └─boot.mount @4.286s +31ms</span><br><span class="line">                              └─systemd-fsck@dev-disk-by\x2duuid-79f594ad\x2da332\x2d4730\x2dbb5f\x2d85d19608096</span><br><span class="line">                                └─dev-disk-by\x2duuid-79f594ad\x2da332\x2d4730\x2dbb5f\x2d85d196080964.device @4</span><br></pre></td></tr></table></figure>
+<p><strong>重要：</strong> Systemctl接受服务（<code>.service</code>），挂载点（<code>.mount</code>），套接口（<code>.socket</code>）和设备（<code>.device</code>）作为单元。                            </p>
+<h3 id="7-列出所有可用单元"><a href="#7-列出所有可用单元" class="headerlink" title="7. 列出所有可用单元"></a>7. 列出所有可用单元</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl list-unit-files</span></span><br><span class="line">UNIT FILE                                   STATE   </span><br><span class="line">proc-sys-fs-binfmt_misc.automount           static  </span><br><span class="line">dev-hugepages.mount                         static  </span><br><span class="line">dev-mqueue.mount                            static  </span><br><span class="line">proc-sys-fs-binfmt_misc.mount               static  </span><br><span class="line">sys-fs-fuse-connections.mount               static  </span><br><span class="line">sys-kernel-config.mount                     static  </span><br><span class="line">sys-kernel-debug.mount                      static  </span><br><span class="line">tmp.mount                                   disabled</span><br><span class="line">brandbot.path                               disabled</span><br><span class="line">.....</span><br></pre></td></tr></table></figure>
+<h3 id="8-列出所有运行中单元"><a href="#8-列出所有运行中单元" class="headerlink" title="8. 列出所有运行中单元"></a>8. 列出所有运行中单元</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl list-units</span></span><br><span class="line">UNIT                                        LOAD   ACTIVE SUB       DESCRIPTION</span><br><span class="line">proc-sys-fs-binfmt_misc.automount           loaded active waiting   Arbitrary Executable File Formats File Syste</span><br><span class="line">sys-devices-pc...0-1:0:0:0-block-sr0.device loaded active plugged   VBOX_CD-ROM</span><br><span class="line">sys-devices-pc...:00:03.0-net-enp0s3.device loaded active plugged   PRO/1000 MT Desktop Adapter</span><br><span class="line">sys-devices-pc...00:05.0-sound-card0.device loaded active plugged   82801AA AC\<span class="string">'97 Audio Controller</span></span><br><span class="line"><span class="string">sys-devices-pc...:0:0-block-sda-sda1.device loaded active plugged   VBOX_HARDDISK</span></span><br><span class="line"><span class="string">sys-devices-pc...:0:0-block-sda-sda2.device loaded active plugged   LVM PV Qzyo3l-qYaL-uRUa-Cjuk-pljo-qKtX-VgBQ8</span></span><br><span class="line"><span class="string">sys-devices-pc...0-2:0:0:0-block-sda.device loaded active plugged   VBOX_HARDDISK</span></span><br><span class="line"><span class="string">sys-devices-pl...erial8250-tty-ttyS0.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS0</span></span><br><span class="line"><span class="string">sys-devices-pl...erial8250-tty-ttyS1.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS1</span></span><br><span class="line"><span class="string">sys-devices-pl...erial8250-tty-ttyS2.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS2</span></span><br><span class="line"><span class="string">sys-devices-pl...erial8250-tty-ttyS3.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS3</span></span><br><span class="line"><span class="string">sys-devices-virtual-block-dm\x2d0.device    loaded active plugged   /sys/devices/virtual/block/dm-0</span></span><br><span class="line"><span class="string">sys-devices-virtual-block-dm\x2d1.device    loaded active plugged   /sys/devices/virtual/block/dm-1</span></span><br><span class="line"><span class="string">sys-module-configfs.device                  loaded active plugged   /sys/module/configfs</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+<h3 id="9-列出所有失败单元"><a href="#9-列出所有失败单元" class="headerlink" title="9. 列出所有失败单元"></a>9. 列出所有失败单元</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl --failed</span></span><br><span class="line">UNIT          LOAD   ACTIVE SUB    DESCRIPTION</span><br><span class="line">kdump.service loaded failed failed Crash recovery kernel arming</span><br><span class="line">LOAD   = Reflects whether the unit definition was properly loaded.</span><br><span class="line">ACTIVE = The high-level unit activation state, i.e. generalization of SUB.</span><br><span class="line">SUB    = The low-level unit activation state, values depend on unit <span class="built_in">type</span>.</span><br><span class="line">1 loaded units listed. Pass --all to see loaded but inactive units, too.</span><br><span class="line">To show all installed unit files use \<span class="string">'systemctl list-unit-files\'</span>.</span><br></pre></td></tr></table></figure>
+<h3 id="10-检查某个单元（如-cron-service）是否启用"><a href="#10-检查某个单元（如-cron-service）是否启用" class="headerlink" title="10. 检查某个单元（如 cron.service）是否启用"></a>10. 检查某个单元（如 cron.service）是否启用</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl is-enabled crond.service</span></span><br><span class="line">enabled</span><br></pre></td></tr></table></figure>
+<h3 id="11-检查某个单元或服务是否运行"><a href="#11-检查某个单元或服务是否运行" class="headerlink" title="11. 检查某个单元或服务是否运行"></a>11. 检查某个单元或服务是否运行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl status firewalld.service</span></span><br><span class="line">firewalld.service - firewalld - dynamic firewall daemon</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled)</span><br><span class="line">   Active: active (running) since Tue 2015-04-28 16:27:55 IST; 34min ago</span><br><span class="line"> Main PID: 549 (firewalld)</span><br><span class="line">   CGroup: /system.slice/firewalld.service</span><br><span class="line">           └─549 /usr/bin/python -Es /usr/sbin/firewalld --nofork --nopid</span><br><span class="line">Apr 28 16:27:51 tecmint systemd[1]: Starting firewalld - dynamic firewall daemon...</span><br><span class="line">Apr 28 16:27:55 tecmint systemd[1]: Started firewalld - dynamic firewall daemon.</span><br></pre></td></tr></table></figure>
+<h2 id="使用Systemctl控制并管理服务"><a href="#使用Systemctl控制并管理服务" class="headerlink" title="使用Systemctl控制并管理服务"></a>使用Systemctl控制并管理服务</h2><h3 id="12-列出所有服务（包括启用的和禁用的）"><a href="#12-列出所有服务（包括启用的和禁用的）" class="headerlink" title="12. 列出所有服务（包括启用的和禁用的）"></a>12. 列出所有服务（包括启用的和禁用的）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl list-unit-files --type=service</span></span><br><span class="line">UNIT FILE                                   STATE   </span><br><span class="line">arp-ethers.service                          disabled</span><br><span class="line">auditd.service                              enabled</span><br><span class="line">autovt@.service                             disabled</span><br><span class="line">blk-availability.service                    disabled</span><br><span class="line">brandbot.service                            static  </span><br><span class="line">collectd.service                            disabled</span><br><span class="line">console-getty.service                       disabled</span><br><span class="line">console-shell.service                       disabled</span><br><span class="line">cpupower.service                            disabled</span><br><span class="line">crond.service                               enabled</span><br><span class="line">dbus-org.fedoraproject.FirewallD1.service   enabled</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<h3 id="13-Linux中如何启动、重启、停止、重载服务以及检查服务（如-httpd-service）状态"><a href="#13-Linux中如何启动、重启、停止、重载服务以及检查服务（如-httpd-service）状态" class="headerlink" title="13. Linux中如何启动、重启、停止、重载服务以及检查服务（如 httpd.service）状态"></a>13. Linux中如何启动、重启、停止、重载服务以及检查服务（如 httpd.service）状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl start httpd.service</span></span><br><span class="line"><span class="comment"># systemctl restart httpd.service</span></span><br><span class="line"><span class="comment"># systemctl stop httpd.service</span></span><br><span class="line"><span class="comment"># systemctl reload httpd.service</span></span><br><span class="line"><span class="comment"># systemctl status httpd.service</span></span><br><span class="line">httpd.service - The Apache HTTP Server</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/httpd.service; enabled)</span><br><span class="line">   Active: active (running) since Tue 2015-04-28 17:21:30 IST; 6s ago</span><br><span class="line">  Process: 2876 ExecStop=/bin/<span class="built_in">kill</span> -WINCH <span class="variable">$&#123;MAINPID&#125;</span> (code=exited, status=0/SUCCESS)</span><br><span class="line"> Main PID: 2881 (httpd)</span><br><span class="line">   Status: <span class="string">"Processing requests..."</span></span><br><span class="line">   CGroup: /system.slice/httpd.service</span><br><span class="line">           ├─2881 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2884 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2885 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2886 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           ├─2887 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">           └─2888 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">Apr 28 17:21:30 tecmint systemd[1]: Starting The Apache HTTP Server...</span><br><span class="line">Apr 28 17:21:30 tecmint httpd[2881]: AH00558: httpd: Could not reliably determine the server\<span class="string">'s fully q...ssage</span></span><br><span class="line"><span class="string">Apr 28 17:21:30 tecmint systemd[1]: Started The Apache HTTP Server.</span></span><br><span class="line"><span class="string">Hint: Some lines were ellipsized, use -l to show in full.</span></span><br></pre></td></tr></table></figure>
+<p><strong>注意：</strong> 当我们使用systemctl的start，restart，stop和reload命令时，我们不会从终端获取到任何输出内容，只有status命令可以打印输出。</p>
+<h3 id="14-如何激活服务并在启动时启用或禁用服务（即系统启动时自动启动服务）"><a href="#14-如何激活服务并在启动时启用或禁用服务（即系统启动时自动启动服务）" class="headerlink" title="14. 如何激活服务并在启动时启用或禁用服务（即系统启动时自动启动服务）"></a>14. 如何激活服务并在启动时启用或禁用服务（即系统启动时自动启动服务）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl is-active httpd.service</span></span><br><span class="line"><span class="comment"># systemctl enable httpd.service</span></span><br><span class="line"><span class="comment"># systemctl disable httpd.service</span></span><br></pre></td></tr></table></figure>
+<h3 id="15-如何屏蔽（让它不能启动）或显示服务（如-httpd-service）"><a href="#15-如何屏蔽（让它不能启动）或显示服务（如-httpd-service）" class="headerlink" title="15. 如何屏蔽（让它不能启动）或显示服务（如 httpd.service）"></a>15. 如何屏蔽（让它不能启动）或显示服务（如 httpd.service）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl mask httpd.service</span></span><br><span class="line">ln -s <span class="string">'/dev/null'</span> <span class="string">'/etc/systemd/system/httpd.service'</span></span><br><span class="line"><span class="comment"># systemctl unmask httpd.service</span></span><br><span class="line">rm <span class="string">'/etc/systemd/system/httpd.service'</span></span><br></pre></td></tr></table></figure>
+<h3 id="16-使用systemctl命令杀死服务"><a href="#16-使用systemctl命令杀死服务" class="headerlink" title="16. 使用systemctl命令杀死服务"></a>16. 使用systemctl命令杀死服务</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl kill httpd</span></span><br><span class="line"><span class="comment"># systemctl status httpd</span></span><br><span class="line">httpd.service - The Apache HTTP Server</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/httpd.service; enabled)</span><br><span class="line">   Active: failed (Result: <span class="built_in">exit</span>-code) since Tue 2015-04-28 18:01:42 IST; 28min ago</span><br><span class="line"> Main PID: 2881 (code=exited, status=0/SUCCESS)</span><br><span class="line">   Status: <span class="string">"Total requests: 0; Current requests/sec: 0; Current traffic:   0 B/sec"</span></span><br><span class="line">Apr 28 17:37:29 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 17:37:29 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 17:37:39 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 17:37:39 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 17:37:49 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 17:37:49 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 17:37:59 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 17:37:59 tecmint systemd[1]: httpd.service: Got notification message from PID 2881, but recepti...bled.</span><br><span class="line">Apr 28 18:01:42 tecmint systemd[1]: httpd.service: control process exited, code=exited status=226</span><br><span class="line">Apr 28 18:01:42 tecmint systemd[1]: Unit httpd.service entered failed state.</span><br><span class="line">Hint: Some lines were ellipsized, use -l to show <span class="keyword">in</span> full.</span><br></pre></td></tr></table></figure>
+<h2 id="使用Systemctl控制并管理挂载点"><a href="#使用Systemctl控制并管理挂载点" class="headerlink" title="使用Systemctl控制并管理挂载点"></a>使用Systemctl控制并管理挂载点</h2><h3 id="17-列出所有系统挂载点"><a href="#17-列出所有系统挂载点" class="headerlink" title="17. 列出所有系统挂载点"></a>17. 列出所有系统挂载点</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl list-unit-files --type=mount</span></span><br><span class="line">UNIT FILE                     STATE   </span><br><span class="line">dev-hugepages.mount           static  </span><br><span class="line">dev-mqueue.mount              static  </span><br><span class="line">proc-sys-fs-binfmt_misc.mount static  </span><br><span class="line">sys-fs-fuse-connections.mount static  </span><br><span class="line">sys-kernel-config.mount       static  </span><br><span class="line">sys-kernel-debug.mount        static  </span><br><span class="line">tmp.mount                     disabled</span><br></pre></td></tr></table></figure>
+<h3 id="18-挂载、卸载、重新挂载、重载系统挂载点并检查系统中挂载点状态"><a href="#18-挂载、卸载、重新挂载、重载系统挂载点并检查系统中挂载点状态" class="headerlink" title="18. 挂载、卸载、重新挂载、重载系统挂载点并检查系统中挂载点状态"></a>18. 挂载、卸载、重新挂载、重载系统挂载点并检查系统中挂载点状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl start tmp.mount</span></span><br><span class="line"><span class="comment"># systemctl stop tmp.mount</span></span><br><span class="line"><span class="comment"># systemctl restart tmp.mount</span></span><br><span class="line"><span class="comment"># systemctl reload tmp.mount</span></span><br><span class="line"><span class="comment"># systemctl status tmp.mount</span></span><br><span class="line">tmp.mount - Temporary Directory</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/tmp.mount; disabled)</span><br><span class="line">   Active: active (mounted) since Tue 2015-04-28 17:46:06 IST; 2min 48s ago</span><br><span class="line">    Where: /tmp</span><br><span class="line">     What: tmpfs</span><br><span class="line">     Docs: man:hier(7)</span><br><span class="line">http://www.freedesktop.org/wiki/Software/systemd/APIFileSystems</span><br><span class="line">  Process: 3908 ExecMount=/bin/mount tmpfs /tmp -t tmpfs -o mode=1777,strictatime (code=exited, status=0/SUCCESS)</span><br><span class="line">Apr 28 17:46:06 tecmint systemd[1]: Mounting Temporary Directory...</span><br><span class="line">Apr 28 17:46:06 tecmint systemd[1]: tmp.mount: Directory /tmp to mount over is not empty, mounting anyway.</span><br><span class="line">Apr 28 17:46:06 tecmint systemd[1]: Mounted Temporary Directory.</span><br></pre></td></tr></table></figure>
+<h3 id="19-在启动时激活、启用或禁用挂载点（系统启动时自动挂载）"><a href="#19-在启动时激活、启用或禁用挂载点（系统启动时自动挂载）" class="headerlink" title="19. 在启动时激活、启用或禁用挂载点（系统启动时自动挂载）"></a>19. 在启动时激活、启用或禁用挂载点（系统启动时自动挂载）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl is-active tmp.mount</span></span><br><span class="line"><span class="comment"># systemctl enable tmp.mount</span></span><br><span class="line"><span class="comment"># systemctl disable  tmp.mount</span></span><br></pre></td></tr></table></figure>
+<h3 id="20-在Linux中屏蔽（让它不能启用）或可见挂载点"><a href="#20-在Linux中屏蔽（让它不能启用）或可见挂载点" class="headerlink" title="20. 在Linux中屏蔽（让它不能启用）或可见挂载点"></a>20. 在Linux中屏蔽（让它不能启用）或可见挂载点</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl mask tmp.mount</span></span><br><span class="line">ln -s <span class="string">'/dev/null'</span> <span class="string">'/etc/systemd/system/tmp.mount'</span></span><br><span class="line"><span class="comment"># systemctl unmask tmp.mount</span></span><br><span class="line">rm <span class="string">'/etc/systemd/system/tmp.mount'</span></span><br></pre></td></tr></table></figure>
+<h2 id="使用Systemctl控制并管理套接口"><a href="#使用Systemctl控制并管理套接口" class="headerlink" title="使用Systemctl控制并管理套接口"></a>使用Systemctl控制并管理套接口</h2><h3 id="21-列出所有可用系统套接口"><a href="#21-列出所有可用系统套接口" class="headerlink" title="21. 列出所有可用系统套接口"></a>21. 列出所有可用系统套接口</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl list-unit-files --type=socket</span></span><br><span class="line">UNIT FILE                    STATE   </span><br><span class="line">dbus.socket                  static  </span><br><span class="line">dm-event.socket              enabled</span><br><span class="line">lvm2-lvmetad.socket          enabled</span><br><span class="line">rsyncd.socket                disabled</span><br><span class="line">sshd.socket                  disabled</span><br><span class="line">syslog.socket                static  </span><br><span class="line">systemd-initctl.socket       static  </span><br><span class="line">systemd-journald.socket      static  </span><br><span class="line">systemd-shutdownd.socket     static  </span><br><span class="line">systemd-udevd-control.socket static  </span><br><span class="line">systemd-udevd-kernel.socket  static  </span><br><span class="line">11 unit files listed.</span><br></pre></td></tr></table></figure>
+<h3 id="22-在Linux中启动、重启、停止、重载套接口并检查其状态"><a href="#22-在Linux中启动、重启、停止、重载套接口并检查其状态" class="headerlink" title="22. 在Linux中启动、重启、停止、重载套接口并检查其状态"></a>22. 在Linux中启动、重启、停止、重载套接口并检查其状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl start cups.socket</span></span><br><span class="line"><span class="comment"># systemctl restart cups.socket</span></span><br><span class="line"><span class="comment"># systemctl stop cups.socket</span></span><br><span class="line"><span class="comment"># systemctl reload cups.socket</span></span><br><span class="line"><span class="comment"># systemctl status cups.socket</span></span><br><span class="line">cups.socket - CUPS Printing Service Sockets</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/cups.socket; enabled)</span><br><span class="line">   Active: active (listening) since Tue 2015-04-28 18:10:59 IST; 8s ago</span><br><span class="line">   Listen: /var/run/cups/cups.sock (Stream)</span><br><span class="line">Apr 28 18:10:59 tecmint systemd[1]: Starting CUPS Printing Service Sockets.</span><br><span class="line">Apr 28 18:10:59 tecmint systemd[1]: Listening on CUPS Printing Service Sockets.</span><br></pre></td></tr></table></figure>
+<h3 id="23-在启动时激活套接口，并启用或禁用它（系统启动时自启动）"><a href="#23-在启动时激活套接口，并启用或禁用它（系统启动时自启动）" class="headerlink" title="23. 在启动时激活套接口，并启用或禁用它（系统启动时自启动）"></a>23. 在启动时激活套接口，并启用或禁用它（系统启动时自启动）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl is-active cups.socket</span></span><br><span class="line"><span class="comment"># systemctl enable cups.socket</span></span><br><span class="line"><span class="comment"># systemctl disable cups.socket</span></span><br></pre></td></tr></table></figure>
+<h3 id="24-屏蔽（使它不能启动）或显示套接口"><a href="#24-屏蔽（使它不能启动）或显示套接口" class="headerlink" title="24. 屏蔽（使它不能启动）或显示套接口"></a>24. 屏蔽（使它不能启动）或显示套接口</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl mask cups.socket</span></span><br><span class="line">ln -s <span class="string">'/dev/null'</span> <span class="string">'/etc/systemd/system/cups.socket'</span></span><br><span class="line"><span class="comment"># systemctl unmask cups.socket</span></span><br><span class="line">rm <span class="string">'/etc/systemd/system/cups.socket'</span></span><br></pre></td></tr></table></figure>
+<h2 id="服务的CPU利用率（分配额）"><a href="#服务的CPU利用率（分配额）" class="headerlink" title="服务的CPU利用率（分配额）"></a>服务的CPU利用率（分配额）</h2><h3 id="25-获取当前某个服务的CPU分配额（如httpd）"><a href="#25-获取当前某个服务的CPU分配额（如httpd）" class="headerlink" title="25. 获取当前某个服务的CPU分配额（如httpd）"></a>25. 获取当前某个服务的CPU分配额（如httpd）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl show -p CPUShares httpd.service</span></span><br><span class="line">CPUShares=1024</span><br></pre></td></tr></table></figure>
+<p><strong>注意：</strong> 各个服务的默认CPU分配份额=1024，你可以增加/减少某个进程的CPU分配份额。</p>
+<h3 id="26-将某个服务（httpd-service）的CPU分配份额限制为2000-CPUShares"><a href="#26-将某个服务（httpd-service）的CPU分配份额限制为2000-CPUShares" class="headerlink" title="26. 将某个服务（httpd.service）的CPU分配份额限制为2000 CPUShares/"></a>26. 将某个服务（httpd.service）的CPU分配份额限制为2000 CPUShares/</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl set-property httpd.service CPUShares=2000</span></span><br><span class="line"><span class="comment"># systemctl show -p CPUShares httpd.service</span></span><br><span class="line">CPUShares=2000</span><br></pre></td></tr></table></figure>
+<p><strong>注意：</strong> 当你为某个服务设置CPUShares，会自动创建一个以服务名命名的目录（如 httpd.service），里面包含了一个名为90-CPUShares.conf的文件，该文件含有CPUShare限制信息，你可以通过以下方式查看该文件：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># vi /etc/systemd/system/httpd.service.d/90-CPUShares.conf</span></span><br><span class="line">[Service]</span><br><span class="line">CPUShares=2000</span><br></pre></td></tr></table></figure></p>
+<h3 id="27-检查某个服务的所有配置细节"><a href="#27-检查某个服务的所有配置细节" class="headerlink" title="27. 检查某个服务的所有配置细节"></a>27. 检查某个服务的所有配置细节</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl show httpd</span></span><br><span class="line">Id=httpd.service</span><br><span class="line">Names=httpd.service</span><br><span class="line">Requires=basic.target</span><br><span class="line">Wants=system.slice</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line">Conflicts=shutdown.target</span><br><span class="line">Before=shutdown.target multi-user.target</span><br><span class="line">After=network.target remote-fs.target nss-lookup.target systemd-journald.socket basic.target system.slice</span><br><span class="line">Description=The Apache HTTP Server</span><br><span class="line">LoadState=loaded</span><br><span class="line">ActiveState=active</span><br><span class="line">SubState=running</span><br><span class="line">FragmentPath=/usr/lib/systemd/system/httpd.service</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<h3 id="28-分析某个服务（httpd）的关键链"><a href="#28-分析某个服务（httpd）的关键链" class="headerlink" title="28. 分析某个服务（httpd）的关键链"></a>28. 分析某个服务（httpd）的关键链</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemd-analyze critical-chain httpd.service</span></span><br><span class="line">The time after the unit is active or started is printed after the <span class="string">"@"</span> character.</span><br><span class="line">The time the unit takes to start is printed after the <span class="string">"+"</span> character.</span><br><span class="line">httpd.service +142ms</span><br><span class="line">└─network.target @11.168s</span><br><span class="line">  └─network.service @9.456s +1.712s</span><br><span class="line">    └─NetworkManager.service @8.858s +596ms</span><br><span class="line">      └─firewalld.service @4.931s +3.926s</span><br><span class="line">        └─basic.target @4.916s</span><br><span class="line">          └─sockets.target @4.916s</span><br><span class="line">            └─dbus.socket @4.916s</span><br><span class="line">              └─sysinit.target @4.905s</span><br><span class="line">                └─systemd-update-utmp.service @4.864s +39ms</span><br><span class="line">                  └─auditd.service @4.563s +301ms</span><br><span class="line">                    └─systemd-tmpfiles-setup.service @4.485s +69ms</span><br><span class="line">                      └─rhel-import-state.service @4.342s +142ms</span><br><span class="line">                        └─<span class="built_in">local</span>-fs.target @4.324s</span><br><span class="line">                          └─boot.mount @4.286s +31ms</span><br><span class="line">                            └─systemd-fsck@dev-disk-by\x2duuid-79f594ad\x2da332\x2d4730\x2dbb5f\x2d85d196080964.service @4.092s +149ms</span><br><span class="line">                              └─dev-disk-by\x2duuid-79f594ad\x2da332\x2d4730\x2dbb5f\x2d85d196080964.device @4.092s</span><br></pre></td></tr></table></figure>
+<h3 id="29-获取某个服务（httpd）的依赖性列表"><a href="#29-获取某个服务（httpd）的依赖性列表" class="headerlink" title="29. 获取某个服务（httpd）的依赖性列表"></a>29. 获取某个服务（httpd）的依赖性列表</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl list-dependencies httpd.service</span></span><br><span class="line">httpd.service</span><br><span class="line">├─system.slice</span><br><span class="line">└─basic.target</span><br><span class="line">  ├─firewalld.service</span><br><span class="line">  ├─microcode.service</span><br><span class="line">  ├─rhel-autorelabel-mark.service</span><br><span class="line">  ├─rhel-autorelabel.service</span><br><span class="line">  ├─rhel-configure.service</span><br><span class="line">  ├─rhel-dmesg.service</span><br><span class="line">  ├─rhel-loadmodules.service</span><br><span class="line">  ├─paths.target</span><br><span class="line">  ├─slices.target</span><br><span class="line">  │ ├─-.slice</span><br><span class="line">  │ └─system.slice</span><br><span class="line">  ├─sockets.target</span><br><span class="line">  │ ├─dbus.socket</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<h3 id="30-按等级列出控制组"><a href="#30-按等级列出控制组" class="headerlink" title="30. 按等级列出控制组"></a>30. 按等级列出控制组</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemd-cgls</span></span><br><span class="line">├─1 /usr/lib/systemd/systemd --switched-root --system --deserialize 23</span><br><span class="line">├─user.slice</span><br><span class="line">│ └─user-0.slice</span><br><span class="line">│   └─session-1.scope</span><br><span class="line">│     ├─2498 sshd: root@pts/0    </span><br><span class="line">│     ├─2500 -bash</span><br><span class="line">│     ├─4521 systemd-cgls</span><br><span class="line">│     └─4522 systemd-cgls</span><br><span class="line">└─system.slice</span><br><span class="line">  ├─httpd.service</span><br><span class="line">  │ ├─4440 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  │ ├─4442 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  │ ├─4443 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  │ ├─4444 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  │ ├─4445 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  │ └─4446 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  ├─polkit.service</span><br><span class="line">  │ └─721 /usr/lib/polkit-1/polkitd --no-debug</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<h3 id="31-按CPU、内存、输入和输出列出控制组"><a href="#31-按CPU、内存、输入和输出列出控制组" class="headerlink" title="31. 按CPU、内存、输入和输出列出控制组"></a>31. 按CPU、内存、输入和输出列出控制组</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemd-cgtop</span></span><br><span class="line">Path                                                              Tasks   %CPU   Memory  Input/s Output/s</span><br><span class="line">/                                                                    83    1.0   437.8M        -        -</span><br><span class="line">/system.slice                                                         -    0.1        -        -        -</span><br><span class="line">/system.slice/mariadb.service                                         2    0.1        -        -        -</span><br><span class="line">/system.slice/tuned.service                                           1    0.0        -        -        -</span><br><span class="line">/system.slice/httpd.service                                           6    0.0        -        -        -</span><br><span class="line">/system.slice/NetworkManager.service                                  1      -        -        -        -</span><br><span class="line">/system.slice/atop.service                                            1      -        -        -        -</span><br><span class="line">/system.slice/atopacct.service                                        1      -        -        -        -</span><br><span class="line">/system.slice/auditd.service                                          1      -        -        -        -</span><br><span class="line">/system.slice/crond.service                                           1      -        -        -        -</span><br><span class="line">/system.slice/dbus.service                                            1      -        -        -        -</span><br><span class="line">/system.slice/firewalld.service                                       1      -        -        -        -</span><br><span class="line">/system.slice/lvm2-lvmetad.service                                    1      -        -        -        -</span><br><span class="line">/system.slice/polkit.service                                          1      -        -        -        -</span><br><span class="line">/system.slice/postfix.service                                         3      -        -        -        -</span><br><span class="line">/system.slice/rsyslog.service                                         1      -        -        -        -</span><br><span class="line">/system.slice/system-getty.slice/getty@tty1.service                   1      -        -        -        -</span><br><span class="line">/system.slice/systemd-journald.service                                1      -        -        -        -</span><br><span class="line">/system.slice/systemd-logind.service                                  1      -        -        -        -</span><br><span class="line">/system.slice/systemd-udevd.service                                   1      -        -        -        -</span><br><span class="line">/system.slice/webmin.service                                          1      -        -        -        -</span><br><span class="line">/user.slice/user-0.slice/session-1.scope                              3      -        -        -        -</span><br></pre></td></tr></table></figure>
+<h2 id="控制系统运行等级"><a href="#控制系统运行等级" class="headerlink" title="控制系统运行等级"></a>控制系统运行等级</h2><h3 id="32-启动系统救援模式"><a href="#32-启动系统救援模式" class="headerlink" title="32. 启动系统救援模式"></a>32. 启动系统救援模式</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl rescue</span></span><br><span class="line">Broadcast message from root@tecmint on pts/0 (Wed 2015-04-29 11:31:18 IST):</span><br><span class="line">The system is going down to rescue mode NOW!</span><br></pre></td></tr></table></figure>
+<h3 id="33-进入紧急模式"><a href="#33-进入紧急模式" class="headerlink" title="33. 进入紧急模式"></a>33. 进入紧急模式</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl emergency</span></span><br><span class="line">Welcome to emergency mode! After logging <span class="keyword">in</span>, <span class="built_in">type</span> <span class="string">"journalctl -xb"</span> to view</span><br><span class="line">system logs, <span class="string">"systemctl reboot"</span> to reboot, <span class="string">"systemctl default"</span> to try again</span><br><span class="line">to boot into default mode.</span><br></pre></td></tr></table></figure>
+<h3 id="34-列出当前使用的运行等级"><a href="#34-列出当前使用的运行等级" class="headerlink" title="34. 列出当前使用的运行等级"></a>34. 列出当前使用的运行等级</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl get-default</span></span><br><span class="line">multi-user.target</span><br></pre></td></tr></table></figure>
+<h3 id="35-启动运行等级5，即图形模式"><a href="#35-启动运行等级5，即图形模式" class="headerlink" title="35. 启动运行等级5，即图形模式"></a>35. 启动运行等级5，即图形模式</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl isolate runlevel5.target</span></span><br></pre></td></tr></table></figure>
+<p>或<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl isolate graphical.target</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="36-启动运行等级3，即多用户模式（命令行）"><a href="#36-启动运行等级3，即多用户模式（命令行）" class="headerlink" title="36. 启动运行等级3，即多用户模式（命令行）"></a>36. 启动运行等级3，即多用户模式（命令行）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl isolate runlevel3.target</span></span><br></pre></td></tr></table></figure>
+<p>或<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl isolate multiuser.target</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="37-设置多用户模式或图形模式为默认运行等级"><a href="#37-设置多用户模式或图形模式为默认运行等级" class="headerlink" title="37. 设置多用户模式或图形模式为默认运行等级"></a>37. 设置多用户模式或图形模式为默认运行等级</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl set-default runlevel3.target</span></span><br><span class="line"><span class="comment"># systemctl set-default runlevel5.target</span></span><br></pre></td></tr></table></figure>
+<h3 id="38-重启、停止、挂起、休眠系统或使系统进入混合睡眠"><a href="#38-重启、停止、挂起、休眠系统或使系统进入混合睡眠" class="headerlink" title="38. 重启、停止、挂起、休眠系统或使系统进入混合睡眠"></a>38. 重启、停止、挂起、休眠系统或使系统进入混合睡眠</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># systemctl reboot</span></span><br><span class="line"><span class="comment"># systemctl halt</span></span><br><span class="line"><span class="comment"># systemctl suspend</span></span><br><span class="line"><span class="comment"># systemctl hibernate</span></span><br><span class="line"><span class="comment"># systemctl hybrid-sleep</span></span><br></pre></td></tr></table></figure>
+<p>对于不知运行等级为何物的人，说明如下。</p>
+<ul>
+<li>Runlevel 0 : 关闭系统</li>
+<li>Runlevel 1 : 救援？维护模式</li>
+<li>Runlevel 3 : 多用户，无图形系统</li>
+<li>Runlevel 4 : 多用户，无图形系统</li>
+<li>Runlevel 5 : 多用户，图形化系统</li>
+<li>Runlevel 6 : 关闭并重启机器</li>
+</ul>
+<p>到此为止吧。保持连线，进行评论。别忘了在下面的评论中为我们提供一些有价值的反馈哦。喜欢我们、与我们分享，求扩散。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">译自: http://www.tecmint.com/manage-services-using-systemd-and-systemctl-in-linux/</span><br><span class="line">转自: https://linux.cn/article-5926-1.html</span><br><span class="line">作者: Avishek Kumar</span><br><span class="line">译者: GOLinux</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/08/15/systemctl命令完全指南/" title="systemctl 命令完全指南">https://weizhimiao.github.io/2017/08/15/systemctl命令完全指南/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/systemctl/" rel="tag"># systemctl</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/23/利用ELK搭建自己的日志分析系统/" rel="next" title="利用ELK搭建自己的日志分析系统">
+                <i class="fa fa-chevron-left"></i> 利用ELK搭建自己的日志分析系统
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Systemd初体验和Systemctl基础"><span class="nav-number">1.</span> <span class="nav-text">Systemd初体验和Systemctl基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-首先检查你的系统中是否安装有systemd并确定当前安装的版本"><span class="nav-number">1.1.</span> <span class="nav-text">1. 首先检查你的系统中是否安装有systemd并确定当前安装的版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-检查systemd和systemctl的二进制文件和库文件的安装位置"><span class="nav-number">1.2.</span> <span class="nav-text">2. 检查systemd和systemctl的二进制文件和库文件的安装位置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-检查systemd是否运行"><span class="nav-number">1.3.</span> <span class="nav-text">3. 检查systemd是否运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-分析systemd启动进程"><span class="nav-number">1.4.</span> <span class="nav-text">4. 分析systemd启动进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-分析启动时各个进程花费的时间"><span class="nav-number">1.5.</span> <span class="nav-text">5. 分析启动时各个进程花费的时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-分析启动时的关键链"><span class="nav-number">1.6.</span> <span class="nav-text">6. 分析启动时的关键链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-列出所有可用单元"><span class="nav-number">1.7.</span> <span class="nav-text">7. 列出所有可用单元</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-列出所有运行中单元"><span class="nav-number">1.8.</span> <span class="nav-text">8. 列出所有运行中单元</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-列出所有失败单元"><span class="nav-number">1.9.</span> <span class="nav-text">9. 列出所有失败单元</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-检查某个单元（如-cron-service）是否启用"><span class="nav-number">1.10.</span> <span class="nav-text">10. 检查某个单元（如 cron.service）是否启用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-检查某个单元或服务是否运行"><span class="nav-number">1.11.</span> <span class="nav-text">11. 检查某个单元或服务是否运行</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Systemctl控制并管理服务"><span class="nav-number">2.</span> <span class="nav-text">使用Systemctl控制并管理服务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#12-列出所有服务（包括启用的和禁用的）"><span class="nav-number">2.1.</span> <span class="nav-text">12. 列出所有服务（包括启用的和禁用的）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-Linux中如何启动、重启、停止、重载服务以及检查服务（如-httpd-service）状态"><span class="nav-number">2.2.</span> <span class="nav-text">13. Linux中如何启动、重启、停止、重载服务以及检查服务（如 httpd.service）状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-如何激活服务并在启动时启用或禁用服务（即系统启动时自动启动服务）"><span class="nav-number">2.3.</span> <span class="nav-text">14. 如何激活服务并在启动时启用或禁用服务（即系统启动时自动启动服务）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-如何屏蔽（让它不能启动）或显示服务（如-httpd-service）"><span class="nav-number">2.4.</span> <span class="nav-text">15. 如何屏蔽（让它不能启动）或显示服务（如 httpd.service）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-使用systemctl命令杀死服务"><span class="nav-number">2.5.</span> <span class="nav-text">16. 使用systemctl命令杀死服务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Systemctl控制并管理挂载点"><span class="nav-number">3.</span> <span class="nav-text">使用Systemctl控制并管理挂载点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#17-列出所有系统挂载点"><span class="nav-number">3.1.</span> <span class="nav-text">17. 列出所有系统挂载点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-挂载、卸载、重新挂载、重载系统挂载点并检查系统中挂载点状态"><span class="nav-number">3.2.</span> <span class="nav-text">18. 挂载、卸载、重新挂载、重载系统挂载点并检查系统中挂载点状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-在启动时激活、启用或禁用挂载点（系统启动时自动挂载）"><span class="nav-number">3.3.</span> <span class="nav-text">19. 在启动时激活、启用或禁用挂载点（系统启动时自动挂载）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-在Linux中屏蔽（让它不能启用）或可见挂载点"><span class="nav-number">3.4.</span> <span class="nav-text">20. 在Linux中屏蔽（让它不能启用）或可见挂载点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Systemctl控制并管理套接口"><span class="nav-number">4.</span> <span class="nav-text">使用Systemctl控制并管理套接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#21-列出所有可用系统套接口"><span class="nav-number">4.1.</span> <span class="nav-text">21. 列出所有可用系统套接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-在Linux中启动、重启、停止、重载套接口并检查其状态"><span class="nav-number">4.2.</span> <span class="nav-text">22. 在Linux中启动、重启、停止、重载套接口并检查其状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-在启动时激活套接口，并启用或禁用它（系统启动时自启动）"><span class="nav-number">4.3.</span> <span class="nav-text">23. 在启动时激活套接口，并启用或禁用它（系统启动时自启动）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-屏蔽（使它不能启动）或显示套接口"><span class="nav-number">4.4.</span> <span class="nav-text">24. 屏蔽（使它不能启动）或显示套接口</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务的CPU利用率（分配额）"><span class="nav-number">5.</span> <span class="nav-text">服务的CPU利用率（分配额）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#25-获取当前某个服务的CPU分配额（如httpd）"><span class="nav-number">5.1.</span> <span class="nav-text">25. 获取当前某个服务的CPU分配额（如httpd）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#26-将某个服务（httpd-service）的CPU分配份额限制为2000-CPUShares"><span class="nav-number">5.2.</span> <span class="nav-text">26. 将某个服务（httpd.service）的CPU分配份额限制为2000 CPUShares/</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#27-检查某个服务的所有配置细节"><span class="nav-number">5.3.</span> <span class="nav-text">27. 检查某个服务的所有配置细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#28-分析某个服务（httpd）的关键链"><span class="nav-number">5.4.</span> <span class="nav-text">28. 分析某个服务（httpd）的关键链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#29-获取某个服务（httpd）的依赖性列表"><span class="nav-number">5.5.</span> <span class="nav-text">29. 获取某个服务（httpd）的依赖性列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#30-按等级列出控制组"><span class="nav-number">5.6.</span> <span class="nav-text">30. 按等级列出控制组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#31-按CPU、内存、输入和输出列出控制组"><span class="nav-number">5.7.</span> <span class="nav-text">31. 按CPU、内存、输入和输出列出控制组</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#控制系统运行等级"><span class="nav-number">6.</span> <span class="nav-text">控制系统运行等级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#32-启动系统救援模式"><span class="nav-number">6.1.</span> <span class="nav-text">32. 启动系统救援模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-进入紧急模式"><span class="nav-number">6.2.</span> <span class="nav-text">33. 进入紧急模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#34-列出当前使用的运行等级"><span class="nav-number">6.3.</span> <span class="nav-text">34. 列出当前使用的运行等级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#35-启动运行等级5，即图形模式"><span class="nav-number">6.4.</span> <span class="nav-text">35. 启动运行等级5，即图形模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#36-启动运行等级3，即多用户模式（命令行）"><span class="nav-number">6.5.</span> <span class="nav-text">36. 启动运行等级3，即多用户模式（命令行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#37-设置多用户模式或图形模式为默认运行等级"><span class="nav-number">6.6.</span> <span class="nav-text">37. 设置多用户模式或图形模式为默认运行等级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#38-重启、停止、挂起、休眠系统或使系统进入混合睡眠"><span class="nav-number">6.7.</span> <span class="nav-text">38. 重启、停止、挂起、休眠系统或使系统进入混合睡眠</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="性能是MySQL一直引以为豪的一点。在性能和功能两个方面，MySQL第一考虑的还是性能。">
+<meta name="keywords" content="性能优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大话MySQL性能优化">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/13/大话MySQL性能优化/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="性能是MySQL一直引以为豪的一点。在性能和功能两个方面，MySQL第一考虑的还是性能。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161013/MySQLXingNenDiaoYou.jpg">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="大话MySQL性能优化">
+<meta name="twitter:description" content="性能是MySQL一直引以为豪的一点。在性能和功能两个方面，MySQL第一考虑的还是性能。">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161013/MySQLXingNenDiaoYou.jpg">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/13/大话MySQL性能优化/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>大话MySQL性能优化 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/13/大话MySQL性能优化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">大话MySQL性能优化<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/大话MySQL性能优化.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-13 18:30:00" itemprop="dateCreated datePublished" datetime="2016-10-13T18:30:00+08:00">2016-10-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/13/大话MySQL性能优化/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/13/大话MySQL性能优化/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="http://n.sinaimg.cn/games/3ece443e/20161013/MySQLXingNenDiaoYou.jpg" alt="MYSQL性能优化"></p>
+<p>性能是MySQL一直引以为豪的一点。在性能和功能两个方面，MySQL第一考虑的还是性能。</p>
+<a id="more"></a>
+<h2 id="影响MySQL性能的相关因素"><a href="#影响MySQL性能的相关因素" class="headerlink" title="影响MySQL性能的相关因素"></a>影响MySQL性能的相关因素</h2><h3 id="商业需求对性能的影响"><a href="#商业需求对性能的影响" class="headerlink" title="商业需求对性能的影响"></a>商业需求对性能的影响</h3><p>对于某一些功能在整个系统中是画蛇添足的，那么这些需求就可能会影响系统性能。比如，一个论坛要求对在线人数进行实时统计。</p>
+<h3 id="系统架构及实现对性能的影响"><a href="#系统架构及实现对性能的影响" class="headerlink" title="系统架构及实现对性能的影响"></a>系统架构及实现对性能的影响</h3><p>服务器调优</p>
+<p>应用程序调优</p>
+<ul>
+<li>不可是存储到数据库的数据<ul>
+<li>二进制多媒体数据</li>
+<li>流水队列数据</li>
+<li>超大文本数据</li>
+</ul>
+</li>
+<li>合理的利用应用层Cache（适合Cache的数据有：）<ul>
+<li>系统的各种配置和规则数据</li>
+<li>活跃用户的基本信息数据</li>
+<li>活跃用户的个性化定制信息数据</li>
+<li>准实时的统计信息</li>
+<li>其他一些访问频繁但变更很少的数据</li>
+</ul>
+</li>
+<li>数据层实现精简</li>
+<li>过度依赖数据库SQL语句功能</li>
+<li>常见的架构设计不当带来的性能问题和资源浪费<ul>
+<li>Cache系统设计不合理，导致Cache命中率低下</li>
+<li>过度依赖面向对象</li>
+<li>对可扩展性的过度追求（促使系统设计的时候对象拆分的过于分散，造成系统中出现大量的join语句）</li>
+<li>对数据库的过于依赖（将不适合存储在数据库中的数据存储在数据库中）</li>
+<li>过度理想化系统的用户体验（使大量非核心业务消耗大量系统资源）</li>
+</ul>
+</li>
+</ul>
+<h3 id="Query语句对性能的影响"><a href="#Query语句对性能的影响" class="headerlink" title="Query语句对性能的影响"></a>Query语句对性能的影响</h3><h4 id="分析手段"><a href="#分析手段" class="headerlink" title="分析手段"></a>分析手段</h4><ul>
+<li><p>explain</p>
+<blockquote>
+<p>分析选项：</p>
+<ul>
+<li>索引（key），query语句中是用到的索引</li>
+<li>row中的rows，查找的记录数</li>
+</ul>
+</blockquote>
+</li>
+<li><p>profiling</p>
+<blockquote>
+<p>先打开profiling；set profiling=1；</p>
+<p>查看profiling信息：show profiling \G;</p>
+<p>show profile CPU,BLOCK IO FOR query 1(2);</p>
+<p>分析选项</p>
+<ul>
+<li>CPU IO消耗</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h4 id="MySQL的锁机制"><a href="#MySQL的锁机制" class="headerlink" title="MySQL的锁机制"></a>MySQL的锁机制</h4><blockquote>
+<p><strong>锁机制的目的：</strong> 保证数据的一致完整性</p>
+<p><strong>锁机制的影响：</strong> 直接影响一个数据库系统的并发处理能力和性能</p>
+</blockquote>
+<ul>
+<li><p>行级锁（row-level）</p>
+<blockquote>
+<p><strong>优点：</strong> 锁定对象的粒度最小，发生锁定资源争用的概率就最小，能给予最大可能的并发处理能力。</p>
+<p><strong>缺点：</strong> 由于粒度最小，所以每次获得锁和释放锁需要做的工作也最多。带来的消耗也就最大。另外，容易发生死锁。</p>
+</blockquote>
+</li>
+<li><p>表级锁（table-level）</p>
+<blockquote>
+<p><strong>优点：</strong> 最大粒度的锁定机制。所以逻辑简单，实现也较为容易。获得锁和释放锁的速度也很快。而且能很好的避免死锁问题。</p>
+<p><strong>缺点：</strong> 出现锁定资源争用的概率会提高，导致并发处理能力大打折扣。</p>
+</blockquote>
+</li>
+<li><p>页级锁（page-level）</p>
+<blockquote>
+<p>介于row-level和table-level二者之间。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="合理的应用锁机制"><a href="#合理的应用锁机制" class="headerlink" title="合理的应用锁机制"></a>合理的应用锁机制</h4><p>MyISAM表锁优化</p>
+<blockquote>
+<p>关键：提高并发度</p>
+</blockquote>
+<ul>
+<li>缩短锁定时间，即query的执行时间要尽可能的短<ul>
+<li>尽量减少大的、复杂的query，将复杂的query拆分</li>
+<li>尽可能的建立高效索引，使数据的检索更加迅速</li>
+<li>尽量让MySQL的表只存放必要的信息，控制字段类型</li>
+</ul>
+</li>
+<li>分离能并行的操作<ul>
+<li>关键：Concurrent insert（并发插入特性）</li>
+<li>打开 Concurrent_insert功能，选项有0，1和2。具体说明如下：</li>
+<li>concurrent_insert=2,无论MyISAM表数据文件中间部分是否存在因删除而留下的空闲空间，都允许在尾部进行concurrent insert操作。</li>
+<li>concurrent_insert=1,当MyISAM表数据文件中间部分不存在因删除而留下的空闲空间，可以在尾部进行concurrent insert操作。</li>
+<li>concurrent_insert=0,无论MyISAM表数据文件中间部分是否存在因删除而留下的空闲空间，都不允许在尾部进行concurrent insert操作。</li>
+<li>建议：如果数据删除的肯呢个性很小，则建议将concurrent_insert设置成1，如不在乎浪费少量空间设置成2也可以。但当有少量删除时，设置成1更合适。</li>
+</ul>
+</li>
+<li>读写优先级设置<ul>
+<li>默认，写的优先级大于读的优先级</li>
+<li>参数选项，low_priority_updates=1(将写的优先级调低)</li>
+</ul>
+</li>
+</ul>
+<p>InnoDB行锁优化</p>
+<ul>
+<li>尽可能让所有的数据检索都通过索引来完成，避免InnoDB因为无法通过索引键加锁升级成为表级锁定</li>
+<li>合理设计索引，让InnoDB加锁是尽可能准确，尽可能缩小锁定范围</li>
+<li>尽可能的减少基于范围的数据检索过滤条件</li>
+<li>尽量控制事务的大小，尽量减少锁定的资源量和锁定的时间长度</li>
+<li>尽量使用级别低的事务隔离级别，减少MySQL因为事务隔离带来的附加成本</li>
+<li>尽可能减少死锁产生的概率<ul>
+<li>类似业务模块中，尽可能用相同的访问顺序来访问，防止产生死锁</li>
+<li>同一事务中，尽可能一次锁定所有需要的资源</li>
+<li>对于非常容易产生死锁的业务部分，可以尝试升级锁定粒度，通过表级锁定减少死锁产生的概率</li>
+</ul>
+</li>
+<li><p>系统锁定争用情况的查询</p>
+<ul>
+<li><p>标记锁定争用状态变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show status like &apos;table%&apos;</span><br><span class="line">variable_name value</span><br><span class="line">table_lock_immediate 100  //产生标记锁定次数</span><br><span class="line">table_lock_waited 0       //出现标记锁定争用出现的等待的次数</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>行级锁定争用状态变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show status like &apos;innodb_row_lock%&apos;</span><br><span class="line">innodb_row_lock_current_waits 0   //当前正在等待锁定的数量</span><br><span class="line">innodb_row_lock_time 3999999      //从系统启动到现在锁定的总时间长度</span><br><span class="line">innodb_row_lock_time_avg 36666    //每次等待所花费平均时间</span><br><span class="line">innodb_row_lock_time_max 122222   //从启动到现在等待最长一次所花时间长度</span><br><span class="line">innodb_row_lock_waits 20          //从启动到现在共等待的次数</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="垂直和水平联合切分的使用"><a href="#垂直和水平联合切分的使用" class="headerlink" title="垂直和水平联合切分的使用"></a>垂直和水平联合切分的使用</h2><p>优点：</p>
+<ul>
+<li>充分利用垂直切分和水平切分各自的优势，而避免各自的缺陷</li>
+<li>让系统扩展性得到最大提升</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>数据库系统架构比较复杂，使维护难度更大</li>
+<li>应用程序架构也相对更复杂</li>
+</ul>
+<h2 id="合理的设计并利用索引"><a href="#合理的设计并利用索引" class="headerlink" title="合理的设计并利用索引"></a>合理的设计并利用索引</h2><h3 id="MySQL常用的四种索引类型"><a href="#MySQL常用的四种索引类型" class="headerlink" title="MySQL常用的四种索引类型"></a>MySQL常用的四种索引类型</h3><ul>
+<li>B-tree索引</li>
+<li>Hash索引</li>
+<li>Fulltext索引</li>
+<li>Rtree索引</li>
+</ul>
+<h3 id="索引的弊端"><a href="#索引的弊端" class="headerlink" title="索引的弊端"></a>索引的弊端</h3><ul>
+<li>增加了更新所带来的IO量，和调整索引导致的计算量</li>
+<li>占用存储空间，并会跟数据量的增加而增加</li>
+</ul>
+<h3 id="如何判断是否需要索引"><a href="#如何判断是否需要索引" class="headerlink" title="如何判断是否需要索引"></a>如何判断是否需要索引</h3><ul>
+<li>较频繁作为查询条件的字段应该创建索引</li>
+<li>唯一性太差的字段不适合做单独的索引，即使它频繁作为查询条件</li>
+<li>更新非常频繁的字段不适合做索引</li>
+<li>不会出现在where子句中的字段不适合做索引</li>
+</ul>
+<h3 id="MySQL索引的限制"><a href="#MySQL索引的限制" class="headerlink" title="MySQL索引的限制"></a>MySQL索引的限制</h3><ul>
+<li>MyISAM存储引擎索引键长度总和长度不能超过1000字节</li>
+<li>Text和Blob类型的字段只能创建前缀索引</li>
+<li>使用不等于（!= 或 &lt;&gt; ）的时候MySQL无法使用索引</li>
+<li>过滤字段使用了函数运算后（如，abs（culumn）），MySQL无法使用索引</li>
+<li>join语句中join条件字段类型不一致不能使用索引</li>
+<li>使用LIKE操作的时候，如果条件以通配符开始（如，’%abc’）MySQL无法使用索引</li>
+<li>使用非等值查询时，MySQL无法使用索引</li>
+</ul>
+<h2 id="Query的优化"><a href="#Query的优化" class="headerlink" title="Query的优化"></a>Query的优化</h2><h3 id="优化更需要优化的query"><a href="#优化更需要优化的query" class="headerlink" title="优化更需要优化的query"></a>优化更需要优化的query</h3><p>高并发低消耗的query（相对）对整个系统的影响远比低并发高消耗的query要大。</p>
+<h3 id="定位优化对象的性能瓶颈（profiling）"><a href="#定位优化对象的性能瓶颈（profiling）" class="headerlink" title="定位优化对象的性能瓶颈（profiling）"></a>定位优化对象的性能瓶颈（profiling）</h3><ul>
+<li>IO，数据访问方面</li>
+<li>CPU，数据运算（如分组、排序）</li>
+</ul>
+<h3 id="明确优化手段"><a href="#明确优化手段" class="headerlink" title="明确优化手段"></a>明确优化手段</h3><p>优化更偏向与对系统功能比较重要的query</p>
+<h3 id="从explain入手"><a href="#从explain入手" class="headerlink" title="从explain入手"></a>从explain入手</h3><p>获取一个query在当前状态的数据库中的执行计划</p>
+<h3 id="多用profile"><a href="#多用profile" class="headerlink" title="多用profile"></a>多用profile</h3><h3 id="永远用小结果集驱动大结果集"><a href="#永远用小结果集驱动大结果集" class="headerlink" title="永远用小结果集驱动大结果集"></a>永远用小结果集驱动大结果集</h3><h3 id="尽可能在索引中完成排序"><a href="#尽可能在索引中完成排序" class="headerlink" title="尽可能在索引中完成排序"></a>尽可能在索引中完成排序</h3><h3 id="只需取出自己需要的column"><a href="#只需取出自己需要的column" class="headerlink" title="只需取出自己需要的column"></a>只需取出自己需要的column</h3><h3 id="仅适用最有效的过滤条件"><a href="#仅适用最有效的过滤条件" class="headerlink" title="仅适用最有效的过滤条件"></a>仅适用最有效的过滤条件</h3><p>where字句中的条件并非越多越好</p>
+<h3 id="尽可能的避免复杂的join查询和子查询"><a href="#尽可能的避免复杂的join查询和子查询" class="headerlink" title="尽可能的避免复杂的join查询和子查询"></a>尽可能的避免复杂的join查询和子查询</h3><p>query语句涉及的表越多，需要锁定的资源就越多，所阻塞的其他线程也就越多。</p>
+<h3 id="其他优化"><a href="#其他优化" class="headerlink" title="其他优化"></a>其他优化</h3><h4 id="join的实现与优化"><a href="#join的实现与优化" class="headerlink" title="join的实现与优化"></a>join的实现与优化</h4><p>join是一种算法，即大名鼎鼎的Nested Loop Join。它是通过驱动表的结果集作为循环基础数据，然后一条一条的通过该结果集中的数据作为过滤条件到下一个表中查询数据，然后合并结果。</p>
+<ul>
+<li><p>尽可能的Join语句中的Nested Loop的循环次数</p>
+<blockquote>
+<p>最有效的方法只有一个：让驱动表的结果集尽可能的小。即『永远用小结果集驱动大结果集』</p>
+</blockquote>
+</li>
+<li><p>优先优化Nested Loop的内层循环</p>
+</li>
+<li>保证Join语句中被驱动表上的join字段已经被索引</li>
+<li>当无法保证被驱动表join字段被索引且内存充足的前提下，不要太吝啬joinBuffer的设置</li>
+</ul>
+<h4 id="order-by的优化"><a href="#order-by的优化" class="headerlink" title="order by的优化"></a>order by的优化</h4><ul>
+<li>加大max_length_for_sort_data参数的设置</li>
+<li>去掉不必要的返回字段</li>
+<li>增大sort_buffer_size参数设置</li>
+</ul>
+<h4 id="Schema设计优化"><a href="#Schema设计优化" class="headerlink" title="Schema设计优化"></a>Schema设计优化</h4><ul>
+<li>范式理论</li>
+<li>十度冗余，尽量减少join</li>
+</ul>
+<h4 id="大字段垂直拆分"><a href="#大字段垂直拆分" class="headerlink" title="大字段垂直拆分"></a>大字段垂直拆分</h4><p>什么样的字段适合</p>
+<ul>
+<li>大字段（比如，文章内容、帖子内容、产品的介绍、小说内容等）</li>
+<li>表中和其他字段比较，访问明显要少的字段</li>
+</ul>
+<p>优点</p>
+<ul>
+<li>数据库拆分简单明了，拆分规则明确</li>
+<li>应用程序模块清晰明了，整合容易</li>
+<li>数据维护方便易行，容易定位</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>部分表关联无法在数据库级别完成，需要在程序中完成</li>
+<li>对于访问极其频繁且数据量超大的表任然存在性能瓶颈，不一定满足要求</li>
+<li>事务处理相对更为复杂</li>
+<li>切分达到一定程度后，扩展性会收到限制</li>
+<li>过度切分可能会带来系统过度复杂而难以维护</li>
+</ul>
+<h4 id="大表水平拆分"><a href="#大表水平拆分" class="headerlink" title="大表水平拆分"></a>大表水平拆分</h4><p>基于类型的分拆优化</p>
+<p>优点</p>
+<ul>
+<li>表关联基本能在数据库端完成</li>
+<li>不会存在某些超大型数据量和高负载的表遇到的瓶颈问题</li>
+<li>应用程序端整体架构改动相对较少</li>
+<li>事务处理相对简单</li>
+<li>只要切分规则能够定义好，基本上较难遇到扩展性限制</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>切分规则相对更为复杂，很难抽象出一个能够满足整个数据库的切分规则</li>
+<li>后期数据的维护难度有所增加，人为手工定位数据更困难</li>
+<li>应用系统各模块耦合度较高，可能会对后面数据的迁移、拆分造成一定困难</li>
+</ul>
+<h2 id="MySQL的备份与恢复"><a href="#MySQL的备份与恢复" class="headerlink" title="MySQL的备份与恢复"></a>MySQL的备份与恢复</h2><p>备份使用场景</p>
+<ul>
+<li>数据丢失应用场景<ul>
+<li>人为操作事务造成的某些数据丢失</li>
+<li>如那件Bug造成的数据部分丢失或者全部丢失</li>
+<li>硬件故障造成的数据部分或者全部丢失</li>
+<li>安全漏洞被入侵数据被恶意破坏</li>
+</ul>
+</li>
+<li>非数据丢失应用场景<ul>
+<li>特殊应用场景下基于时间点恢复</li>
+<li>开发测试环境数据库搭建</li>
+<li>相同数据库的新环境搭建</li>
+<li>数据库或者数据迁移</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/13/大话MySQL性能优化/" title="大话MySQL性能优化">https://weizhimiao.github.io/2016/10/13/大话MySQL性能优化/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/性能优化/" rel="tag"># 性能优化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/13/大型网站技术架构剖析/" rel="next" title="大型网站技术架构剖析">
+                <i class="fa fa-chevron-left"></i> 大型网站技术架构剖析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/14/PHP常见设计模式之单例模式/" rel="prev" title="PHP常见设计模式之单例模式">
+                PHP常见设计模式之单例模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#影响MySQL性能的相关因素"><span class="nav-number">1.</span> <span class="nav-text">影响MySQL性能的相关因素</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#商业需求对性能的影响"><span class="nav-number">1.1.</span> <span class="nav-text">商业需求对性能的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统架构及实现对性能的影响"><span class="nav-number">1.2.</span> <span class="nav-text">系统架构及实现对性能的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Query语句对性能的影响"><span class="nav-number">1.3.</span> <span class="nav-text">Query语句对性能的影响</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分析手段"><span class="nav-number">1.3.1.</span> <span class="nav-text">分析手段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MySQL的锁机制"><span class="nav-number">1.3.2.</span> <span class="nav-text">MySQL的锁机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#合理的应用锁机制"><span class="nav-number">1.3.3.</span> <span class="nav-text">合理的应用锁机制</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垂直和水平联合切分的使用"><span class="nav-number">2.</span> <span class="nav-text">垂直和水平联合切分的使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#合理的设计并利用索引"><span class="nav-number">3.</span> <span class="nav-text">合理的设计并利用索引</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MySQL常用的四种索引类型"><span class="nav-number">3.1.</span> <span class="nav-text">MySQL常用的四种索引类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引的弊端"><span class="nav-number">3.2.</span> <span class="nav-text">索引的弊端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何判断是否需要索引"><span class="nav-number">3.3.</span> <span class="nav-text">如何判断是否需要索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MySQL索引的限制"><span class="nav-number">3.4.</span> <span class="nav-text">MySQL索引的限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Query的优化"><span class="nav-number">4.</span> <span class="nav-text">Query的优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优化更需要优化的query"><span class="nav-number">4.1.</span> <span class="nav-text">优化更需要优化的query</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#定位优化对象的性能瓶颈（profiling）"><span class="nav-number">4.2.</span> <span class="nav-text">定位优化对象的性能瓶颈（profiling）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#明确优化手段"><span class="nav-number">4.3.</span> <span class="nav-text">明确优化手段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从explain入手"><span class="nav-number">4.4.</span> <span class="nav-text">从explain入手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多用profile"><span class="nav-number">4.5.</span> <span class="nav-text">多用profile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#永远用小结果集驱动大结果集"><span class="nav-number">4.6.</span> <span class="nav-text">永远用小结果集驱动大结果集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尽可能在索引中完成排序"><span class="nav-number">4.7.</span> <span class="nav-text">尽可能在索引中完成排序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#只需取出自己需要的column"><span class="nav-number">4.8.</span> <span class="nav-text">只需取出自己需要的column</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#仅适用最有效的过滤条件"><span class="nav-number">4.9.</span> <span class="nav-text">仅适用最有效的过滤条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尽可能的避免复杂的join查询和子查询"><span class="nav-number">4.10.</span> <span class="nav-text">尽可能的避免复杂的join查询和子查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他优化"><span class="nav-number">4.11.</span> <span class="nav-text">其他优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#join的实现与优化"><span class="nav-number">4.11.1.</span> <span class="nav-text">join的实现与优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#order-by的优化"><span class="nav-number">4.11.2.</span> <span class="nav-text">order by的优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Schema设计优化"><span class="nav-number">4.11.3.</span> <span class="nav-text">Schema设计优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#大字段垂直拆分"><span class="nav-number">4.11.4.</span> <span class="nav-text">大字段垂直拆分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#大表水平拆分"><span class="nav-number">4.11.5.</span> <span class="nav-text">大表水平拆分</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL的备份与恢复"><span class="nav-number">5.</span> <span class="nav-text">MySQL的备份与恢复</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

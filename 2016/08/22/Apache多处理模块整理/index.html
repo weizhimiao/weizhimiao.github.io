@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Apache 2.X  支持插入式并行处理模块，称为多路处理模块 MPM，（Multi-Processing Modules）它是一个用于选择和处理网络端口的绑定，接收请求并指派子进程处理来自客户端的请求的一个Apache模块。和其他Apache模块相比，它最大的区别是，在任何时间， 必须有一个，而且只有一个 MPM 加载到服务器中。  原理就是增加服务器服务进程或线程数量，是服务器可同时处理更多">
+<meta name="keywords" content="Apache Apache性能优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache 并行处理模块小结">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/08/22/Apache多处理模块整理/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Apache 2.X  支持插入式并行处理模块，称为多路处理模块 MPM，（Multi-Processing Modules）它是一个用于选择和处理网络端口的绑定，接收请求并指派子进程处理来自客户端的请求的一个Apache模块。和其他Apache模块相比，它最大的区别是，在任何时间， 必须有一个，而且只有一个 MPM 加载到服务器中。  原理就是增加服务器服务进程或线程数量，是服务器可同时处理更多">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache 并行处理模块小结">
+<meta name="twitter:description" content="Apache 2.X  支持插入式并行处理模块，称为多路处理模块 MPM，（Multi-Processing Modules）它是一个用于选择和处理网络端口的绑定，接收请求并指派子进程处理来自客户端的请求的一个Apache模块。和其他Apache模块相比，它最大的区别是，在任何时间， 必须有一个，而且只有一个 MPM 加载到服务器中。  原理就是增加服务器服务进程或线程数量，是服务器可同时处理更多">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/08/22/Apache多处理模块整理/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Apache 并行处理模块小结 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/08/22/Apache多处理模块整理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Apache 并行处理模块小结<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Apache多处理模块整理.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-08-22 22:36:00" itemprop="dateCreated datePublished" datetime="2016-08-22T22:36:00+08:00">2016-08-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Apache/" itemprop="url" rel="index"><span itemprop="name">Apache</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/08/22/Apache多处理模块整理/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/08/22/Apache多处理模块整理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">6.4k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">6 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Apache 2.X  支持插入式并行处理模块，称为多路处理模块 MPM，（Multi-Processing Modules）它是一个用于选择和处理网络端口的绑定，接收请求并指派子进程处理来自客户端的请求的一个Apache模块。和其他Apache模块相比，它最大的区别是，在任何时间， 必须有一个，而且只有一个 MPM 加载到服务器中。</p>
+<blockquote>
+<p>原理就是增加服务器服务进程或线程数量，是服务器可同时处理更多用户请求。</p>
+</blockquote>
+<a id="more"></a>
+<h2 id="如何为Apache选择并安装一个合适的MPM模块"><a href="#如何为Apache选择并安装一个合适的MPM模块" class="headerlink" title="如何为Apache选择并安装一个合适的MPM模块"></a>如何为Apache选择并安装一个合适的MPM模块</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>MPM 必须在编译前夕，配置时指定，然后编译到服务器程序中。</p>
+<p>即在执行 configure 时，使用参数 –with-mpm=NAME 来指定一个希望安装的MPM模块。NAME 是指定的 MPM 名称。</p>
+<p>例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/usr/local/apache2 --with-mpm=worker</span><br><span class="line">make &amp; make install</span><br></pre></td></tr></table></figure></p>
+<p>或者也可以编译为支持指定的几种或者全部MPM，之后通过修改配置来更换具体使用哪种MPM。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--enable-mpms-shared=&apos;prefork worker&apos;</span><br><span class="line">--enable-mpms-shared=all</span><br></pre></td></tr></table></figure></p>
+<p>例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/usr/local/apache2 --enable-mpms-shared=all</span><br><span class="line">···</span><br></pre></td></tr></table></figure></p>
+<p>安装成功之后，会在modules文件夹下，自动编译出我们指定的MPM的so模块，在httpd.conf中修改Apache的多处理模式MPM可以切换不同MPM模块：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#LoadModule mpm_prefork_module modules/mod_mpm_prefork.so</span><br><span class="line">LoadModule mpm_worker_module modules/mod_mpm_worker.so</span><br><span class="line">#LoadModule mpm_event_module modules/mod_mpm_event.so</span><br></pre></td></tr></table></figure></p>
+<h3 id="如何查看当前使用的是哪种MPM模块"><a href="#如何查看当前使用的是哪种MPM模块" class="headerlink" title="如何查看当前使用的是哪种MPM模块"></a>如何查看当前使用的是哪种MPM模块</h3><ol>
+<li><p>使用 ./httpd -l 来确定选择的 MPM。 此命令会列出编译到服务器程序中的所有模块，包括 MPM。例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ httpd -l</span><br><span class="line">Compiled in modules:</span><br><span class="line">  core.c</span><br><span class="line">  mod_so.c</span><br><span class="line">  http_core.c</span><br><span class="line">  prefork.c</span><br></pre></td></tr></table></figure>
+<p>如上显示，我们呢当前安装的是以prefork方式工作的MPM模块。</p>
+</li>
+<li><p>使用./httpd -V 来确定当前使用的MPM模块。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">$ httpd -V</span><br><span class="line">Server version: Apache/2.4.18 (Unix)</span><br><span class="line">Server built:   Feb 20 2016 20:03:19</span><br><span class="line">Server&apos;s Module Magic Number: 20120211:52</span><br><span class="line">Server loaded:  APR 1.4.8, APR-UTIL 1.5.2</span><br><span class="line">Compiled using: APR 1.4.8, APR-UTIL 1.5.2</span><br><span class="line">Architecture:   64-bit</span><br><span class="line">Server MPM:     prefork</span><br><span class="line">  threaded:     no</span><br><span class="line">    forked:     yes (variable process count)</span><br><span class="line">Server compiled with....</span><br><span class="line"> -D APR_HAS_SENDFILE</span><br><span class="line"> -D APR_HAS_MMAP</span><br><span class="line"> -D APR_HAVE_IPV6 (IPv4-mapped addresses enabled)</span><br><span class="line"> -D APR_USE_FLOCK_SERIALIZE</span><br><span class="line"> -D APR_USE_PTHREAD_SERIALIZE</span><br><span class="line"> -D SINGLE_LISTEN_UNSERIALIZED_ACCEPT</span><br><span class="line"> -D APR_HAS_OTHER_CHILD</span><br><span class="line"> -D AP_HAVE_RELIABLE_PIPED_LOGS</span><br><span class="line"> -D DYNAMIC_MODULE_LIMIT=256</span><br><span class="line"> -D HTTPD_ROOT=&quot;/usr&quot;</span><br><span class="line"> -D SUEXEC_BIN=&quot;/usr/bin/suexec&quot;</span><br><span class="line"> -D DEFAULT_PIDLOG=&quot;/private/var/run/httpd.pid&quot;</span><br><span class="line"> -D DEFAULT_SCOREBOARD=&quot;logs/apache_runtime_status&quot;</span><br><span class="line"> -D DEFAULT_ERRORLOG=&quot;logs/error_log&quot;</span><br><span class="line"> -D AP_TYPES_CONFIG_FILE=&quot;/private/etc/apache2/mime.types&quot;</span><br><span class="line"> -D SERVER_CONFIG_FILE=&quot;/private/etc/apache2/httpd.conf&quot;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="常见的几种MPM模块以及它们之间的区别"><a href="#常见的几种MPM模块以及它们之间的区别" class="headerlink" title="常见的几种MPM模块以及它们之间的区别"></a>常见的几种MPM模块以及它们之间的区别</h2><p>如果我们在编译的时候没有明确选择使用哪种MPM模块，那么Apache将会根据不同的系统选择不同的MPM模块进行编译安装。</p>
+<table>
+<thead>
+<tr>
+<th>系统</th>
+<th>默认MPM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BeOS</td>
+<td>beos</td>
+</tr>
+<tr>
+<td>Netware</td>
+<td>mpm_netware</td>
+</tr>
+<tr>
+<td>OS/2</td>
+<td>mpmt_os2</td>
+</tr>
+<tr>
+<td>Unix</td>
+<td>prefork</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>mpm_winnt</td>
+</tr>
+</tbody>
+</table>
+<p>对于类UNIX系统，根据不同的场景需要我们可以选择使用不同的MPM模块。</p>
+<ul>
+<li>prefork</li>
+<li>worker</li>
+<li>event</li>
+</ul>
+<h3 id="prefork-MPM"><a href="#prefork-MPM" class="headerlink" title="prefork MPM"></a>prefork MPM</h3><blockquote>
+<p>非线程型的、预派生的MPM</p>
+</blockquote>
+<p><strong>原理：</strong> 启动之初，就预先fork一些子进程，然后等待请求进来。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># prefork MPM</span><br><span class="line"># StartServers: number of server processes to start</span><br><span class="line"># MinSpareServers: minimum number of server processes which are kept spare</span><br><span class="line"># MaxSpareServers: maximum number of server processes which are kept spare</span><br><span class="line"># MaxRequestWorkers: maximum number of server processes allowed to start</span><br><span class="line"># MaxConnectionsPerChild: maximum number of connections a server process serves</span><br><span class="line">#                         before terminating</span><br><span class="line">&lt;IfModule mpm_prefork_module&gt;</span><br><span class="line">    StartServers             1  #推荐 小=默认，中=20~50，大=50~100</span><br><span class="line">    MinSpareServers          1  #推荐 与 StartServers 保持一致</span><br><span class="line">    MaxSpareServers         10  #推荐 小=20，中=30~80，大=80~120</span><br><span class="line">    MaxRequestWorkers      250  #推荐 小=500，中=500~1500，大=1500~3000</span><br><span class="line">    MaxConnectionsPerChild   0  #推荐 小=10000，中或大10000~50000</span><br><span class="line">    #ServerLimit           250  #推荐 与 MaxRequestWorkers 保持一致，当MaxRequestWorkers 值超过256，则需要增加该值配置</span><br><span class="line">&lt;/IfModule&gt;</span><br></pre></td></tr></table></figure></p>
+<p>启动时建立<code>StartServers</code>个子进程，然后按每秒创建指数级个进程数，直到达到<code>MinSpareServers</code>个进程（最多增到每秒32个）。如果空闲进程大于<code>MaxSpareServers</code>，则检查kill掉一些空闲进程。</p>
+<p><code>MaxRequestWorkers</code>指定Apache最多可以同时同时处理的请求数，即进程数，当请求数多余这个值之后，多余的请求就会进入请求队列等待处理（默认不能大于256）。但可以通过设定ServerLimit来增大限制数，serverlimit最大为20000。apache2.3.1之前的版本该参数叫 MaxClients 。当我们的服务器资源很多，但访问却很慢时，我们就可以试一下增大该值，来提高服务器的请求处理能力。<br><code>MaxConnectionsPerChild</code>每个子进程可处理的请求数。处理完之后子进程就会自动销毁。<code>0</code>表示无限，永不销毁。</p>
+<ul>
+<li>优点：成熟稳定，兼容所有新老模块。同时，不需要担心线程安全的问题。</li>
+<li>缺点：相对于线程，进程相对占用更多的系统资源，消耗更多的内存。所以不擅长处理高并发请求。</li>
+</ul>
+<h3 id="worker-MPM"><a href="#worker-MPM" class="headerlink" title="worker MPM"></a>worker MPM</h3><blockquote>
+<p>支持混合的多线程、多进程的MPM。相比于prefork，worker采用了多进程和多线程混合模式，所以在使用中它占据更少的内存，在高并发情况下表现更优秀。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># worker MPM</span><br><span class="line"># StartServers: initial number of server processes to start</span><br><span class="line"># MinSpareThreads: minimum number of worker threads which are kept spare</span><br><span class="line"># MaxSpareThreads: maximum number of worker threads which are kept spare</span><br><span class="line"># ThreadsPerChild: constant umber of worker threads in each server process</span><br><span class="line"># MaxRequestWorkers: maximum number of worker threads</span><br><span class="line"># MaxConnectionsPerChild: maximum number of connections a server process serves</span><br><span class="line">#                         before terminating</span><br><span class="line">&lt;IfModule mpm_worker_module&gt;</span><br><span class="line">    StartServers             3  #推荐 小=默认，中=3~5，大=5~10</span><br><span class="line">    MinSpareThreads         75  #推荐 小=默认，中=50~100，大=100~200</span><br><span class="line">    MaxSpareThreads        250  #推荐 小=默认，中=80~160，大=200~400</span><br><span class="line">    ThreadsPerChild         25  #推荐 小=默认，中=50~100，大=100~200</span><br><span class="line">    MaxRequestWorkers      400  #推荐 小=500，中=500~1500，大=1500~3000</span><br><span class="line">    MaxConnectionsPerChild   0  #推荐 小=10000，中或大=10000~50000</span><br><span class="line">    #ServerLimit           250  #推荐 当 MaxRequestWorkers/ThreadsPerChild 大于16时，则需要增加该值配置。并且该值必须大于等于MaxRequestWorkers/ThreadsPerChild 的值</span><br><span class="line">&lt;/IfModule&gt;</span><br></pre></td></tr></table></figure>
+<p><code>ThreadsPerChild</code> 每个进程包含线程数<br><code>MaxSpareThreads</code> 定义最大空闲线程数，超过则清理</p>
+<ul>
+<li>优点：占用更少系统资源，高并发情况下表现更优秀。</li>
+<li>缺点：必须考虑线程安全的问题。</li>
+</ul>
+<h3 id="event-MPM"><a href="#event-MPM" class="headerlink" title="event MPM"></a>event MPM</h3><blockquote>
+<p>worker方式的升级版，也采用多进程和多线程混合模式，并且解决了在 <code>keep-alive</code> 情况下，长期被占用的线程的资源浪费问题。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># event MPM</span><br><span class="line"># StartServers: initial number of server processes to start</span><br><span class="line"># MinSpareThreads: minimum number of worker threads which are kept spare</span><br><span class="line"># MaxSpareThreads: maximum number of worker threads which are kept spare</span><br><span class="line"># ThreadsPerChild: constant number of worker threads in each server process</span><br><span class="line"># MaxRequestWorkers: maximum number of worker threads</span><br><span class="line"># MaxConnectionsPerChild: maximum number of connections a server process serves</span><br><span class="line">#                         before terminating</span><br><span class="line">&lt;IfModule mpm_event_module&gt;</span><br><span class="line">    StartServers             3</span><br><span class="line">    MinSpareThreads         75</span><br><span class="line">    MaxSpareThreads        250</span><br><span class="line">    ThreadsPerChild         25</span><br><span class="line">    MaxRequestWorkers      400</span><br><span class="line">    MaxConnectionsPerChild   0</span><br><span class="line">&lt;/IfModule&gt;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>优点：更好的高并发请求处理能力。</li>
+<li>缺点：兼容性问题可能不是很好（最新的官方自带的模块，已经全部支持event MPM了），需要Linux系统（Linux 2.6+）对EPoll的支持，才能启用</li>
+</ul>
+<p><strong>Tips：</strong></p>
+<ul>
+<li><strong><em>空闲子进程：</em></strong> 即没有正在处理请求的子进程。</li>
+<li><strong><em>请求等待队列：</em></strong> 任何超过 MaxClients 或 MaxRequestWorkers 限制的请求都将进入到等待队列，直到收到 ListenBacklog 指令限制的最大值为止（默认 ListenBacklog 511）</li>
+<li><strong><em>ServerLimit：</em></strong> 该值表示Apache允许创建的最大进程数。值得注意的是 Apache在编译的时候会有一个硬限制 ServerLimit 20000 ，你不能超过该值。该值如果设置过高，将会有过多的内存被分配，可能会导致Apache 无法启动或者不稳定的情况。</li>
+</ul>
+<h2 id="简单测试对比"><a href="#简单测试对比" class="headerlink" title="简单测试对比"></a>简单测试对比</h2><p>对上面三种模式，我们做简单的测试进行对比。</p>
+<h3 id="静态页面"><a href="#静态页面" class="headerlink" title="静态页面"></a>静态页面</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./ab -k -c 200 -n 200000 192.168.1.234/index.html</span><br></pre></td></tr></table></figure>
+<p>结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prefork：9556QPS</span><br><span class="line">worker ：11038QPS</span><br><span class="line">event ：10224QPS</span><br></pre></td></tr></table></figure></p>
+<h3 id="PHP页面"><a href="#PHP页面" class="headerlink" title="PHP页面"></a>PHP页面</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./ab -k -c 200 -n 200000 192.168.1.234/index.php  #echo &quot;hello world&quot;;</span><br></pre></td></tr></table></figure>
+<p>结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prefork：6094QPS</span><br><span class="line">worker ：7411QPS</span><br><span class="line">event ：7089QPS</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/08/22/Apache多处理模块整理/" title="Apache 并行处理模块小结">https://weizhimiao.github.io/2016/08/22/Apache多处理模块整理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Apache-Apache性能优化/" rel="tag"># Apache Apache性能优化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/22/面向对象三大特性五大基本原则/" rel="next" title="面向对象三大特性五大基本原则">
+                <i class="fa fa-chevron-left"></i> 面向对象三大特性五大基本原则
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/23/Apache性能监控/" rel="prev" title="Apache性能监控">
+                Apache性能监控 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#如何为Apache选择并安装一个合适的MPM模块"><span class="nav-number">1.</span> <span class="nav-text">如何为Apache选择并安装一个合适的MPM模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">1.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何查看当前使用的是哪种MPM模块"><span class="nav-number">1.2.</span> <span class="nav-text">如何查看当前使用的是哪种MPM模块</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见的几种MPM模块以及它们之间的区别"><span class="nav-number">2.</span> <span class="nav-text">常见的几种MPM模块以及它们之间的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#prefork-MPM"><span class="nav-number">2.1.</span> <span class="nav-text">prefork MPM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#worker-MPM"><span class="nav-number">2.2.</span> <span class="nav-text">worker MPM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#event-MPM"><span class="nav-number">2.3.</span> <span class="nav-text">event MPM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单测试对比"><span class="nav-number">3.</span> <span class="nav-text">简单测试对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态页面"><span class="nav-number">3.1.</span> <span class="nav-text">静态页面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP页面"><span class="nav-number">3.2.</span> <span class="nav-text">PHP页面</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

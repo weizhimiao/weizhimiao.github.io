@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="URL重定向是.htaccess 的重头戏，它可以将长地址转为短地址、将动态地址转为静态地址、重定向丢失的页面、防止盗链、实现自动语言转换等等。 难点： 正则表达式的运用和理解。">
+<meta name="keywords" content="Apache,.htaccess">
+<meta property="og:type" content="article">
+<meta property="og:title" content=".htaccess 文件功能及配置介绍">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/09/05/htaccess 文件功能及配置整理/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="URL重定向是.htaccess 的重头戏，它可以将长地址转为短地址、将动态地址转为静态地址、重定向丢失的页面、防止盗链、实现自动语言转换等等。 难点： 正则表达式的运用和理解。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content=".htaccess 文件功能及配置介绍">
+<meta name="twitter:description" content="URL重定向是.htaccess 的重头戏，它可以将长地址转为短地址、将动态地址转为静态地址、重定向丢失的页面、防止盗链、实现自动语言转换等等。 难点： 正则表达式的运用和理解。">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/09/05/htaccess 文件功能及配置整理/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>.htaccess 文件功能及配置介绍 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/09/05/htaccess 文件功能及配置整理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">.htaccess 文件功能及配置介绍<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/htaccess 文件功能及配置整理.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-09-05 10:00:00" itemprop="dateCreated datePublished" datetime="2016-09-05T10:00:00+08:00">2016-09-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Apache/" itemprop="url" rel="index"><span itemprop="name">Apache</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/09/05/htaccess 文件功能及配置整理/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/09/05/htaccess 文件功能及配置整理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">5.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">5 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>URL重定向是<code>.htaccess</code> 的重头戏，它可以将长地址转为短地址、将动态地址转为静态地址、重定向丢失的页面、防止盗链、实现自动语言转换等等。</p>
+<p><strong>难点：</strong> 正则表达式的运用和理解。</p>
+<a id="more"></a>
+<h2 id="准备-mod-rewrite"><a href="#准备-mod-rewrite" class="headerlink" title="准备 mod_rewrite"></a>准备 mod_rewrite</h2><p>要实现上述功能，首先得装上mod_rewrite 模块，并确保启用了该模块。</p>
+<p>一般我们会这样设置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;IfModule mod_rewrite.c&gt;</span><br><span class="line">  Options +FollowSymlinks</span><br><span class="line">  RewriteEngine on</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">&lt;IfModule&gt;</span><br></pre></td></tr></table></figure></p>
+<p><strong><em>Tips:</em></strong></p>
+<ul>
+<li>FollowSymlinks:必须启用，这是rewrite引擎的安全要求。</li>
+<li>RewriteEngine：用于启用rewrite引擎。</li>
+</ul>
+<h2 id="URL重写及重定向"><a href="#URL重写及重定向" class="headerlink" title="URL重写及重定向"></a>URL重写及重定向</h2><p>利用<code>.htaccess</code> 文件可以实现对URL的重写（rewrite）与重定向（redirect）</p>
+<ol>
+<li>将<code>.html</code> 映射到<code>.php</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Options +FollowSymlinks</span><br><span class="line">RewriteEngine on</span><br><span class="line">RewriteRule ^(.*)\.html$ $1.php [NC]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong><em>注</em></strong></p>
+<ul>
+<li>必须保证服务器上有对应的<code>.php</code> 文件，否则会报 404</li>
+<li>浏览器和搜索引擎可同事用<code>.html</code> 和<code>.php</code> 访问到网页。</li>
+<li>[NC] 表示不区分大小写</li>
+</ul>
+<ol start="2">
+<li>临时重定向（R=302）与永久重定向（R=301）<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteBase /</span><br><span class="line">RewriteRule ^(.*)\.html $1.php [R,NC,L]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong><em>注</em></strong></p>
+<ul>
+<li><p>RewriteBase 定义了重写基准目录。</p>
+<blockquote>
+<p>例如，如虚拟机站点设在 /var/www目录下，删除这行这行将会导致重定向到 <a href="http://your-domain/var/www/1.php" target="_blank" rel="noopener">http://your-domain/var/www/1.php</a>. 显然这不是我们想要的。如果RewriteBase /base/，那么将会重定向到<a href="http://your-domain/base/1.php" target="_blank" rel="noopener">http://your-domain/base/1.php</a>.</p>
+</blockquote>
+</li>
+<li><p>对于重写基准目录，我们还可以将 <code>$1.php</code> 变成 <code>/$1.php</code> 实现直接变换，这是就可以将 <code>RewriteBase</code> 省略。</p>
+</li>
+<li><p>字母<code>L</code>，表示如果能匹配到本条规则，则本条规则是最后一条（Last），忽略之后的规则。</p>
+<p>永久重定向（R=301）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteRule ^(.*)$ http://newdomain/$1 [R=301,NC,L]</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ol start="3">
+<li><p>为什么要用重定向</p>
+<ol>
+<li>通过重定向，浏览器知道页面位置发生变化，从而会改变地址栏到新的地址。</li>
+<li>通过重定向，搜索引擎能够发现位置发生变化，从而进行更新。</li>
+<li>R=302，R=301都是亲搜索引擎的，是SEO的一个重要手段。</li>
+<li><strong>URL重写用于将页面映射到本站的另一页面，而重写到另一个域名下，则安重定向处理。</strong></li>
+</ol>
+</li>
+<li><p>长短地址处理   </p>
+<blockquote>
+<p>利用URL重写，方便实现长短地址转换。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteRule ^grab /public/files/download/download.php</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>若访问 <a href="http://your-domain/grab?file=my.zip" target="_blank" rel="noopener">http://your-domain/grab?file=my.zip</a>, 则页面会实际执行该页面 <a href="http://your-domain/public/files/download/download.php?file=my.zip" target="_blank" rel="noopener">http://your-domain/public/files/download/download.php?file=my.zip</a></p>
+<ol start="5">
+<li>去掉WWW<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteCond %&#123;HTTP_HOST&#125; ^(.*)$</span><br><span class="line">RewriteRule (.*) http://www\.%1/$1 [R=301,L]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong><em>注:</em></strong></p>
+<ul>
+<li>RewriteCond 定义了规则的生效条件。即，一个RewriteRule规则之前可以有一个或者多个RewriteCond指令。</li>
+<li>语法：RewriteCond TestString CondPattern [flags]</li>
+</ul>
+<ol start="6">
+<li><p>加上www</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteCond %&#123;HTTP_HOST&#125; ^(.*)$</span><br><span class="line">RewriteRule (.*) http://www\.%1/$1 [R=301,L]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>支持多域名访问</p>
+<blockquote>
+<p>如果有些主机不支持多域名，那么<code>.htaccess</code> 或许也可以解决。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#one.com</span><br><span class="line">RewriteCond %&#123;HTTP_HOST&#125; one.com</span><br><span class="line">RewriteCond %&#123;REQUEST_URI&#125; !^/one</span><br><span class="line">RewriteRule ^(.*)$ /one/$1 [L]</span><br><span class="line">#two.com</span><br><span class="line">RewriteCond %&#123;HTTP_HOST&#125; two.com</span><br><span class="line">RewriteCond %&#123;REQUEST_URI&#125; !^/two</span><br><span class="line">RewriteRule ^(.*)$ /two/$1 [L]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="改写查询字符串-QUERY-STRING"><a href="#改写查询字符串-QUERY-STRING" class="headerlink" title="改写查询字符串 QUERY_STRING"></a>改写查询字符串 QUERY_STRING</h2><p>所谓查询字符串，就是值URL问号之后的部分。</p>
+<ol>
+<li>利用QSA转换 QUERY_STRING<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteRule /page/(.+) /page.php?page=$1 [QSA]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong><em>注：</em></strong></p>
+<ol>
+<li>将会把 <code>/page/123?one=two</code> 映射到 <code>/page.php?page=123&amp;one=two</code>.</li>
+<li>如果没有[QAS] 标志，则会映射到<code>page.php?page=123</code>.</li>
+<li><p>如果没有用到小括号正则表达式，就不需要 QSA</p>
+<blockquote>
+<p>例，将 <code>/simple/flat/link</code> =&gt; server-side.php?first-var=flat&amp;second-var=link</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteRule ^/simple/([^/]+)/([^/]+)/? /server-side.php?first-var=$1&amp;second-var=$2 [QSA]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<ol start="2">
+<li><p>利用RewriteCond 改写 QUERY_STRING</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine On</span><br><span class="line">RewriteCond %&#123;QUERY_STRING&#125; foo=(.*)</span><br><span class="line">RewriteRule ^grab(.*) /page.php?bar=%1</span><br></pre></td></tr></table></figure>
+<ul>
+<li>该规则将访问请求<a href="http://mysite/grab?foo=bar转换为http://mysite/page.php?bar=bar" target="_blank" rel="noopener">http://mysite/grab?foo=bar转换为http://mysite/page.php?bar=bar</a></li>
+<li>RewriteCond用于捕获查询字符串（QUERY_STRING）中变量foo的值，并存储在%1中</li>
+<li>QUERY_STRING是Apache定义的“变量=值”向量（数组）</li>
+</ul>
+</li>
+<li><p>RewriteCond与QSA双剑齐发</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine On</span><br><span class="line">RewriteCond %&#123;QUERY_STRING&#125; foo=(.+)</span><br><span class="line">RewriteRule ^grab/(.*) /%1/index.php?file=$1 [QSA]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>会把/grab/foobar.zip?level=5&amp;foo=bar 映射到 /bar/index.php?file=foobar.zip&amp;level=5&amp;foo=bar</li>
+<li>转换后根目录是bar目录</li>
+<li>foobar.zip?level=5中的“问号”变成了foobar.zip&amp;level=5中的“与”符号</li>
+</ul>
+</li>
+<li><p>剥离查询字符串</p>
+<blockquote>
+<p>只需在要开始剥离的链接后面加个“问号”，并且不要启用QSA标志，就可剥离查询字符串</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine On</span><br><span class="line"># Whatever QS is</span><br><span class="line">RewriteCond %&#123;QUERY_STRING&#125; .</span><br><span class="line"># I don&apos;t want it with Question mark</span><br><span class="line">RewriteRule foo.php(.*) /foo.php? [L]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="访问控制"><a href="#访问控制" class="headerlink" title="访问控制"></a>访问控制</h2><ol>
+<li><p>文件访问控制</p>
+<blockquote>
+<p>利用Order、Files及FilesMatch命令实现的访问控制可以满足大部分要求，但是当用户被拒绝时，他们看到的是硕大的“403 Forbidden”，如果你不想伤害用户的感情，就需要显示一些别的东西，通过Rewrite就可以实现这个特性：</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine On</span><br><span class="line">RewriteCond %&#123;REQUEST_FILENAME&#125; !^(.+)\.css$</span><br><span class="line">RewriteCond %&#123;REQUEST_FILENAME&#125; !^(.+)\.js$</span><br><span class="line">RewriteCond %&#123;REQUEST_FILENAME&#125; !special.zip$</span><br><span class="line">RewriteRule ^(.+)$ /chat/ [NC]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>该规则将仅允许用户请求.css, .js类型的文件，还有special.zip文件</li>
+<li>RewriteRule 后面指定了限制规则：映射到/char/目录下处理</li>
+<li>RewriteCond 后面的“感叹号”(!)起到了“否定”作用，它表明，对不满足后面正则表达式者应用RewriteRule规则，也就是对当前类型的文件将不应用规则</li>
+<li>RewriteCond 之间是以逻辑“与”连接的，也就是只有当三个条件都不满足时才执行RewriteRule</li>
+<li>该规则也会限制访问.htm, .jpg等格式</li>
+<li>该规则不可以放在虚拟站点根目录（/）下，否则会死循环</li>
+<li>如果是二级目录，如/test/，那么传入RewriteCond的参数是以/test/开始的，因此从(.+)获得的文件名也含有/test/，读者必须对此多加小心</li>
+<li>要想仅获得文件名，可以将(.+)替换成([^/]+)，并且去掉符号^，如下所示：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine On</span><br><span class="line">RewriteCond %&#123;REQUEST_FILENAME&#125; !([^/]+)\.css$</span><br><span class="line">RewriteCond %&#123;REQUEST_FILENAME&#125; !([^/]+)\.js$</span><br><span class="line">RewriteRule ^(.+)$ /chat/ [NC]</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>用.htaccess阻止User-agent</p>
+<blockquote>
+<p>User-agent用于浏览器向服务器“自报家门”，更确切的说是所有HTTP客户端都得用User-agent向服务器“自报家门”，以便服务器对不同的客户端作出不同响应。比如，某站点可能需要对浏览器、搜索引擎crawl还有各类下载工具作出不同的响应。服务器就是通过所谓的User-agent进行区分的。<br>如果你的服务器提供某些资源的下载，那么你就必须多加小心诸如“迅雷”等下载软件，因为它们可能把你网站资源吸干，并且影响你的正常访客访问。</p>
+</blockquote>
+<p>为此，我们可以利用Rewrite限制某些UA的访问：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteCond %&#123;HTTP_USER_AGENT&#125; 2.0.50727 [NC]</span><br><span class="line">RewriteRule . abuse.txt [L]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>该规则限制“迅雷”客户端下载资源，并将下载文件重置到abuse.txt</li>
+<li>HTTP_USER_AGENT是Apache的内置变量</li>
+<li>2.0.50727是迅雷User-agent的特征字符串</li>
+<li>RewriteRule后面的“点”表示“任意URI”，也就是不管请求的是什么，都输出abuse.txt</li>
+</ul>
+<p>通常，我们不会仅限制一个UA。利用[OR]即可实现对多个UA作出统一处理：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine on</span><br><span class="line">RewriteCond %&#123;HTTP_USER_AGENT&#125; 2.0.50727 [NC,OR]</span><br><span class="line">RewriteCond %&#123;HTTP_USER_AGENT&#125; ^BlackWidow [NC,OR]</span><br><span class="line"># etc..</span><br><span class="line">RewriteCond %&#123;HTTP_USER_AGENT&#125; ^Net\ Vampire [NC]</span><br><span class="line">RewriteRule . abuse.txt [L]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用.htaccess阻止盗链(hot-linking)</p>
+<blockquote>
+<p>盗链，特别是图片，是非常可耻的！哪怕将图片复制到自己服务器上，也比盗用他人的图片链接来得光彩！</p>
+</blockquote>
+<p>.htaccess的Rewrite功能可以提供非常简单、有效的方法阻止这种可耻行为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RewriteEngine On</span><br><span class="line">RewriteCond %&#123;HTTP_REFERER&#125; !^$</span><br><span class="line">RewriteCond %&#123;HTTP_REFERER&#125; !^http://(www\.)?lesca\.me/ [NC]</span><br><span class="line">RewriteCond %&#123;REQUEST_URI&#125; !hotlink\.png [NC]</span><br><span class="line">RewriteRule .*\.(gif|jpg|png)$ /hotlink.png [NC]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>简单解释一下该规则的功能：</p>
+<ul>
+<li>除本站以外其他网站都不得引用本站图片，具体可以理解为</li>
+<li>如果引用站点为“空”或者是“本站”，或者，所引用对象是“hotlink.png”，那么就允许访问</li>
+<li>再次提醒，RewriteCond之间默认的逻辑连接词是逻辑“与”</li>
+<li>这里的难点是理解逻辑转换，即德·摩根定律</li>
+</ul>
+<h2 id="htaccess-缺点"><a href="#htaccess-缺点" class="headerlink" title="htaccess 缺点"></a>htaccess 缺点</h2><p>说了这么多<code>.htaccess</code> 可以实现这么多的功能，那么它有没有什么缺点呢?</p>
+<p>答案是，当然有。由于开启了<code>.htaccess</code> 文件，当我们访问了一个地址对应到服务器端某个目录之后<code>Apache</code> 会遍历并解析每层目录下的<code>.htaccess</code> 文件，所有对服务器性能会有一定的影响。</p>
+<p>但是具体影响有多大，要不要使用还需要看具体的环境。或者需要进行前后对比在进行选择。</p>
+<h2 id="htaccess-生成工具"><a href="#htaccess-生成工具" class="headerlink" title="htaccess 生成工具"></a>htaccess 生成工具</h2><p>说了这么多，貌似真正配置起来还是非常麻烦。不用着急目前网上有非常多<code>htaccess</code> 在线生成工具，可大大方便我们进行完成各种配置。</p>
+<p>如：<a href="http://htaccess.uuz.cc/" target="_blank" rel="noopener">smarty .htaccess :http://htaccess.uuz.cc/</a></p>
+<p><a href="http://lesca.me/archives/htaccess-rewrite.html" target="_blank" rel="noopener">转自:Lesca技术宅</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/09/05/htaccess 文件功能及配置整理/" title=".htaccess 文件功能及配置介绍">https://weizhimiao.github.io/2016/09/05/htaccess 文件功能及配置整理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Apache/" rel="tag"># Apache</a>
+          
+            <a href="/tags/htaccess/" rel="tag"># .htaccess</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/26/Apache分层与模块化结构体系小结/" rel="next" title="Apache分层与模块化体系结构小结">
+                <i class="fa fa-chevron-left"></i> Apache分层与模块化体系结构小结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/05/Apache 虚拟主机配置/" rel="prev" title="Apache 虚拟主机配置">
+                Apache 虚拟主机配置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#准备-mod-rewrite"><span class="nav-number">1.</span> <span class="nav-text">准备 mod_rewrite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#URL重写及重定向"><span class="nav-number">2.</span> <span class="nav-text">URL重写及重定向</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#改写查询字符串-QUERY-STRING"><span class="nav-number">3.</span> <span class="nav-text">改写查询字符串 QUERY_STRING</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#访问控制"><span class="nav-number">4.</span> <span class="nav-text">访问控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#htaccess-缺点"><span class="nav-number">5.</span> <span class="nav-text">htaccess 缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#htaccess-生成工具"><span class="nav-number">6.</span> <span class="nav-text">htaccess 生成工具</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

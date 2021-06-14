@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Linux命令格式格式：命令    [选项]    [参数] 例如：1#ls 	-list 	显示目录下内容  命令操作的对象（文件、目录、用户、进程）Linux中以”.”开头的文件是隐藏文件  提示符：[root@localhost src]#  [当前登录用户@主机名 当前所在目录]# 超级用户$    普通用户  当前所在目录：    用户家目录     管理员        /root">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux常用命令">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/06/Linux常用命令/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Linux命令格式格式：命令    [选项]    [参数] 例如：1#ls 	-list 	显示目录下内容  命令操作的对象（文件、目录、用户、进程）Linux中以”.”开头的文件是隐藏文件  提示符：[root@localhost src]#  [当前登录用户@主机名 当前所在目录]# 超级用户$    普通用户  当前所在目录：    用户家目录     管理员        /root">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux常用命令">
+<meta name="twitter:description" content="Linux命令格式格式：命令    [选项]    [参数] 例如：1#ls 	-list 	显示目录下内容  命令操作的对象（文件、目录、用户、进程）Linux中以”.”开头的文件是隐藏文件  提示符：[root@localhost src]#  [当前登录用户@主机名 当前所在目录]# 超级用户$    普通用户  当前所在目录：    用户家目录     管理员        /root">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/06/Linux常用命令/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Linux常用命令 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/06/Linux常用命令/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux常用命令<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Linux常用命令.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-06 22:30:00" itemprop="dateCreated datePublished" datetime="2016-10-06T22:30:00+08:00">2016-10-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/06/Linux常用命令/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/06/Linux常用命令/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4.9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Linux命令格式"><a href="#Linux命令格式" class="headerlink" title="Linux命令格式"></a>Linux命令格式</h2><p>格式：命令    [选项]    [参数]</p>
+<p>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#ls 	-list 	显示目录下内容</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>命令操作的对象（文件、目录、用户、进程）<br>Linux中以”.”开头的文件是隐藏文件</p>
+</blockquote>
+<p>提示符：[root@localhost src]#</p>
+<blockquote>
+<p>[当前登录用户@主机名 当前所在目录]#</p>
+<h1 id="超级用户"><a href="#超级用户" class="headerlink" title="超级用户"></a>超级用户</h1><p>$    普通用户</p>
+</blockquote>
+<p>当前所在目录：    用户家目录</p>
+<blockquote>
+<p>   管理员        /root<br>   普通用户        /home/用户名</p>
+</blockquote>
+<p><strong>tips：</strong></p>
+<blockquote>
+<p>ctrl +  c        强制终止<br>ctrl+l            清屏<br>ctrl+u        光标删除到行首<br>ctrl+a        光标移动到行首<br>ctrl+e        光标移动到行尾</p>
+</blockquote>
+<a id="more"></a>
+<h2 id="目录操作命令"><a href="#目录操作命令" class="headerlink" title="目录操作命令"></a>目录操作命令</h2><p><strong>切换所在目录</strong></p>
+<p><code>cd</code></p>
+<p>例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd  /usr/local/src</span><br><span class="line">cd   ~	或cd	  	进入当前用户的家目录</span><br><span class="line">cd  -		进入上次目录</span><br><span class="line">cd  ..		进入上一级目录</span><br><span class="line">cd  .		进入当前目录</span><br></pre></td></tr></table></figure></p>
+<p><strong>显示当前所在目录</strong></p>
+<p><code>pwd</code></p>
+<p><strong>建立目录</strong></p>
+<p><code>mkdir</code></p>
+<p>例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir  	-p  11/22/33/44		递归建立目录</span><br></pre></td></tr></table></figure></p>
+<p><strong>删除目录</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">rmdir	目录		只能删除空目录</span><br><span class="line"></span><br><span class="line">rm	文件名		删除文件</span><br><span class="line">rm	-rf	目录		删除文件和目录</span><br><span class="line">		-f	强制</span><br><span class="line">		-r	递归、删除目录</span><br></pre></td></tr></table></figure></p>
+<p><strong>显示指定目录下的所有内容的目录树</strong></p>
+<p>tree    目录名</p>
+<p>例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tree	/var/</span><br></pre></td></tr></table></figure></p>
+<h2 id="文件操作命令"><a href="#文件操作命令" class="headerlink" title="文件操作命令"></a>文件操作命令</h2><p><strong>创建空文件或修改文件时间</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch  文件名</span><br></pre></td></tr></table></figure></p>
+<p><strong>删除</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rm  –rf  文件名</span><br><span class="line">		-f	强制</span><br><span class="line">		-r	删除目录</span><br></pre></td></tr></table></figure></p>
+<p><strong>查看文件内容</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cat	文件名		（从头到尾）</span><br><span class="line">		-n	列出行号</span><br><span class="line">more	文件名		（分屏显示文件内容）</span><br><span class="line">空格向下翻		b  向上翻		q  退出</span><br><span class="line">head	文件名		（显示文件头几行）</span><br><span class="line">	head  –n  行数	文件名	指定显示文件头几行</span><br><span class="line">	head  -20  文件名</span><br></pre></td></tr></table></figure></p>
+<p><strong>链接文件</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln  -s  源文件   目标文件		（文件名都必须写绝对路径）</span><br><span class="line">链接文件相当于windows中的快捷方式，链接文件和源文件修改一个两个都变，删除原文件，软链接打不开。</span><br></pre></td></tr></table></figure></p>
+<h2 id="文件和目录都能操作的命令"><a href="#文件和目录都能操作的命令" class="headerlink" title="文件和目录都能操作的命令"></a>文件和目录都能操作的命令</h2><p><strong>删除文件或目录</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rm</span><br></pre></td></tr></table></figure></p>
+<p><strong>复制</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cp  源文件   目标文件</span><br><span class="line">		-r	复制目录</span><br><span class="line">		-p	带文件属性复制</span><br><span class="line">		-d	若源文件为链接文件，则复制链接属性</span><br><span class="line">		-a	相当于  -pdr</span><br><span class="line">例：</span><br><span class="line">cp   aa  /tmp/			原名复制</span><br><span class="line">cp  aa  /tmp/bb			改名复制</span><br></pre></td></tr></table></figure></p>
+<p><strong>剪切或改名</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mv	源文件   目标位置</span><br><span class="line">剪切目录不需要加“-r”选项（特殊）</span><br><span class="line">例：</span><br><span class="line">mv  /root/aa  /tmp/	剪切</span><br><span class="line">mv  aa  bb			改名</span><br></pre></td></tr></table></figure></p>
+<h2 id="权限管理"><a href="#权限管理" class="headerlink" title="权限管理"></a>权限管理</h2><p><strong>权限位</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rw-r--r--   1   root root     0 08-11 01:45 aa</span><br></pre></td></tr></table></figure></p>
+<p>权限位是十位<br>第一位：代表文件类型</p>
+<blockquote>
+<p>-    普通文件<br>   d    目录文件<br>   f    链接文件</p>
+</blockquote>
+<p>常见的文件类型就有以上3种，Linux和Unix系统中共有7种文件类型，分别有</p>
+<pre><code>-    Block        块设备文件，如某个磁盘分区，软驱和光驱等。
+-    Char        字符设备，如键盘、打印机等。
+-    Dir        目录类型，目录也是文件的一种。
+-    Fifo        命名管道，常用于将信息从一个进程传递到另一个进程。
+-    File        普通文件。
+-    Link        符号链接文件，即指向文件指针的指针。
+-    Unknown    未知类型
+</code></pre><p>其他九位：属主权限u        属主权限g        其他人权限o</p>
+<pre><code>-    r    读        4
+-    w    写        2
+-    x    执行        1
+</code></pre><p><strong>修改权限</strong></p>
+<p>chmod</p>
+<blockquote>
+<p>格式：chmod  {u,g,o }{+,-,=}{w,r,x} 文件名或目录</p>
+</blockquote>
+<p>例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">chmod  u+x  aa</span><br><span class="line">chmod u-x  aa</span><br><span class="line">chmod  g+w,o-r   aa</span><br><span class="line">chmod  u=rwx  aa</span><br><span class="line">chmod  755  aa</span><br><span class="line">chmod  644  aa</span><br></pre></td></tr></table></figure></p>
+<p><strong>权限对于文件和目录的意义</strong></p>
+<p>对于文件的意义</p>
+<ul>
+<li>r：读取文件的内容。cat、more、head、tail</li>
+<li>w：编辑、修改文件内容。vi、echo</li>
+<li>x：可执行</li>
+</ul>
+<p>对于目录的意义</p>
+<ul>
+<li>r：可以查询目录下的文件名。ls</li>
+<li>w：具有修改目录结构的权限。比如新建文件和目录，删除此目录下文件和目录，剪切等操作。touch、mv、cp</li>
+<li>x：可以进入目录    。    cd</li>
+</ul>
+<p>对于目录来说，r和x权限一般是一起给的，及对于目录的权限一般至少会给到6.</p>
+<p><strong>更改文件或目录的属主和属组命令</strong></p>
+<p>chown</p>
+<blockquote>
+<p>格式：chown  用户名  文件名  </p>
+</blockquote>
+<p>例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chown user1  aa</span><br><span class="line">chown  user1：user1   aa	（更改属主的同时改变属主）</span><br></pre></td></tr></table></figure></p>
+<h2 id="帮助命令"><a href="#帮助命令" class="headerlink" title="帮助命令"></a>帮助命令</h2><p><strong>查找命令的的帮助</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man  命令名</span><br></pre></td></tr></table></figure></p>
+<p><strong>查看常见的选项</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">命令  --help</span><br></pre></td></tr></table></figure></p>
+<p>Tips：Linux中通配符和正则的使用原则：</p>
+<ul>
+<li><p>在搜索目录或者文件名时Linux使用的是通配符，如find.        </p>
+<blockquote>
+<p>Find:    在系统当中搜索符合条件的文件名，如果需要匹配，使用通配符匹配<br>通配符是完全匹配</p>
+</blockquote>
+</li>
+<li><p>在搜索文件中的内容是，Linux使用的事正则表达式，如grep.        </p>
+<blockquote>
+<p>Grep：    在文件当中搜索符合条件的字符串，如果需要匹配，使用正则表达式匹配<br>正则表达是包含匹配</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="查找命令"><a href="#查找命令" class="headerlink" title="查找命令"></a>查找命令</h2><p><strong>查找命令的命令，同时查看帮助文档的位置</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">whereis</span><br><span class="line">格式：whereis   命令</span><br></pre></td></tr></table></figure>
+<p><strong>搜索命令</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">find</span><br><span class="line">格式：find   查找位置   -name   文件名</span><br><span class="line">例</span><br><span class="line">find /   -name   aabbcc    </span><br><span class="line">		-user   用户名		按属主用户查找文件</span><br><span class="line">		-group   组名		按属组组名查找文件</span><br><span class="line">		-nouser			查找没有属主的文件</span><br><span class="line">按照文件属性查找：</span><br><span class="line">		-name			按照文件名</span><br><span class="line">		-size 				文件大小。+50k：大于50k，-50k：小雨50k，50k：等于50k	（可用的单位有k，M）</span><br><span class="line">		-type				文件类型。（f:普通文件，l：链接文件，d目录文件）</span><br><span class="line">		-perm	644		按文件的权限值查找。</span><br><span class="line">		-iname			文件名查找，不区分大小写</span><br><span class="line">		-inum				按照文件i节点查找</span><br><span class="line">在查找出的结果中，直接进行命令操作。</span><br><span class="line">find  /var/log/   -mtime   +10  -exec   rm  -rf  &#123;&#125;  \;	查找出十天前修改的文件名删除</span><br><span class="line">find   /root  -inum   112033   -exec  ls   -l   &#123;&#125;  \;	用文件i节点查找到文件并且显示文件的长格式。</span><br></pre></td></tr></table></figure></p>
+<p><strong>查找文件中的字符串</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">grep</span><br><span class="line">原理：先把命令操作的结果存在文件中，然后后面的命令去操作文件</span><br><span class="line">格式：grep  “字符串”   文件名</span><br><span class="line">例：</span><br><span class="line">grep  -i  “root” /etc/passwd</span><br><span class="line">		-i	忽略大小写</span><br><span class="line">		-v	反向选择</span><br><span class="line">比较：</span><br><span class="line">find：在系统当中搜索符合条件的文件名，如果需要匹配，使用通配符匹配。通配符是完全匹配。</span><br><span class="line">grep：在文件当中搜索符合条件的字符串，如果需要匹配，使用正则表达式匹配，正则表达式是包含匹配</span><br></pre></td></tr></table></figure></p>
+<p><strong>管道符</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">命令1  |  命令2  |   命令3		命令1的执行结果，作为命令2执行的执行条件，以此类推。</span><br><span class="line">例：</span><br><span class="line">netstat   -an  |  grep  ESTABLISHED  |  wc  -l	统计正在连接的网络连接的个数</span><br><span class="line">cat  文件名  |  grep  “字符串”  	提取含有字符串的行</span><br><span class="line">ls  -l  /etc  |  more 		分屏显示ls内容</span><br><span class="line">ll  /etc、  |  grep  my</span><br></pre></td></tr></table></figure></p>
+<h2 id="压缩和解压缩"><a href="#压缩和解压缩" class="headerlink" title="压缩和解压缩"></a>压缩和解压缩</h2><p>Linux中常见的压缩包格式</p>
+<blockquote>
+<p>.gz        bz2        Linux可以识别的常见压缩格式<br>.tar.gz    .tar.bz2    常见的压缩和打包命令</p>
+</blockquote>
+<p><strong>压缩打包命令</strong></p>
+<ul>
+<li><p>压缩同时打包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tar  -zcvf   压缩文件名	源文件</span><br><span class="line">tar  -zcvf  aa.tar.gz   aa</span><br><span class="line">	-z:识别.gz格式</span><br><span class="line">	-c:压缩</span><br><span class="line">	-v:显示压缩过程</span><br><span class="line">	-f:指定压缩包名</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>解压缩同时解打包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar   -zxvf  压缩文件名</span><br><span class="line">	-x: 解压缩</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>压缩同时打包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar  -jcvf  压缩文件名	源文件</span><br><span class="line">	-j：识别.tar.gz2文件格式</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>解打包同时解压缩</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar  -jxvf  aa.tar.bz2</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看不解包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tar   -ztvf   aa.tar.gz</span><br><span class="line">tar  -jtvf   aa.tar.bz2</span><br><span class="line">	-t:  只查看，不解压</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>解压到指定压缩位置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar  -jxvf  root.tar.bz2   -C  /tmp/  	（-C一定要写在后边）</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="关闭和重启命令"><a href="#关闭和重启命令" class="headerlink" title="关闭和重启命令"></a>关闭和重启命令</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">shutdown		没有特殊情况建议使用此命令来关机</span><br><span class="line">shutdown  -h  now	立刻关机</span><br><span class="line">	-h	关机</span><br><span class="line">	-r 	重启</span><br><span class="line"></span><br><span class="line">reboot 重启命令</span><br></pre></td></tr></table></figure>
+<h2 id="挂载命令"><a href="#挂载命令" class="headerlink" title="挂载命令"></a>挂载命令</h2><p>Linux下所有的存储设备都必须挂载使用，包括硬盘</p>
+<ul>
+<li><p>挂载</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mount</span><br><span class="line">设备文件：</span><br><span class="line">	/dev/sda1		第一个SCSI硬盘的第一个分区</span><br><span class="line">	/dev/cdrom		光盘（链接）</span><br><span class="line">	/dev/hdc		光盘		CentOS 5.5</span><br><span class="line">	/dev/sr0		光盘		CentOS6.x</span><br><span class="line">mount  -t  文件系统  设备描述文件   挂载点（已经存在的空目录）</span><br><span class="line">mount  -t iso9660  /dev/cdrom  /mnt/cdrom(-t iso9660也可省略)</span><br><span class="line">mount  /dev/cdrom  /mnt/cdrom</span><br><span class="line"></span><br><span class="line">fdisk  -l		列出指定的外围设备的分区表状况</span><br><span class="line">mount  -t  vfat  /dev/sdb1  /mnt/usb</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>卸载</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">umount</span><br><span class="line">umount    /dev/cdrom  </span><br><span class="line">umount   /mnt/cdrom</span><br><span class="line">强调：退出挂载目录，才能卸载</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="网络命令"><a href="#网络命令" class="headerlink" title="网络命令"></a>网络命令</h2><p>ping测试网络连通性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping   -c  次数  ip 	（测试网络的通畅）</span><br></pre></td></tr></table></figure></p>
+<p>ifconfig        查询本机网络信息</p>
+<blockquote>
+<p>   -a    列出所有的网卡信息（包括没启动的）</p>
+</blockquote>
+<h2 id="输出重定向和多命令顺序执行"><a href="#输出重定向和多命令顺序执行" class="headerlink" title="输出重定向和多命令顺序执行"></a>输出重定向和多命令顺序执行</h2><p>输出重定向 把应该输出到屏幕的输出，重定向到文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;	覆盖</span><br><span class="line">&gt;&gt;	追加</span><br><span class="line">ls  &gt;  aa		覆盖到aa</span><br><span class="line">ls  &gt;&gt;  aa		追加到aa</span><br><span class="line">ls  gdlslga  2&gt;&gt;aa		错误信息输出到aa		</span><br><span class="line">强调：错误输出，不能有空格</span><br></pre></td></tr></table></figure></p>
+<p>错误信息重定向<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ls  &gt;&gt;  aa  2&gt;&amp;1		错误和正确都输入到aa，可以追加</span><br><span class="line">		2&gt;&amp;1		把标准错误重定向到标准正确输出</span><br><span class="line"></span><br><span class="line">ls  &gt;&gt;  aa  2&gt;&gt;/tmp/bb		正确信息输入aa，错误信息输入bb</span><br></pre></td></tr></table></figure></p>
+<h2 id="补充命令"><a href="#补充命令" class="headerlink" title="补充命令"></a>补充命令</h2><p>date  查看系统时间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">date 		</span><br><span class="line">date	-s   20140701		设定日期</span><br><span class="line">date	-s	09:30:00		设定时间</span><br></pre></td></tr></table></figure></p>
+<p>du统计目录大小<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-sh	目录名		统计目录大小</span><br><span class="line">-s		和</span><br><span class="line">-h		习惯单位</span><br></pre></td></tr></table></figure></p>
+<p>netstat<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">netstat  		查看网络状态的命令</span><br><span class="line">	-t	查看TCP端口</span><br><span class="line">	-u	查看UDP端口</span><br><span class="line">	-l	监听</span><br><span class="line">	-n	以IP地址和端口号显示，不用域名和服务名显示</span><br><span class="line">	-a	查询所有连接</span><br><span class="line">例</span><br><span class="line">netstat  -tlun</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/06/Linux常用命令/" title="Linux常用命令">https://weizhimiao.github.io/2016/10/06/Linux常用命令/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/06/Linux简介/" rel="next" title="Linux系统的简介和安装">
+                <i class="fa fa-chevron-left"></i> Linux系统的简介和安装
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/06/Linux中的用户和用户组管理/" rel="prev" title="Linux中的用户和用户组管理">
+                Linux中的用户和用户组管理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux命令格式"><span class="nav-number">1.</span> <span class="nav-text">Linux命令格式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#超级用户"><span class="nav-number"></span> <span class="nav-text">超级用户</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#目录操作命令"><span class="nav-number">1.</span> <span class="nav-text">目录操作命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件操作命令"><span class="nav-number">2.</span> <span class="nav-text">文件操作命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件和目录都能操作的命令"><span class="nav-number">3.</span> <span class="nav-text">文件和目录都能操作的命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#权限管理"><span class="nav-number">4.</span> <span class="nav-text">权限管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#帮助命令"><span class="nav-number">5.</span> <span class="nav-text">帮助命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查找命令"><span class="nav-number">6.</span> <span class="nav-text">查找命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#压缩和解压缩"><span class="nav-number">7.</span> <span class="nav-text">压缩和解压缩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关闭和重启命令"><span class="nav-number">8.</span> <span class="nav-text">关闭和重启命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#挂载命令"><span class="nav-number">9.</span> <span class="nav-text">挂载命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网络命令"><span class="nav-number">10.</span> <span class="nav-text">网络命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#输出重定向和多命令顺序执行"><span class="nav-number">11.</span> <span class="nav-text">输出重定向和多命令顺序执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充命令"><span class="nav-number">12.</span> <span class="nav-text">补充命令</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

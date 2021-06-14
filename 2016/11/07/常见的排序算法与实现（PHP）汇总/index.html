@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="冒泡排序 选择排序 插入排序 快速排序 归并排序 堆排序 桶排序 基数排序 希尔排序">
+<meta name="keywords" content="算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见的排序算法与实现（PHP）汇总">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="冒泡排序 选择排序 插入排序 快速排序 归并排序 堆排序 桶排序 基数排序 希尔排序">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161107/sort_img.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="常见的排序算法与实现（PHP）汇总">
+<meta name="twitter:description" content="冒泡排序 选择排序 插入排序 快速排序 归并排序 堆排序 桶排序 基数排序 希尔排序">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161107/sort_img.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>常见的排序算法与实现（PHP）汇总 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">常见的排序算法与实现（PHP）汇总<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/常见的排序算法与实现（PHP）汇总.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-11-07 20:30:00" itemprop="dateCreated datePublished" datetime="2016-11-07T20:30:00+08:00">2016-11-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/11/07/常见的排序算法与实现（PHP）汇总/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/11/07/常见的排序算法与实现（PHP）汇总/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">12k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">11 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <ul>
+<li>冒泡排序</li>
+<li>选择排序</li>
+<li>插入排序</li>
+<li>快速排序</li>
+<li>归并排序</li>
+<li>堆排序</li>
+<li>桶排序</li>
+<li>基数排序</li>
+<li>希尔排序</li>
+</ul>
+<a id="more"></a>
+<h2 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h2><ul>
+<li><p>思路分析</p>
+<blockquote>
+<p>在排序的一组数中，对当前还未排好的序列，从前后对相邻的两个数依次进行比较和调整，让较大的数往下沉，较小的数往上冒。</p>
+<p>即，每当两个相邻的数比较后发现它们的排序与排序要求相反时，就将它们互换。</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [bubblingSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">bubblingSort</span><span class="params">($arr)</span></span>&#123;</span><br><span class="line">    $len = count($arr);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//控制需要冒泡的轮数</span></span><br><span class="line">    <span class="keyword">for</span>($i = <span class="number">1</span>;$i &lt; $len; $i++)&#123;</span><br><span class="line">      <span class="comment">//控制每层冒出一个数 需要比较的次数</span></span><br><span class="line">      <span class="keyword">for</span>($k = <span class="number">0</span>; $k &lt; $len-$i; $k++)&#123;</span><br><span class="line">        <span class="keyword">if</span>($arr[$k] &gt; $arr[$k+<span class="number">1</span>])&#123;</span><br><span class="line">          $temp = $arr[$k+<span class="number">1</span>];</span><br><span class="line">          $arr[$k+<span class="number">1</span>] = $arr[$k];</span><br><span class="line">          $arr[$k] = $temp;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $arr;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  var_dump(bubblingSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="选择排序"><a href="#选择排序" class="headerlink" title="选择排序"></a>选择排序</h2><ul>
+<li><p>思路分析</p>
+<blockquote>
+<p>在要排序的一组数中，选出最小的一个数与第一个位置的数交换。</p>
+<p>然后在剩下的数当中再找最小的与第二个位置的数交换，如此循环到倒数第二个数和最后一个数比较为止。</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [selectSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">selectSort</span><span class="params">($arr)</span></span>&#123;</span><br><span class="line">    <span class="comment">//双重循环，外层控制循环轮数，内层控制比较次数</span></span><br><span class="line">    $len = count($arr);</span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;$len<span class="number">-1</span>;$i++)&#123;</span><br><span class="line">      <span class="comment">//先假设最小的值的位置</span></span><br><span class="line">      $p = $i;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span>($j=$i+<span class="number">1</span>;$j&lt;$len;$j++)&#123;</span><br><span class="line">        <span class="comment">//$arr[$p] 是当前已知的最小值</span></span><br><span class="line">        <span class="keyword">if</span>($arr[$p] &gt; $arr[$j])&#123;</span><br><span class="line">          <span class="comment">//比较，发现更小的，记录下最小值的位置；并且在下次比较时采用已知的最小值进行比较</span></span><br><span class="line">          $p = $j;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">//已经确定了当前的最小值的位置，保存到$p中。如果发现最小值的位置与当前假设的位置$i不同，则位置互换即可。</span></span><br><span class="line">      <span class="keyword">if</span>($p != $i)&#123;</span><br><span class="line">        $tmp = $arr[$p];</span><br><span class="line">        $arr[$p] = $arr[$i];</span><br><span class="line">        $arr[$i] = $tmp;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $arr;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  var_dump(selectSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="插入排序"><a href="#插入排序" class="headerlink" title="插入排序"></a>插入排序</h2><ul>
+<li><p>思路分析</p>
+<blockquote>
+<p>在要排序的一组数中，假设前面的数已经是排好顺序的，现在要把第n个数插入到前面的有序数中，使得这n个数也是排好序的。如此反复循环，直到全部排好顺序。</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [insertSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">insertSort</span><span class="params">($arr)</span></span>&#123;</span><br><span class="line">    $len = count($arr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">1</span>;$i&lt;$len;$i++)&#123;</span><br><span class="line">      $tmp = $arr[$i];</span><br><span class="line">      <span class="comment">//内层循环控制，比较并插入</span></span><br><span class="line">      <span class="keyword">for</span>($j=$i<span class="number">-1</span>;$j&gt;=<span class="number">0</span>;$j--)&#123;</span><br><span class="line">        <span class="keyword">if</span>($tmp &lt; $arr[$j])&#123;</span><br><span class="line">          <span class="comment">//发现插入的元素要小，交换位置，将后边的元素与前面的元素互换</span></span><br><span class="line">          $arr[$j+<span class="number">1</span>] = $arr[$j];</span><br><span class="line">          $arr[$j] = $tmp;</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">          <span class="comment">//如果碰到不需要移动的元素，由于是已经排序好的数组，则前面的就不需要再次比较了</span></span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $arr;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  var_dump(insertSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="快速排序"><a href="#快速排序" class="headerlink" title="快速排序"></a>快速排序</h2><ul>
+<li><p>思路分析</p>
+<blockquote>
+<p>选择一个基准元素，通常选择第一个元素或者最后一个元素。通过一趟扫描，将待排序列分成两部分，一部分比基准元素小，一部分大于等于基准元素。</p>
+<p>此时基准元素在其排好序后的正确位置，然后再用同样的方法递归地排序划分的两部分。</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [quickSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">quickSort</span><span class="params">($arr)</span></span>&#123;</span><br><span class="line">    <span class="comment">//先判断是否需要继续进行</span></span><br><span class="line">    $len = count($arr);</span><br><span class="line">    <span class="keyword">if</span>($len &lt;= <span class="number">1</span>)&#123;</span><br><span class="line">      <span class="keyword">return</span> $arr;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//选择第一个元素作为基准</span></span><br><span class="line">    $base_num = $arr[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//遍历除了标尺外的所有元素，按照大小关系放入两个数组内</span></span><br><span class="line">    <span class="comment">//初始化两个数组</span></span><br><span class="line">    $left_array = <span class="keyword">array</span>();  <span class="comment">//小于基准值的数组</span></span><br><span class="line">    $right_array = <span class="keyword">array</span>();   <span class="comment">//大于基准的数组</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">1</span>;$i&lt;$len;$i++)&#123;</span><br><span class="line">      <span class="keyword">if</span>($base_num &gt; $arr[$i])&#123;</span><br><span class="line">        <span class="comment">//放入左边</span></span><br><span class="line">        $left_array[] = $arr[$i];</span><br><span class="line">      &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="comment">//放入右边</span></span><br><span class="line">        $right_array[] = $arr[$i];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//分别对左边和右边的数组进行相同的排序处理方式递归调用这个函数</span></span><br><span class="line">    $left_array = quickSort($left_array);</span><br><span class="line">    $right_array = quickSort($right_array);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//合并</span></span><br><span class="line">    <span class="keyword">return</span> array_merge($left_array, <span class="keyword">array</span>($base_num), $right_array);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  var_dump(quickSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h2><ul>
+<li><p>思路分析</p>
+<blockquote>
+<p>采用分治法，将已有序的子序列合并,从而得到完全有序的序列.</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [mergeSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">mergeSort</span><span class="params">($arr)</span></span>&#123;</span><br><span class="line">    $len = count($arr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>($len &lt; <span class="number">2</span>)&#123;</span><br><span class="line">      <span class="keyword">return</span> $arr;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取中间参考点值</span></span><br><span class="line">    $middle = floor($len/<span class="number">2</span>);</span><br><span class="line">    <span class="comment">//取左边区间</span></span><br><span class="line">    $left = array_slice($arr, <span class="number">0</span>, $middle);</span><br><span class="line">    <span class="comment">//取右边区间</span></span><br><span class="line">    $right = array_slice($arr, $middle);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//调用归并函数</span></span><br><span class="line">    <span class="keyword">return</span> merge(mergeSort($left), mergeSort($right));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 归并函数</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $left  [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $right [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]        [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">merge</span><span class="params">($left, $right)</span></span>&#123;</span><br><span class="line">    $res = <span class="keyword">array</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(count($left) &gt; <span class="number">0</span> &amp;&amp; count($right) &gt; <span class="number">0</span>)&#123;</span><br><span class="line">      <span class="keyword">if</span>($left[<span class="number">0</span>] &lt;= $right[<span class="number">0</span>])&#123;</span><br><span class="line">        array_push($res, array_shift($left));</span><br><span class="line">      &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">        array_push($res, array_shift($right));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//解决$left遗留元素</span></span><br><span class="line">    <span class="keyword">while</span>(count($left) &gt; <span class="number">0</span>)&#123;</span><br><span class="line">      array_push($res, array_shift($left));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//解决$right遗留元素</span></span><br><span class="line">    <span class="keyword">while</span>(count($right) &gt; <span class="number">0</span>)&#123;</span><br><span class="line">      array_push($res, array_shift($right));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $res;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  var_dump(mergeSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="堆排序"><a href="#堆排序" class="headerlink" title="堆排序"></a>堆排序</h2><ul>
+<li>思路分析<blockquote>
+<p><strong>建堆</strong>，建堆是不断调整堆的过程，从len/2处开始调整，一直到第一个节点，此处len是堆中元素的个数。建堆的过程是线性的过程，从len/2到0处一直调用调整堆的过程，相当于o(h1)+o(h2)…+o(hlen/2) 其中h表示节点的深度，len/2表示节点的个数，这是一个求和的过程，结果是线性的O(n)。</p>
+<p><strong>调整堆</strong>：调整堆在构建堆的过程中会用到，而且在堆排序过程中也会用到。利用的思想是比较节点i和它的孩子节点left(i),right(i)，选出三者最大(或者最小)者，如果最大（小）值不是节点i而是它的一个孩子节点，那边交互节点i和该节点，然后再调用调整堆过程，这是一个递归的过程。调整堆的过程时间复杂度与堆的深度有关系，是lgn的操作，因为是沿着深度方向进行调整的。</p>
+<p><strong>堆排序</strong>：堆排序是利用上面的两个过程来进行的。首先是根据元素构建堆。然后将堆的根节点取出(一般是与最后一个节点进行交换)，将前面len-1个节点继续进行堆调整的过程，然后再将根节点取出，这样一直到所有节点都取出。堆排序过程的时间复杂度是O(nlgn)。因为建堆的时间复杂度是O(n)（调用一次）；调整堆的时间复杂度是lgn，调用了n-1次，所以堆排序的时间复杂度是O(nlgn)</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>实现</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [heapSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">heapSort</span><span class="params">($arr)</span> </span>&#123;</span><br><span class="line">      <span class="comment">#初始化大顶堆</span></span><br><span class="line">      initHeap($arr, <span class="number">0</span>, count($arr) - <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">      <span class="comment">#开始交换首尾节点,并每次减少一个末尾节点再调整堆,直到剩下一个元素</span></span><br><span class="line">      <span class="keyword">for</span>($end = count($arr) - <span class="number">1</span>; $end &gt; <span class="number">0</span>; $end--) &#123;</span><br><span class="line">          $temp = $arr[<span class="number">0</span>];</span><br><span class="line">          $arr[<span class="number">0</span>] = $arr[$end];</span><br><span class="line">          $arr[$end] = $temp;</span><br><span class="line">          ajustNodes($arr, <span class="number">0</span>, $end - <span class="number">1</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> $arr;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 初始化大顶堆</span></span><br><span class="line"><span class="comment">   * 初始化最大堆,从最后一个非叶子节点开始,最后一个非叶子节点编号为 数组长度/2 向下取整</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">initHeap</span><span class="params">(&amp;$arr)</span> </span>&#123;</span><br><span class="line">      $len = count($arr);</span><br><span class="line">      <span class="keyword">for</span>($start = floor($len / <span class="number">2</span>) - <span class="number">1</span>; $start &gt;= <span class="number">0</span>; $start--) &#123;</span><br><span class="line">          ajustNodes($arr, $start, $len - <span class="number">1</span>);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 调整节点</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr   待调整数组</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $start 调整的父节点坐标</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $end   待调整数组结束节点坐标</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]        [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">ajustNodes</span><span class="params">(&amp;$arr, $start, $end)</span> </span>&#123;</span><br><span class="line">      $maxInx = $start;</span><br><span class="line">      $len = $end + <span class="number">1</span>;    <span class="comment">#待调整部分长度</span></span><br><span class="line">      $leftChildInx = ($start + <span class="number">1</span>) * <span class="number">2</span> - <span class="number">1</span>;    <span class="comment">#左孩子坐标</span></span><br><span class="line">      $rightChildInx = ($start + <span class="number">1</span>) * <span class="number">2</span>;    <span class="comment">#右孩子坐标</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">#如果待调整部分有左孩子</span></span><br><span class="line">      <span class="keyword">if</span>($leftChildInx + <span class="number">1</span> &lt;= $len) &#123;</span><br><span class="line">          <span class="comment">#获取最小节点坐标</span></span><br><span class="line">          <span class="keyword">if</span>($arr[$maxInx] &lt; $arr[$leftChildInx]) &#123;</span><br><span class="line">              $maxInx = $leftChildInx;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          <span class="comment">#如果待调整部分有右子节点</span></span><br><span class="line">          <span class="keyword">if</span>($rightChildInx + <span class="number">1</span> &lt;= $len) &#123;</span><br><span class="line">              <span class="keyword">if</span>($arr[$maxInx] &lt; $arr[$rightChildInx]) &#123;</span><br><span class="line">                  $maxInx = $rightChildInx;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">#交换父节点和最大节点</span></span><br><span class="line">      <span class="keyword">if</span>($start != $maxInx) &#123;</span><br><span class="line">          $temp = $arr[$start];</span><br><span class="line">          $arr[$start] = $arr[$maxInx];</span><br><span class="line">          $arr[$maxInx] = $temp;</span><br><span class="line"></span><br><span class="line">          <span class="comment">#如果交换后的子节点还有子节点,继续调整</span></span><br><span class="line">          <span class="keyword">if</span>(($maxInx + <span class="number">1</span>) * <span class="number">2</span> &lt;= $len) &#123;</span><br><span class="line">              ajustNodes($arr, $maxInx, $end);</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  var_dump(heapSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="桶排序"><a href="#桶排序" class="headerlink" title="桶排序"></a>桶排序</h2><ul>
+<li><p>思路分析</p>
+<blockquote>
+<p>先将数组根据其值的大小放入到桶的相应位置，然后在按照顺序将元素从桶中取出。</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [tongSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $max [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">tongSort</span><span class="params">($arr, $max)</span></span>&#123;</span><br><span class="line">    $len = count($arr);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//填充木桶</span></span><br><span class="line">		$tong = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;$max;$i++)&#123;</span><br><span class="line">      $tong[$i] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//开始标示木桶</span></span><br><span class="line">		<span class="keyword">for</span>($i = <span class="number">0</span>; $i&lt;$len; $i++)&#123;</span><br><span class="line">			$tong[$arr[$i]]++;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		$res = <span class="keyword">array</span>();</span><br><span class="line">		<span class="comment">//开始从木桶中拿出数据</span></span><br><span class="line">		<span class="keyword">for</span>($i = <span class="number">0</span>; $i&lt; $max ; $i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>($tong[$i] &gt; <span class="number">0</span>)&#123;</span><br><span class="line">          <span class="keyword">for</span>($j = <span class="number">1</span>; $j &lt;= $tong[$i]; $j++)&#123; <span class="comment">//这一行主要用来控制输出多个数</span></span><br><span class="line">            $res[] = $i;</span><br><span class="line">    			&#125;</span><br><span class="line">        &#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> $res;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  var_dump(tongSort($arr, <span class="number">1000</span>));</span><br></pre></td></tr></table></figure>
+<h2 id="基数排序"><a href="#基数排序" class="headerlink" title="基数排序"></a>基数排序</h2><ul>
+<li><p>思路分析</p>
+<blockquote>
+<p>将所有待比较数值（正整数）统一为同样的数位长度，数位较短的数前面补零。</p>
+<p>然后，从最低位开始，依次进行一次排序。这样从最低位排序一直到最高位排序完成以后,数列就变成一个有序序列。</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [countingSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type]  $arr       [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  boolean $digit_num [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]             [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">countingSort</span><span class="params">($arr, $digit_num = false)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> ($digit_num !== <span class="keyword">false</span>) &#123; <span class="comment">#如果参数$digit_num不为空，则根据元素的第$digit_num位数进行排序</span></span><br><span class="line">       <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; count($arr); $i++) &#123;</span><br><span class="line">         $arr_temp[$i] = get_specific_digit($arr[$i], $digit_num);</span><br><span class="line">       &#125;</span><br><span class="line">     &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">       $arr_temp = $arr;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     $max = max($arr);</span><br><span class="line">     $time_arr = <span class="keyword">array</span>(); <span class="comment">#储存元素出现次数的数组</span></span><br><span class="line"></span><br><span class="line">     <span class="comment">#初始化出现次数数组</span></span><br><span class="line">     <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt;= $max; $i++) &#123;</span><br><span class="line">       $time_arr[$i] = <span class="number">0</span>;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">#统计每个元素出现次数</span></span><br><span class="line">     <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; count($arr_temp); $i++) &#123;</span><br><span class="line">       $time_arr[$arr_temp[$i]]++;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">#统计每个元素比其小或相等的元素出现次数</span></span><br><span class="line">     <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; count($time_arr) - <span class="number">1</span>; $i++) &#123;</span><br><span class="line">       $time_arr[$i + <span class="number">1</span>] += $time_arr[$i];</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">#利用出现次数对数组进行排序</span></span><br><span class="line">     <span class="keyword">for</span>($i = count($arr) - <span class="number">1</span>; $i &gt;= <span class="number">0</span>; $i--) &#123;</span><br><span class="line">       $sorted_arr[$time_arr[$arr_temp[$i]] - <span class="number">1</span>] = $arr[$i];</span><br><span class="line">       $time_arr[$arr_temp[$i]]--;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     $arr = $sorted_arr;</span><br><span class="line">     ksort($arr);  <span class="comment">#忽略这次对key排序的效率损耗</span></span><br><span class="line">     <span class="keyword">return</span> $arr;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 计算某个数的位数</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span>  [type] $number [description]</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> [type]         [description]</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">function</span> <span class="title">get_digit</span><span class="params">($number)</span> </span>&#123;</span><br><span class="line">     $i = <span class="number">1</span>;</span><br><span class="line">     <span class="keyword">while</span> ($number &gt;= pow(<span class="number">10</span>, $i)) &#123;</span><br><span class="line">      $i++;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span> $i;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 获取某个数字的从个位算起的第i位数</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span>  [type] $num [description]</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span>  [type] $i   [description]</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">function</span> <span class="title">get_specific_digit</span><span class="params">($num, $i)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> ($num &lt; pow(<span class="number">10</span>, $i - <span class="number">1</span>)) &#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> floor($num % pow(<span class="number">10</span>, $i) / pow(<span class="number">10</span>, $i - <span class="number">1</span>));</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 基数排序,以计数排序作为子排序过程</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">function</span> <span class="title">radix_sort</span><span class="params">(&amp;$arr)</span> </span>&#123;</span><br><span class="line">     <span class="comment">#先求出数组中最大的位数</span></span><br><span class="line">     $max = max($arr);</span><br><span class="line">     $max_digit = get_digit($max);</span><br><span class="line"></span><br><span class="line">     <span class="keyword">for</span> ($i = <span class="number">1</span>; $i &lt;= $max_digit; $i++) &#123;</span><br><span class="line">       counting_sort($arr, $i);</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   var_dump(countingSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="希尔排序"><a href="#希尔排序" class="headerlink" title="希尔排序"></a>希尔排序</h2><ul>
+<li><p>思路分析：</p>
+<blockquote>
+<p>先将整个待排序的记录序列分割成为若干子序列分别进行直接插入排序，待整个序列中的记录“基本有序”时，再对全体记录进行依次直接插入排序。</p>
+</blockquote>
+</li>
+<li><p>实现</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">  $arr = <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">223</span>,<span class="number">23</span>,<span class="number">43</span>,<span class="number">54</span>,<span class="number">455</span>,<span class="number">26</span>,<span class="number">823</span>,<span class="number">45</span>,<span class="number">9</span>,<span class="number">23</span>,<span class="number">65</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [shellSort description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span>  [type] $arr [description]</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> [type]      [description]</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">shellSort</span><span class="params">($arr)</span></span>&#123;</span><br><span class="line">    $length=count($arr);</span><br><span class="line">    $h=<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span>($h&lt;$length/<span class="number">3</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      $h=<span class="number">3</span>*$h+<span class="number">1</span>;<span class="comment">//设置间隔</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span>($h&gt;=<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">for</span>($i=$h; $i&lt;$length; $i++)</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">for</span>($j=$i; $j&gt;=$h &amp;&amp; $arr[$j]&lt;$arr[$j-$h]; $j-=$h)</span><br><span class="line">        &#123;</span><br><span class="line">           $temp =$arr[$j-$h];</span><br><span class="line">           $arr[$j-$h]=$arr[$j];</span><br><span class="line">           $arr[$j]=$temp;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      $h=($h<span class="number">-1</span>)/<span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $arr;</span><br><span class="line">  &#125;</span><br><span class="line">  var_dump(shellSort($arr));</span><br></pre></td></tr></table></figure>
+<h2 id="简单比较"><a href="#简单比较" class="headerlink" title="简单比较"></a>简单比较</h2><p><img src="http://n.sinaimg.cn/games/3ece443e/20161107/sort_img.png" alt="sort"></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/" title="常见的排序算法与实现（PHP）汇总">https://weizhimiao.github.io/2016/11/07/常见的排序算法与实现（PHP）汇总/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/01/Linux中常用的shell脚本（二）/" rel="next" title="Linux中常用的shell脚本（二）">
+                <i class="fa fa-chevron-left"></i> Linux中常用的shell脚本（二）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/16/Bash脚本15分钟进阶教程/" rel="prev" title="Bash脚本15分钟进阶教程[转]">
+                Bash脚本15分钟进阶教程[转] <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#冒泡排序"><span class="nav-number">1.</span> <span class="nav-text">冒泡排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选择排序"><span class="nav-number">2.</span> <span class="nav-text">选择排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#插入排序"><span class="nav-number">3.</span> <span class="nav-text">插入排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速排序"><span class="nav-number">4.</span> <span class="nav-text">快速排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#归并排序"><span class="nav-number">5.</span> <span class="nav-text">归并排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#堆排序"><span class="nav-number">6.</span> <span class="nav-text">堆排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#桶排序"><span class="nav-number">7.</span> <span class="nav-text">桶排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基数排序"><span class="nav-number">8.</span> <span class="nav-text">基数排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#希尔排序"><span class="nav-number">9.</span> <span class="nav-text">希尔排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单比较"><span class="nav-number">10.</span> <span class="nav-text">简单比较</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

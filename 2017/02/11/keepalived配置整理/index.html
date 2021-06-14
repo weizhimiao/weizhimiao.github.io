@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="keepalived只有一个配置文件 keepalived.conf ，里面主要包括以下几个配置区域，分别是  global_defs  主要是配置故障发生时的通知对象以及机器标识   static_ipaddress  配置的是是本节点的IP信息。（如果当前服务器上已经配置了IP，那么这这个区域可以不用配置）   static_routes  配置的是是本节点的路由信息。（如果当前服务器上已经配">
+<meta name="keywords" content="keepalived">
+<meta property="og:type" content="article">
+<meta property="og:title" content="keepalived配置整理">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/02/11/keepalived配置整理/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="keepalived只有一个配置文件 keepalived.conf ，里面主要包括以下几个配置区域，分别是  global_defs  主要是配置故障发生时的通知对象以及机器标识   static_ipaddress  配置的是是本节点的IP信息。（如果当前服务器上已经配置了IP，那么这这个区域可以不用配置）   static_routes  配置的是是本节点的路由信息。（如果当前服务器上已经配">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="keepalived配置整理">
+<meta name="twitter:description" content="keepalived只有一个配置文件 keepalived.conf ，里面主要包括以下几个配置区域，分别是  global_defs  主要是配置故障发生时的通知对象以及机器标识   static_ipaddress  配置的是是本节点的IP信息。（如果当前服务器上已经配置了IP，那么这这个区域可以不用配置）   static_routes  配置的是是本节点的路由信息。（如果当前服务器上已经配">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/02/11/keepalived配置整理/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>keepalived配置整理 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/02/11/keepalived配置整理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">keepalived配置整理<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/keepalived配置整理.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-02-11 21:30:00" itemprop="dateCreated datePublished" datetime="2017-02-11T21:30:00+08:00">2017-02-11</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/02/11/keepalived配置整理/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/02/11/keepalived配置整理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">22k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">20 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>keepalived只有一个配置文件 keepalived.conf ，里面主要包括以下几个配置区域，分别是</p>
+<ul>
+<li><p><strong>global_defs</strong></p>
+<blockquote>
+<p>主要是配置故障发生时的通知对象以及机器标识</p>
+</blockquote>
+</li>
+<li><p>static_ipaddress</p>
+<blockquote>
+<p>配置的是是本节点的IP信息。（如果当前服务器上已经配置了IP，那么这这个区域可以不用配置）</p>
+</blockquote>
+</li>
+<li><p>static_routes</p>
+<blockquote>
+<p>配置的是是本节点的路由信息。（如果当前服务器上已经配置了路由，那么这这个区域可以不用配置）</p>
+</blockquote>
+</li>
+<li><p>vrrp_script</p>
+<blockquote>
+<p>用来做健康检查的，当时检查失败时会将<code>vrrp_instance</code>的<code>priority</code>减少相应的值。</p>
+</blockquote>
+</li>
+<li><p><strong>vrrp_instance</strong></p>
+<blockquote>
+<p>用来定义对外提供服务的VIP区域及其相关属性。</p>
+</blockquote>
+</li>
+<li><p>vrrp_sync_group</p>
+<blockquote>
+<p>用来定义<code>vrrp_intance</code>组，使得这个组内成员动作一致。</p>
+</blockquote>
+</li>
+<li><p><strong>virtual_server</strong></p>
+<blockquote>
+<p>虚拟服务器，来源<code>vrrp_instance</code> 中配置的 的虚拟IP地址，后面加空格加端口号</p>
+</blockquote>
+</li>
+<li><p>virtual_server_group</p>
+<blockquote>
+<p>用来定义<code>virtual_server</code> 组，一般在超大型的LVS中用到，一般LVS用不过这东西。</p>
+</blockquote>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="配置说明："><a href="#配置说明：" class="headerlink" title="配置说明："></a>配置说明：</h2><ul>
+<li>注释以“＃”或“！”开头到行尾，可以从一行的任何位置开始。</li>
+<li>关键字 <code>include</code> 允许在主配置文件中包含其他配置文件。</li>
+<li>keepalived 还支持条件配置。(根据在启动 keepalived 时的命令行选项 -i 后面的参数，来确定指定命令是否生效)<blockquote>
+<p>这样做的目的是允许单个配置文件用于多个系统，keepalived 中多个系统上的配置文件有区别的配置，可能只有以下几个配置，</p>
+<ul>
+<li>router_id，</li>
+<li>vrrp实例优先级，</li>
+<li>以及可能的接口名称。</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<p>条件配置具体方法，示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">global_defs</span><br><span class="line">&#123;</span><br><span class="line">  @main router_id main_router</span><br><span class="line">  @backup router_id backup_router</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以“@”开头的任何配置行都是条件配置行。 ‘@’字符紧接着的（即没有任何空格）字符串，会与使用 <code>-i</code> 命令行选项指定的字符串进行比较，如果不匹配匹配，则这条配置行被会被忽略。如，上面的配置，当使用 <code>/usr/local/keepalived/sbin/keepalived -f /etc/keepalived/keepalived.conf -i main</code> 启动 <code>keepalived</code> 时，则 <code>router_id</code> 将设置为 <code>main_router</code>。当使用 <code>-i backup</code> 参数启动时，则 <code>router_id</code> 将设置为 <code>backup_router</code>。</p>
+<p><strong>注意</strong>：如果不使用 <code>-i</code> 或者 <code>-i</code> 后面是其他不匹配的参数启动时，则 <code>router_id</code> 将不会被设置。</p>
+<h2 id="全局配置"><a href="#全局配置" class="headerlink" title="全局配置"></a>全局配置</h2><p>包含的子块有，</p>
+<ul>
+<li>Global definitions，</li>
+<li>static_ipaddress，</li>
+<li>static_routes</li>
+</ul>
+<h3 id="Global-definitions"><a href="#Global-definitions" class="headerlink" title="Global definitions"></a>Global definitions</h3><h4 id="global-defs-区块"><a href="#global-defs-区块" class="headerlink" title="global_defs 区块"></a>global_defs 区块</h4><p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">global_defs &#123;</span><br><span class="line">   # 故障发生时给谁发邮件通知。</span><br><span class="line">   notification_email &#123;</span><br><span class="line">     acassen@firewall.loc</span><br><span class="line">     # ....</span><br><span class="line">   &#125;</span><br><span class="line">   # 通知邮件从哪个地址发出。</span><br><span class="line">   notification_email_from Alexandre.Cassen@firewall.loc</span><br><span class="line">   smtp_server 192.168.200.1</span><br><span class="line">   smtp_connect_timeout 30</span><br><span class="line"></span><br><span class="line">   router_id LVS_DEVEL</span><br><span class="line"></span><br><span class="line">   vrrp_skip_check_adv_addr</span><br><span class="line">   vrrp_strict</span><br><span class="line">   vrrp_garp_interval 0</span><br><span class="line">   vrrp_gna_interval 0</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>notification_email 故障发生时给谁发邮件通知。</li>
+<li>notification_email_from 通知邮件从哪个地址发出。</li>
+<li><p>smtp_server 通知邮件的smtp地址。</p>
+<blockquote>
+<p>格式：smtp_server 127.0.0.1 [<port>] # 带可选端口号的IP地址或域名（默认为25）</port></p>
+</blockquote>
+</li>
+<li><p>smtp_helo_name</p>
+<blockquote>
+<p>格式：smtp_helo_name &lt;HOST_NAME&gt; # 在HELO消息中使用的名称（默认为本地主机名）</p>
+</blockquote>
+</li>
+<li><p>smtp_connect_timeout 连接smtp服务器的超时时间。</p>
+</li>
+<li>router_id 标识本节点的字条串，通常为hostname，但不一定非得是hostname。故障发生时，邮件通知会用到。</li>
+</ul>
+<ul>
+<li>vrrp_mcast_group4 224.0.0.18 # 可选, 默认为 224.0.0.18</li>
+<li>vrrp_mcast_group6 ff02::12   # 可选, 默认为 ff02::12</li>
+<li><p>default_interface p33p1.3    # 设置静态地址的默认接口，默认为eth0</p>
+</li>
+<li><p>lvs_sync_daemon <interface> &lt;VRRP_INSTANCE&gt; [id &lt;SYNC_ID&gt;] [maxlen <len>] [port <port>] [ttl <ttl>] [group <ip addr="">]</ip></ttl></port></len></interface></p>
+<blockquote>
+<ul>
+<li>＃绑定接口，vrrp实例  </li>
+<li>＃syncid for lvs syncd</li>
+<li>＃syncid（0 to 255）for lvs syncd</li>
+<li>＃maxlen（1..65507）最大包长度</li>
+<li>＃port（1..65535）要使用的UDP端口号</li>
+<li>＃ttl（1..255）</li>
+<li>＃group - 组播组地址（IPv4或IPv6）</li>
+<li>＃注意：maxlen，port，ttl和group仅在Linux 4.3或更高版本上可用。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>lvs_flush＃在启动时刷新任何现有的LVS配置</p>
+</li>
+<li><p>vrrp_garp_master_delay 10    # 秒，默认值5 ,0表示没有设置秒数</p>
+<blockquote>
+<p>在转换到MASTER之后的第二组ARP的延迟</p>
+</blockquote>
+</li>
+<li><p>vrrp_garp_master_repeat 1    # default 5</p>
+<blockquote>
+<p>在转换到MASTER之后一次发送的ARP消息的数量</p>
+</blockquote>
+</li>
+<li><p>vrrp_garp_lower_prio_delay 10</p>
+<blockquote>
+<p>当 MASTER 接收的较低优先级的 advert 延迟第二组ARP发送</p>
+</blockquote>
+</li>
+<li><p>vrrp_garp_lower_prio_repeat 1</p>
+<blockquote>
+<p>当MASTER接收到较低优先级的广播之后，一次发送的RP消息的数量</p>
+</blockquote>
+</li>
+<li><p>vrrp_garp_master_refresh 60  # secs, default 0 (no refreshing)</p>
+<blockquote>
+<p>MASTER 刷新<code>gratuitous ARPs</code>的最小时间间隔</p>
+</blockquote>
+</li>
+<li><p>vrrp_garp_master_refresh_repeat 2 # default 1</p>
+<blockquote>
+<p>在 MASTER 状态时发送的<code>gratuitous ARPs</code>消息的数量</p>
+</blockquote>
+</li>
+<li><p>vrrp_garp_interval 0.001          # decimal, seconds (resolution usecs). Default 0.</p>
+<blockquote>
+<p>接口发送的<code>gratuitous ARPs</code>的延迟时间（毫秒）</p>
+</blockquote>
+</li>
+<li><p>vrrp_gna_interval 0.000001        # decimal, seconds (resolution usecs). Default 0.</p>
+<blockquote>
+<p>接口发送的 主动NA消息 之间的延迟（ms）</p>
+</blockquote>
+</li>
+<li><p>vrrp_lower_prio_no_advert [<bool>]</bool></p>
+<blockquote>
+<p>如果收到较低优先级的广告，请不要发送另一个广告。 默认为false，除非设置了strict_mode。</p>
+</blockquote>
+</li>
+<li><p>vrrp_version <2 3="" or="">        # default version 2</2></p>
+<blockquote>
+<p>设置要使用的默认VRRP版本</p>
+</blockquote>
+</li>
+<li><p>vrrp_iptables keepalived     # default INPUT</p>
+<blockquote>
+<ul>
+<li>＃指定 iptables链 以确保版本3实例不对其不拥有的地址做出响应。</li>
+<li>＃注意：指定的 链 必须存在于 <code>iptables</code>/<code>ip6tables</code>配置中，并且链从<code>iptables</code>配置中的适当点调用。</li>
+<li>＃可能需要在接受任何<code>ESTABLISHED</code>，<code>RELATED</code>数据包之后进行此过滤，因为<code>IPv4</code>可能选择<code>VIP</code>作为传出连接的源地址。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>vrrp_iptables keepalived_in keepalived_out</p>
+<blockquote>
+<ul>
+<li>＃或用于出站过滤</li>
+<li>＃注意，出站过滤将不适用于IPv4，因为可以选择VIP作为出站连接的源地址。 对于IPv6，由于地址已过时，因此不太可能。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>vrrp_iptables</p>
+<blockquote>
+<p>或者不添加任何iptables规则：</p>
+</blockquote>
+</li>
+<li><p>vrrp_ipset [keepalived [keepalived6 [keepalived_if6]]]</p>
+<blockquote>
+<ul>
+<li>＃Keepalived可以选择使用iptables结合使用ipetsets。</li>
+<li>＃如果是这样，那么可以指定 ipset 名称，默认如下。</li>
+<li>＃如果未指定名称，则不使用 ipsets，否则将通过向先前指定的名称添加“<code>_if</code>”和/或“<code>6</code>”来构造任何省略的名称。</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>vrrp_check_unicast_src<blockquote>
+<p>＃以下启用检查在单播模式下，VRRP数据包的源地址是我们的单播对等体之一。</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>vrrp_skip_check_adv_addr     # Default - don’t skip<blockquote>
+<ul>
+<li>＃查看接收到的VRRP报文中的所有地址可能比较耗时。</li>
+<li>＃设置此标志表示如果广告来自与接收的上一个广告相同的主路由器，则不执行检查。</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>vrrp_strict<blockquote>
+<p>＃严格遵守VRRP协议。 这将禁止：</p>
+<ul>
+<li>0 VIPs</li>
+<li>unicast peers (单播对等体)</li>
+<li>IPv6 addresses in VRRP version 2(VRRP版本2中的IPv6地址)</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<hr>
+<p>如果vrrp或检查程序超时，则可以使用以下4个选项。 这可以通过备份vrrp实例成为主，即使是因为主或备份系统太忙，无法处理vrrp数据包，但主服务器仍然运行的情况。</p>
+<ul>
+<li>vrrp_priority <-20 19="" to="">    # 设置vrrp子进程优先级 。 （负值增加优先级）</-20></li>
+<li>checker_priority <-20 19="" to=""> # 设置 子进程检查器优先级</-20></li>
+<li>vrrp_no_swap                 # 设置vrrp子进程不可交换</li>
+<li>checker_no_swap              # 设置 子进程检查器不可交换</li>
+</ul>
+<hr>
+<p>如果 <code>Keepalived</code> 已构建与SNMP支持，以下关键字可用</p>
+<blockquote>
+<p>注意：Keepalived, checker 和 RFC支持 可以单独启用/禁用</p>
+</blockquote>
+<ul>
+<li>snmp_socket udp:1.2.3.4:705  # 指定用于连接到SNMP主代理的套接字（默认<code>unix:/var/agentx/master</code>）<pre><code># 除非使用网络命名空间，默认为udp：`udp:localhost:705`
+</code></pre></li>
+<li>enable_snmp_keepalived       # 启用SNMP处理KEEPALIVED MIB的vrrp元素</li>
+<li>enable_snmp_checker          # 启用SNMP处理KEEPALIVED MIB的checker元素</li>
+<li>enable_snmp_rfc              # 启用SNMP处理 RFC2787 和 RFC6527 VRRP MIB</li>
+<li>enable_snmp_rfcv2            # 启用SNMP处理 RFC2787 VRRP MIB</li>
+<li>enable_snmp_rfcv3            # 启用SNMP处理 RFC6527 VRRP MIB</li>
+<li>enable_traps                 # 启用SNMP陷阱</li>
+</ul>
+<hr>
+<p>如果Keepalived已构建与DBus支持，以下关键字可用</p>
+<ul>
+<li><p>enable_dbus                  # 启用DBus接口</p>
+</li>
+<li><p>script_user username [groupname] # 如果未指定groupname，则其默认为用户的组</p>
+<blockquote>
+<ul>
+<li>＃指定要在其下运行脚本的默认<code>用户名</code>/<code>组名</code>。</li>
+<li>＃如果未指定此选项，则用户默认为 <code>keepalived_script</code>（如果该用户存在），否则为<code>root</code>。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>enable_script_security       # 如果非必要，请不要配置为以<code>root</code>身份运行的脚本。</p>
+</li>
+</ul>
+<h4 id="其它全局配置"><a href="#其它全局配置" class="headerlink" title="其它全局配置"></a>其它全局配置</h4><ul>
+<li>net_namespace NAME         # 用于在单独的网络命名空间中运行keepalived<blockquote>
+<ul>
+<li>＃设置运行的网络命名空间<code>/var/run/keepalived</code>目录将创建为非共享挂载点，例如pid文件。</li>
+<li>syslog条目将<code>_NAME</code>附加到 <code>ident</code>。<br><strong>注意：</strong> 不能在配置重新加载时更改命名空间</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>namespace_with_ipsets        </p>
+<blockquote>
+<p>＃<code>Linux 3.13</code>之前，网络命名空间找不到 <code>ipetsets</code> ，因此如果运行在早期版本的内核，默认情况下，如果使用命名空间和<code>vrrp_ipsets</code>没有指定， <code>ipsets</code> 是被禁用的。 此选项覆盖默认值，并允许将 <code>ipsets</code> 与 <code>3.11</code> 之前的内核上的命名空间一起使用。</p>
+</blockquote>
+</li>
+<li><p>instance NAME               </p>
+<blockquote>
+<p>＃如果 <code>keepalived</code> 的多个实例在同一命名空间中运行，这将创建 pid 文件，其中 NAME 是文件名的一部分，在<code>/var/run/keepalived</code>中。</p>
+<p>注意：不能在配置重新加载时更改实例名称</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>use_pid_dir              # 在 <code>/var/run/keepalived</code> 创建 <code>pid</code> 文件</p>
+</li>
+<li><p>linkbeat_use_polling         # 轮询检测媒体链路故障，否则尝试使用 <code>ETHTOOL</code> 或 <code>MII</code> 接口</p>
+</li>
+</ul>
+<h3 id="Static-routes-addresses-rules"><a href="#Static-routes-addresses-rules" class="headerlink" title="Static routes/addresses/rules"></a>Static routes/addresses/rules</h3><p>Keepalived可以配置静态地址，路由和规则。 如果我们的计算机上已有IP和路由，并且可以互相ping通，则不需要此部分。<br>规则和路由的语法与<code>ip rule add/ip route add</code>相同。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">static_ipaddress</span><br><span class="line">&#123;</span><br><span class="line">        192.168.1.1/24 dev eth0 scope global</span><br><span class="line">        ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static_routes</span><br><span class="line">&#123;</span><br><span class="line">  192.168.2.0/24 via 192.168.1.100 dev eth0</span><br><span class="line">  192.168.100.0/24 table 6909 nexthop via 192.168.101.1 dev wlan0 onlink weight 1  nexthop  via  192.168.101.2  dev  wlan0 onlink weight 2</span><br><span class="line">  192.168.200.0/24  dev  p33p1.2 table 6909 tos 0x04 protocol bird scope link priority 12 mtu 1000 hoplimit 100 advmss 101 rtt 102 rttvar 103 reordering 104 window 105 cwnd 106 ssthresh lock 107 realms PQA/0x14 rto_min 108 initcwnd 109 initrwnd 110 features ecn</span><br><span class="line">  2001:470:69e9:1:2::4  dev  p33p1.2 table 6909 tos 0x04 protocol bird scope link priority 12 mtu 1000 hoplimit 100 advmss 101 rtt 102 rttvar 103 reordering 104 window 105 cwnd 106 ssthresh lock 107 rto_min 108 initcwnd 109  initrwnd  110  features ecn</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static_rules</span><br><span class="line">&#123;</span><br><span class="line">  from 192.168.2.0/24 table 1</span><br><span class="line">  to 192.168.2.0/24 table 1</span><br><span class="line">  from  192.168.28.0/24  to 192.168.29.0/26 table small iif p33p1 oif wlan0 tos 22 fwmark 24/12 preference 39 realms 30/20 goto 40</span><br><span class="line">  to 1:2:3:4:5:6:7:0/112 from 7:6:5:4:3:2::/96 table 6908</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="VRRPD配置"><a href="#VRRPD配置" class="headerlink" title="VRRPD配置"></a>VRRPD配置</h2><p>包含的子块有，</p>
+<ul>
+<li>VRRP script(s),VRRP脚本</li>
+<li>VRRP synchronization group(s), VRRP同步组</li>
+<li>VRRP gratuitous ARP ,</li>
+<li>unsolicited neighbour advert delay group(s), 主动邻居广播延迟组</li>
+<li>VRRP instance(s),VRRP实例</li>
+</ul>
+<h3 id="VRRP-script-s"><a href="#VRRP-script-s" class="headerlink" title="VRRP script(s)"></a>VRRP script(s)</h3><p>添加要定期执行的脚本。 VRRP instances 会根据 脚本的退出码来调整优先级<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">vrrp_script &lt;SCRIPT_NAME&gt; &#123;</span><br><span class="line">  script &lt;STRING&gt;|&lt;QUOTED-STRING&gt; # 脚本的路径执行</span><br><span class="line">  interval &lt;INTEGER&gt;  # 脚本调用之间的间隔，默认1秒</span><br><span class="line">  timeout &lt;INTEGER&gt;   # 脚本运行超时时间</span><br><span class="line">  weight &lt;INTEGER:-254..254&gt;  # 按此权重调整优先级，默认为2</span><br><span class="line">  rise &lt;INTEGER&gt;              # 转换为OK状态，所需的成功数量</span><br><span class="line">  fall &lt;INTEGER&gt;              # 转换为KO状态，所需的成功数量</span><br><span class="line">  user USERNAME [GROUPNAME]   # 运行脚本的 用户/组名 （组默认为用户组）</span><br><span class="line">  init_fail                   # 假设脚本最初处于失败状态</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="VRRP-synchronization-group-s-，VRRP同步组"><a href="#VRRP-synchronization-group-s-，VRRP同步组" class="headerlink" title="VRRP synchronization group(s)，VRRP同步组"></a>VRRP synchronization group(s)，VRRP同步组</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">#VG_1, 一起故障转移的IP组的名称</span><br><span class="line">vrrp_sync_group VG_1 &#123;</span><br><span class="line">   group &#123;</span><br><span class="line">     inside_network   # vrrp_instance的名称（见下文）</span><br><span class="line">     outside_network  # One for each movable IP</span><br><span class="line">     ...</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   # 通知脚本和警报（可选）</span><br><span class="line">   #</span><br><span class="line">   ＃filenames的脚本在转换时运行，可以不加引号（如果只是文件名）或加引号（如果它有参数）用户名和组名指定脚本应该运行的用户和组。</span><br><span class="line">   ＃如果指定了username，则组默认为用户的组。</span><br><span class="line">   ＃如果未指定username，则它们默认为全局 script_user 和 script_group 到 MASTER 转换</span><br><span class="line"></span><br><span class="line">   notify_master /path/to_master.sh [username [groupname]]</span><br><span class="line">   # 转换成 BACKUP 状态</span><br><span class="line">   notify_backup /path/to_backup.sh [username [groupname]]</span><br><span class="line">   # 转换成 FAULT</span><br><span class="line">   notify_fault &quot;/path/fault.sh VG_1&quot; [username [groupname]]</span><br><span class="line"></span><br><span class="line">   # for ANY state transition.</span><br><span class="line">   # &quot;notify&quot; script is called AFTER the</span><br><span class="line">   # notify_* script(s) and is executed</span><br><span class="line">   # with 3 arguments provided by Keepalived</span><br><span class="line">   # (so don’t include parameters in the notify line).</span><br><span class="line">   # arguments</span><br><span class="line"></span><br><span class="line">   ＃ 对于任何状态的转换。</span><br><span class="line">   ＃ “notify”脚本在 notify_* 脚本之后调用，并使用 Keepalived 提供的3个参数执行（不包括通知行中的参数）。</span><br><span class="line">   ＃ 参数：</span><br><span class="line">   #    $1 = &quot;GROUP&quot;|&quot;INSTANCE&quot;</span><br><span class="line">   #    $2 = 组或实例的名称</span><br><span class="line">   #    $3 = 转型目标状态 (&quot;MASTER&quot;|&quot;BACKUP&quot;|&quot;FAULT&quot;)</span><br><span class="line">   notify /path/notify.sh [username [groupname]]</span><br><span class="line"></span><br><span class="line">   # 在状态转换期间使用global_defs中的地址发送电子邮件通知。</span><br><span class="line">   smtp_alert</span><br><span class="line"></span><br><span class="line">   global_tracking     # 所有VRRP共享相同的跟踪配置</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="VRRP-gratuitous-ARP-and-unsolicited-neighbour-advert-delay-group-s"><a href="#VRRP-gratuitous-ARP-and-unsolicited-neighbour-advert-delay-group-s" class="headerlink" title="VRRP gratuitous ARP and unsolicited neighbour advert delay group(s)"></a>VRRP gratuitous ARP and unsolicited neighbour advert delay group(s)</h3><p>指定发送 gratuitous ARPs 和未经请求的邻居 advert 的延迟的设置。 这是为了防止上游交换机无法处理 ARPs/NAs 泛滥。</p>
+<ul>
+<li>当限制适用于单个物理接口时使用接口。</li>
+<li>当一组接口链接到同一交换机时使用接口，则限制适用于整个交换机。</li>
+</ul>
+<p>如果设置了全局<code>vrrp_garp_interval</code>或<code>vrrp_gna_interval</code>，那么在<code>garp_group</code>中未指定的任何接口时，将继承全局设置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">garp_group &#123;</span><br><span class="line">  # 设置免费ARP之间的间隔（以秒，微秒为单位）</span><br><span class="line">  garp_interval &lt;DECIMAL&gt;</span><br><span class="line">  # 设置非请求 NA 之间的默认间隔（以秒，微秒为单位）</span><br><span class="line">  gna_interval &lt;DECIMAL&gt;</span><br><span class="line">  # 应用间隔的物理接口</span><br><span class="line">  interface &lt;STRING&gt;</span><br><span class="line">  # 聚合延迟的接口列表。</span><br><span class="line">  interfaces &#123;</span><br><span class="line">     &lt;STRING&gt;</span><br><span class="line">     &lt;STRING&gt;</span><br><span class="line">     ...</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="VRRP-instance-s"><a href="#VRRP-instance-s" class="headerlink" title="VRRP instance(s)"></a>VRRP instance(s)</h3><p>描述了<code>vrrp_sync_group</code>中组的每个实例的IP。 这里描述两个IP（在<code>inside_network</code>和在<code>outer_network</code>），在机器“<code>my_hostname</code>”，属于组<code>VG_1</code>并且将在任何状态更改时一起转换。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br></pre></td><td class="code"><pre><span class="line"># 除inside_network外，还需要为outer_network编写另一个块。</span><br><span class="line">vrrp_instance inside_network &#123;</span><br><span class="line">  # 初始状态，MASTER | BACKUP</span><br><span class="line">  # 一旦其他机器启动，将进行选举，具有最高优先级的机器将变为MASTER。</span><br><span class="line">  # 所以这里的配置并不重要。</span><br><span class="line">  state MASTER</span><br><span class="line"></span><br><span class="line">  # 为 inside_network 配置网络接口, 由 vrrp 绑定</span><br><span class="line">  interface eth0</span><br><span class="line"></span><br><span class="line">  # 使用VRRP虚拟MAC。</span><br><span class="line">  use_vmac [&lt;VMAC_INTERFACE&gt;]</span><br><span class="line"></span><br><span class="line">  # 从基本接口（而不是VMAC接口）发送/恢复VRRP消息</span><br><span class="line">  vmac_xmit_base</span><br><span class="line"></span><br><span class="line">  native_ipv6         # 强制实例使用IPv6（混合IPv4和IPv6配置时）。</span><br><span class="line"></span><br><span class="line">  # 忽略VRRP接口故障（默认未设置）</span><br><span class="line">  dont_track_primary</span><br><span class="line"></span><br><span class="line">  # 可选，监视</span><br><span class="line">  # 如果任何一个下降，进入FAULT状态。</span><br><span class="line">  track_interface &#123;</span><br><span class="line">    eth0</span><br><span class="line">    eth1</span><br><span class="line">    eth2 weight &lt;-254..254&gt;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  # 向接口添加跟踪脚本（&lt;SCRIPT_NAME&gt;是vrrp_script条目的名称）</span><br><span class="line">  track_script &#123;</span><br><span class="line">      &lt;SCRIPT_NAME&gt;</span><br><span class="line">      &lt;SCRIPT_NAME&gt; weight &lt;-254..254&gt;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  # 默认 vrrpd 绑定的 IP 是接口上的主 IP 。 （可选的）</span><br><span class="line">  # 如果要隐藏 vrrpd 的位置，请将此 IP 当做 src_addr 用于组播或单播 vrrp 数据包。 （</span><br><span class="line">  # 因为它是多播，vrrpd 将获得答复数据包，无论使用什么 src_addr ）。</span><br><span class="line">  mcast_src_ip &lt;IPADDR&gt;</span><br><span class="line">  unicast_src_ip &lt;IPADDR&gt;</span><br><span class="line"></span><br><span class="line">  version &lt;2 or 3&gt;            # VRRP版本在接口上运行</span><br><span class="line">                              # default是全局参数vrrp_version。</span><br><span class="line"></span><br><span class="line">  # 不要通过 VRRP 组播组发送 VRRP adverts</span><br><span class="line">  # 相反，它使用单播将 adverts 发送到以下IP地址列表。 在不支持多播的网络环境中使用VRRP FSM和功能可能很酷！</span><br><span class="line">  # 指定的IP地址可以是IPv4和IPv6。</span><br><span class="line">  unicast_peer &#123;</span><br><span class="line">    &lt;IPADDR&gt;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">  # 接口特定设置，与全局参数相同; 默认为全局参数</span><br><span class="line">  garp_master_delay 10</span><br><span class="line">  garp_master_repeat 1</span><br><span class="line">  garp_lower_prio_delay 10</span><br><span class="line">  garp_lower_prio_repeat 1</span><br><span class="line">  garp_master_refresh 60</span><br><span class="line">  garp_master_refresh_repeat 2</span><br><span class="line">  garp_interval 100</span><br><span class="line">  gna_interval 100</span><br><span class="line"></span><br><span class="line">  lower_prio_no_advert [&lt;BOOL&gt;]</span><br><span class="line"></span><br><span class="line">  # 从0到255的任意唯一编号，用于区分在同一NIC（和相同的套接字）上运行的vrrpd的多个实例。</span><br><span class="line">  virtual_router_id 51</span><br><span class="line"></span><br><span class="line">  # 用于选择MASTER，最高优先级的会被选举出来。</span><br><span class="line">  # 超过50个以上的其它机器的设置，会被选为 MASTER</span><br><span class="line">  priority 100</span><br><span class="line"></span><br><span class="line">  # VRRP广告间隔（以秒为单位）（例如0.92）（使用默认值）</span><br><span class="line">  advert_int 1</span><br><span class="line"></span><br><span class="line">  # 注意：在2004年，RFC3768 从 VRRPv2 规范中删除了身份验证。</span><br><span class="line">  # 此选项的使用不符合规定，可能会导致问题;</span><br><span class="line">  # 所以尽可能避免使用，除非使用单播。</span><br><span class="line">  authentication &#123;     # 验证块</span><br><span class="line">      # PASS||AH</span><br><span class="line">      #   PASS - 简单密码（建议）</span><br><span class="line">      #   AH - IPSEC（不推荐）</span><br><span class="line">      auth_type PASS</span><br><span class="line">      # 访问vrrpd的密码。</span><br><span class="line">      # 应在所有机器上相同。</span><br><span class="line">      # 只使用前八（8）个字符。</span><br><span class="line">      auth_pass 1234</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  # 设置虚拟IP地址，所有的机器上应该都使用相同的配置</span><br><span class="line">  virtual_ipaddress &#123;</span><br><span class="line">      &lt;IPADDR&gt;/&lt;MASK&gt; brd &lt;IPADDR&gt; dev &lt;STRING&gt; scope &lt;SCOPE&gt; label &lt;LABEL&gt;</span><br><span class="line">      192.168.200.17/24 dev eth1</span><br><span class="line">      192.168.200.18/24 dev eth2 label eth2:1</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  # 从可选的VRRP中排除VRRP IP。</span><br><span class="line">  # 对于在同一接口上有大量（例如200）的IP的情况。 要减少广告中发送的数据包数量，我们可以从广告中排除大多数IP。</span><br><span class="line"></span><br><span class="line">  # 为virtual_ipaddress添加或者删除。</span><br><span class="line">  # 因为virtual_ipaddress中的所有地址必须是同一系列，所以如果我们希望能够添加IPv4和IPv6地址的混合，也可以使用，virtual_ipaddress_excluded 来进行配置。</span><br><span class="line">  virtual_ipaddress_excluded &#123;</span><br><span class="line">   &lt;IPADDR&gt;/&lt;MASK&gt; brd &lt;IPADDR&gt; dev &lt;STRING&gt; scope &lt;SCOPE&gt;</span><br><span class="line">   &lt;IPADDR&gt;/&lt;MASK&gt; brd &lt;IPADDR&gt; dev &lt;STRING&gt; scope &lt;SCOPE&gt;</span><br><span class="line">      ...</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  # 设置接口上的promote_secondaries标志，以便在删除其中一个时，停止删除同一CIDR中的其他地址。例如，如果在接口上同时配置了10.1.1.2/24和10.1.1.3/24，一旦删除了一个，除非接口上设置了 promote_secondaries 标志，否则其他地址也将会被删除。</span><br><span class="line">  prompte_secondaries</span><br><span class="line"></span><br><span class="line">  # 当转换成 MASTER 时添加下面的routes，当转换成 BACKUP 时，会删除下面的routes 配置</span><br><span class="line">  # 有关详细信息，请参阅static_routes</span><br><span class="line">  virtual_routes &#123;</span><br><span class="line">      # src &lt;IPADDR&gt; [to] &lt;IPADDR&gt;/&lt;MASK&gt; via|gw &lt;IPADDR&gt; [or &lt;IPADDR&gt;] dev &lt;STRING&gt; scope &lt;SCOPE&gt; table &lt;TABLE&gt;</span><br><span class="line">      src 192.168.100.1 to 192.168.109.0/24 via 192.168.200.254 dev eth1</span><br><span class="line">      192.168.110.0/24 via 192.168.200.254 dev eth1</span><br><span class="line">      192.168.111.0/24 dev eth2</span><br><span class="line">      192.168.112.0/24 via 192.168.100.254</span><br><span class="line">      192.168.113.0/24 via 192.168.200.254 or 192.168.100.254 dev eth1</span><br><span class="line">      blackhole 192.168.114.0/24</span><br><span class="line">      0.0.0.0/0 gw 192.168.0.1 table 100  # To set a default gateway into table 100.</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  # 当转换成 MASTER 时添加下面的 rules ，当转换成 BACKUP 时，会删除下面的 rules 配置</span><br><span class="line">  # 有关详细信息，请参阅static_rules</span><br><span class="line">  virtual_rules &#123;</span><br><span class="line">      from 192.168.2.0/24 table 1</span><br><span class="line">      to 192.168.2.0/24 table 1</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  # VRRPv3有一个 接受模式，以允许虚拟路由器在没有地址所有者时接收发往VIP的数据包。 这是默认设置，除非设置了strict模式。</span><br><span class="line">  # 作为扩展，这也适用于VRRPv2（RFC 3768没有定义接受模式）。</span><br><span class="line">  accept          # 接受数据包到非地址所有者</span><br><span class="line">  no_accept       # 丢弃数据包到非地址所有者。</span><br><span class="line"></span><br><span class="line">  # 当较高优先级机器联机时，VRRP通常抢占较低优先级机器。 “nopreempt”允许较低优先级机器维护主机角色，即使较高优先级机器恢复在线时也是如此。</span><br><span class="line">  # 注意：要使其工作，此条目的初始状态必须为BACKUP。</span><br><span class="line">  nopreempt</span><br><span class="line">  preempt             # 用于向后兼容</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   # 请参见全局vrrp_skip_check_adv_addr的描述，它设置默认值。 默认为vrrp_skip_check_adv_addr</span><br><span class="line">   skip_check_adv_addr [on|off|true|false|yes|no]      # 如果没有指定，默认开启</span><br><span class="line"></span><br><span class="line">   # 请参见全局vrrp_strict的描述</span><br><span class="line">   # 如果未指定vrrp_strict，则它使用vrrp_strict的值</span><br><span class="line">   # 如果指定了不带参数的strict_mode，则其默认为on</span><br><span class="line">   strict_mode [on|off|true|false|yes|no]</span><br><span class="line"></span><br><span class="line">   # 启动后的秒数或看到较低优先级主机直到抢占（如果未由“nopreempt”禁用）。</span><br><span class="line">   # Range: 0 (default) to 1000</span><br><span class="line">   # 注意：要使其工作，此条目的初始状态必须为BACKUP。</span><br><span class="line">   preempt_delay 300    # 等待5分钟</span><br><span class="line"></span><br><span class="line">   # 调试级别，尚未实现。</span><br><span class="line">   debug &lt;LEVEL&gt;        # LEVEL是0到4范围内的数字</span><br><span class="line"></span><br><span class="line">   # 通知脚本，警报如上</span><br><span class="line">   notify_master &lt;STRING&gt;|&lt;QUOTED-STRING&gt; [username [groupname]]</span><br><span class="line">   notify_backup &lt;STRING&gt;|&lt;QUOTED-STRING&gt; [username [groupname]]</span><br><span class="line">   notify_fault &lt;STRING&gt;|&lt;QUOTED-STRING&gt; [username [groupname]]</span><br><span class="line">   notify_stop &lt;STRING&gt;|&lt;QUOTED-STRING&gt; [username [groupname]]      # 在停止vrrp时执行</span><br><span class="line">   notify &lt;STRING&gt;|&lt;QUOTED-STRING&gt; [username [groupname]]</span><br><span class="line">   smtp_alert</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 用于SSL_GET检查的参数。</span><br><span class="line"># 如果未指定任何参数，则将自动生成SSL上下文。</span><br><span class="line">SSL &#123;</span><br><span class="line">   password &lt;STRING&gt;   # 密码</span><br><span class="line">   ca &lt;STRING&gt;         # ca文件</span><br><span class="line">   certificate &lt;STRING&gt;  # 证书文件</span><br><span class="line">   key &lt;STRING&gt;        # 密钥文件</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="LVS-配置"><a href="#LVS-配置" class="headerlink" title="LVS 配置"></a>LVS 配置</h2><p>包含的子块有，</p>
+<ul>
+<li>Virtual server group(s) ,虚拟服务器组</li>
+<li>Virtual server(s) ,虚拟服务器</li>
+</ul>
+<p>子块包含了 ipvsadm（8）的参数。  了解 ipvsadm（8）将会有助于我们的配置。</p>
+<h3 id="Virtual-server-group-s-虚拟服务器组"><a href="#Virtual-server-group-s-虚拟服务器组" class="headerlink" title="Virtual server group(s) ,虚拟服务器组"></a>Virtual server group(s) ,虚拟服务器组</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># 可选配置项</span><br><span class="line"># 此组允许real_server上的服务属于多个虚拟服务，并且只进行一次健康检查。</span><br><span class="line"># 仅适用于非常大的LVS。</span><br><span class="line">virtual_server_group &lt;STRING&gt; &#123;</span><br><span class="line">       #VIP port</span><br><span class="line">       &lt;IPADDR&gt; &lt;PORT&gt;</span><br><span class="line">       &lt;IPADDR&gt; &lt;PORT&gt;</span><br><span class="line">       ...</span><br><span class="line">       # &lt;IPADDR RANGE&gt; 的格式为 XXX.YYY.ZZZ.WWW-VVV，例如 192.168.200.1-10 范围包括.1到.10地址</span><br><span class="line">       &lt;IPADDR RANGE&gt; &lt;PORT&gt;# VIP  VPORT 范围</span><br><span class="line">       &lt;IPADDR RANGE&gt; &lt;PORT&gt;</span><br><span class="line">       ...</span><br><span class="line">       fwmark &lt;INT&gt;  # fwmark</span><br><span class="line">       fwmark &lt;INT&gt;</span><br><span class="line">       ...  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Virtual-server-s-虚拟服务器"><a href="#Virtual-server-s-虚拟服务器" class="headerlink" title="Virtual server(s) ,虚拟服务器"></a>Virtual server(s) ,虚拟服务器</h3><p>virtual_server是一个<code>vip vport (IPADDR PORT pair)</code> 或  <code>fwmark &lt;INT&gt;</code> 的声明。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br></pre></td><td class="code"><pre><span class="line">(virtual server) group &lt;STRING&gt;</span><br><span class="line"></span><br><span class="line"># 设置服务</span><br><span class="line">virtual_server IP port |</span><br><span class="line">virtual_server fwmark int |</span><br><span class="line">virtual_server group string</span><br><span class="line">&#123;</span><br><span class="line"># 延迟定时器用于服务轮询</span><br><span class="line">delay_loop &lt;INT&gt;</span><br><span class="line"></span><br><span class="line"># LVS调度器</span><br><span class="line">lb_algo rr|wrr|lc|wlc|lblc|sh|dh</span><br><span class="line"></span><br><span class="line"># 启用散列条目</span><br><span class="line">hashed</span><br><span class="line"># 启用 flag-1 调度器 (-b flag-1 in ipvsadm)</span><br><span class="line">flag-1</span><br><span class="line"># 启用 flag-2 调度器(-b flag-2 in ipvsadm)</span><br><span class="line">flag-2</span><br><span class="line"># 启用 flag-3 调度器 (-b flag-3 in ipvsadm)</span><br><span class="line">flag-3</span><br><span class="line"># 启用 sh-port 调度器 (-b sh-port in ipvsadm)</span><br><span class="line">sh-port</span><br><span class="line"># 启用 sh-fallback 调度器  (-b sh-fallback in ipvsadm)</span><br><span class="line">sh-fallback</span><br><span class="line"></span><br><span class="line"># 为UDP启用单分组调度（在ipvsadm中为-O）</span><br><span class="line">ops</span><br><span class="line"># LVS转发方法</span><br><span class="line">lb_kind NAT|DR|TUN</span><br><span class="line"># LVS持久超时，秒</span><br><span class="line">persistence_timeout &lt;INT&gt;</span><br><span class="line"># LVS粒度掩码（ipvsadm中的-M）</span><br><span class="line">persistence_granularity &lt;NETMASK&gt;</span><br><span class="line"># 仅实现TCP</span><br><span class="line">protocol TCP</span><br><span class="line"># 如果没有设置VS IP地址，则暂停healthchecker的活动</span><br><span class="line">ha_suspend</span><br><span class="line"></span><br><span class="line"># 用于HTTP_GET或SSL_GET的VirtualHost字符串</span><br><span class="line"># 例如 virtualhost www.firewall.loc</span><br><span class="line">virtualhost &lt;STRING&gt;</span><br><span class="line"></span><br><span class="line"># 假定所有RS关闭,并且在启动时检查运行状况失败。</span><br><span class="line"># 这有助于防止启动时的假的积极操作。 默认情况下禁用Alpha模式。</span><br><span class="line">alpha</span><br><span class="line"></span><br><span class="line"># 在守护程序关闭时，在适当的情况下，考虑降低仲裁和RS通知程序执行。</span><br><span class="line"># 默认情况下禁用Omega模式。</span><br><span class="line">omega</span><br><span class="line"></span><br><span class="line"># Minimum total weight of all live servers in</span><br><span class="line"># the pool necessary to operate VS with no</span><br><span class="line"># quality regression. Defaults to 1.</span><br><span class="line">quorum &lt;INT&gt;</span><br><span class="line"></span><br><span class="line"># Tolerate this much weight units compared to the</span><br><span class="line"># nominal quorum, when considering quorum gain</span><br><span class="line"># or loss. A flap dampener. Defaults to 0.</span><br><span class="line">hysteresis &lt;INT&gt;</span><br><span class="line"></span><br><span class="line"># 获得 quorum 时启动的脚本。</span><br><span class="line">quorum_up &lt;STRING&gt;|&lt;QUOTED-STRING&gt;</span><br><span class="line"></span><br><span class="line"># 丢失quorum时启动的脚本。</span><br><span class="line">quorum_down &lt;STRING&gt;|&lt;QUOTED-STRING&gt;</span><br><span class="line"></span><br><span class="line"># 设置 realserver(s)</span><br><span class="line"></span><br><span class="line"># 在所有 realserver 都关闭时生效</span><br><span class="line">sorry_server &lt;IPADDR&gt; &lt;PORT&gt;</span><br><span class="line"># 将 inhibit_on_failure 行为应用于前面的 sorry_server 指令</span><br><span class="line">sorry_server_inhibit</span><br><span class="line"></span><br><span class="line"># 每个realserver,一个条目</span><br><span class="line">real_server &lt;IPADDR&gt; &lt;PORT&gt;</span><br><span class="line">  &#123;</span><br><span class="line">      # 相对权重，默认：1</span><br><span class="line">      weight &lt;INT&gt;</span><br><span class="line">      # 健康检查器检测到故障时，将权重设置为0</span><br><span class="line">      inhibit_on_failure</span><br><span class="line"></span><br><span class="line">      # 当运行状况检查器将服务视为启动时启动的脚本。</span><br><span class="line">      notify_up &lt;STRING&gt;|&lt;QUOTED-STRING&gt;</span><br><span class="line">      # 当运行状况检查器将服务视为停机时启动的脚本。</span><br><span class="line">      notify_down &lt;STRING&gt;|&lt;QUOTED-STRING&gt;</span><br><span class="line"></span><br><span class="line">      # 选择一个健康检查</span><br><span class="line">      # HTTP_GET|SSL_GET|TCP_CHECK|SMTP_CHECK|MISC_CHECK</span><br><span class="line"></span><br><span class="line">      # HTTP和SSL健康检查程序</span><br><span class="line">      HTTP_GET|SSL_GET</span><br><span class="line">      &#123;</span><br><span class="line">          # 一个url测试</span><br><span class="line">          # 可以有多个条目</span><br><span class="line">          url &#123;</span><br><span class="line">            # 例如 path / , or path /mrtg2/</span><br><span class="line">            path &lt;STRING&gt;</span><br><span class="line">            # healthcheck需要status_code或status_code和digest</span><br><span class="line">            # 摘要用genhash计算</span><br><span class="line">            # 例如 digest 9b3a0c85a887a256d6939da88aabd8cd</span><br><span class="line">            digest &lt;STRING&gt;</span><br><span class="line">            # HTTP标头中返回的状态代码</span><br><span class="line">            # 例如 status_code 200</span><br><span class="line">            status_code &lt;INT&gt;</span><br><span class="line">          &#125;</span><br><span class="line">          # 获取重试次数</span><br><span class="line">          nb_get_retry &lt;INT&gt;</span><br><span class="line">          # 延迟后重试</span><br><span class="line">          delay_before_retry &lt;INT&gt;</span><br><span class="line"></span><br><span class="line">          # ======== 通用连接选项</span><br><span class="line">          # 要连接的可选IP地址。</span><br><span class="line">          # 默认值为真实服务器的IP</span><br><span class="line">          connect_ip &lt;IP ADDRESS&gt;</span><br><span class="line">          # 可选，端口，如果没有连接</span><br><span class="line">          # 默认值为真实服务器的端口</span><br><span class="line">          connect_port &lt;PORT&gt;</span><br><span class="line">          # 用于发起连接的可选接口</span><br><span class="line">          bindto &lt;IP ADDRESS&gt;</span><br><span class="line">          # 用于发起连接的可选源端口</span><br><span class="line">          bind_port &lt;PORT&gt;</span><br><span class="line">          # 可选，连接超时（秒）。</span><br><span class="line">          # 默认值为5秒</span><br><span class="line">          connect_timeout &lt;INTEGER&gt;</span><br><span class="line">          # 可选，用于标记所有传出检查程序包的fwmark</span><br><span class="line">          fwmark &lt;INTEGER&gt;</span><br><span class="line"></span><br><span class="line">          # 可选的，随机延迟最大N秒后开始初始检查。</span><br><span class="line">          # 用于将多个同时检查分散到同一个RS。 默认情况下启用，最大值为delay_loop。 指定 0 为禁用</span><br><span class="line">          warmup &lt;INT&gt;</span><br><span class="line">      &#125; # HTTP_GET|SSL_GET</span><br><span class="line"></span><br><span class="line">      # TCP健康检查器（绑定到IP端口）</span><br><span class="line">      TCP_CHECK</span><br><span class="line">      &#123;</span><br><span class="line">          # ======== 通用连接选项</span><br><span class="line">          # 可选，要连接的IP地址。</span><br><span class="line">          # 默认值为真实服务器的IP</span><br><span class="line">          connect_ip &lt;IP ADDRESS&gt;</span><br><span class="line">          # 可选，连接端口</span><br><span class="line">          # 默认值为真实服务器的端口</span><br><span class="line">          connect_port &lt;PORT&gt;</span><br><span class="line">          # 可选，发起连接使用的接口</span><br><span class="line">          bindto &lt;IP ADDRESS&gt;</span><br><span class="line">          # 可选，发起连接源端口</span><br><span class="line">          bind_port &lt;PORT&gt;</span><br><span class="line">          # 可选，连接超时（以秒为单位）。</span><br><span class="line">          # 默认值为5秒</span><br><span class="line">          connect_timeout &lt;INTEGER&gt;</span><br><span class="line">          # 可选， 用于标记所有传出检查程序包的fwmark</span><br><span class="line">          fwmark &lt;INTEGER&gt;</span><br><span class="line"></span><br><span class="line">          # 可选， 随机延迟最大N秒后开始初始检查。</span><br><span class="line">          # 用于将多个同时检查分散到同一个RS。 默认情况下启用，最大值为delay_loop。 指定 0 为禁用</span><br><span class="line">          warmup &lt;INT&gt;</span><br><span class="line">      &#125; #TCP_CHECK</span><br><span class="line"></span><br><span class="line">      # SMTP健康检查器</span><br><span class="line">      SMTP_CHECK</span><br><span class="line">      &#123;</span><br><span class="line">          # 可选，主机接口检查。</span><br><span class="line">          # 如果没有主机指令，则只检查真实服务器的IP地址。</span><br><span class="line">          host &#123;</span><br><span class="line">            # ======== 通用连接选项</span><br><span class="line">            # 可选，要连接的IP地址。</span><br><span class="line">            # 默认值为真实服务器的IP</span><br><span class="line">            connect_ip &lt;IP ADDRESS&gt;</span><br><span class="line">            # 可选，连接端口</span><br><span class="line">            # 默认值为25</span><br><span class="line">            connect_port &lt;PORT&gt;</span><br><span class="line">            # 可选，发起连接使用的接口</span><br><span class="line">            bindto &lt;IP ADDRESS&gt;</span><br><span class="line">            # 可选，发起连接源端口</span><br><span class="line">            bind_port &lt;PORT&gt;</span><br><span class="line">            # 可选，每个主机连接超时。</span><br><span class="line">            # Default is outer-scope connect_timeout</span><br><span class="line">            connect_timeout &lt;INTEGER&gt;</span><br><span class="line">            # 可选， 用于标记所有传出检查程序包的fwmark</span><br><span class="line">            fwmark &lt;INTEGER&gt;</span><br><span class="line">         &#125;</span><br><span class="line">         # 连接超时时间</span><br><span class="line">         connect_timeout &lt;INTEGER&gt;</span><br><span class="line">         # 重试失败检查的次数</span><br><span class="line">         retry &lt;INTEGER&gt;</span><br><span class="line">         # 重试前延迟秒</span><br><span class="line">         delay_before_retry &lt;INTEGER&gt;</span><br><span class="line">         # 用于smtp HELO请求的可选字符串</span><br><span class="line">         helo_name &lt;STRING&gt;|&lt;QUOTED-STRING&gt;</span><br><span class="line"></span><br><span class="line">         # 可选， 随机延迟最大N秒后开始初始检查。</span><br><span class="line">         # 用于将多个同时检查分散到同一个RS。 默认情况下启用，最大值为delay_loop。 指定 0 为禁用</span><br><span class="line">         warmup &lt;INT&gt;</span><br><span class="line">      &#125; #SMTP_CHECK</span><br><span class="line"></span><br><span class="line">      # 运行外部程序，进行MISC健康检查</span><br><span class="line">      MISC_CHECK</span><br><span class="line">      &#123;</span><br><span class="line">          # 外部系统脚本或程序</span><br><span class="line">          misc_path &lt;STRING&gt;|&lt;QUOTED-STRING&gt;</span><br><span class="line">          # 脚本执行超时</span><br><span class="line">          misc_timeout &lt;INT&gt;</span><br><span class="line"></span><br><span class="line">          # 可选， 随机延迟最大N秒后开始初始检查。</span><br><span class="line">          # 用于将多个同时检查分散到同一个RS。 默认情况下启用，最大值为delay_loop。 指定 0 为禁用</span><br><span class="line">          warmup &lt;INT&gt;</span><br><span class="line"></span><br><span class="line">          # 如果设置，将会根据  healthchecker 退出状态码动态调整权重如下：</span><br><span class="line">          #   exit status 0: svc检查成功，权重不变。</span><br><span class="line">          #   exit status 1: svc检查失败.</span><br><span class="line">          #   exit status 2-255: svc检查成功，权重更改为小于退出状态2的值。</span><br><span class="line">          #   (示例：退出状态为 255 会将权重设置为 253 )</span><br><span class="line">          misc_dynamic</span><br><span class="line">          # 指定脚本应在其下运行的用户名/组名。 如果未指定GROUPNAME，则使用用户的组</span><br><span class="line">          user USERNAME [GROUPNAME]</span><br><span class="line">      &#125;</span><br><span class="line">  &#125; # realserver 定义</span><br><span class="line">&#125; # virtual service</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/02/11/keepalived配置整理/" title="keepalived配置整理">https://weizhimiao.github.io/2017/02/11/keepalived配置整理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/keepalived/" rel="tag"># keepalived</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/11/keepalived安装配置/" rel="next" title="keepalived安装与配置">
+                <i class="fa fa-chevron-left"></i> keepalived安装与配置
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/11/keepalived实现双机高可用/" rel="prev" title="keepalived实现Nginx双机高可用">
+                keepalived实现Nginx双机高可用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#配置说明："><span class="nav-number">1.</span> <span class="nav-text">配置说明：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#全局配置"><span class="nav-number">2.</span> <span class="nav-text">全局配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Global-definitions"><span class="nav-number">2.1.</span> <span class="nav-text">Global definitions</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#global-defs-区块"><span class="nav-number">2.1.1.</span> <span class="nav-text">global_defs 区块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其它全局配置"><span class="nav-number">2.1.2.</span> <span class="nav-text">其它全局配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Static-routes-addresses-rules"><span class="nav-number">2.2.</span> <span class="nav-text">Static routes/addresses/rules</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VRRPD配置"><span class="nav-number">3.</span> <span class="nav-text">VRRPD配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#VRRP-script-s"><span class="nav-number">3.1.</span> <span class="nav-text">VRRP script(s)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VRRP-synchronization-group-s-，VRRP同步组"><span class="nav-number">3.2.</span> <span class="nav-text">VRRP synchronization group(s)，VRRP同步组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VRRP-gratuitous-ARP-and-unsolicited-neighbour-advert-delay-group-s"><span class="nav-number">3.3.</span> <span class="nav-text">VRRP gratuitous ARP and unsolicited neighbour advert delay group(s)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VRRP-instance-s"><span class="nav-number">3.4.</span> <span class="nav-text">VRRP instance(s)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LVS-配置"><span class="nav-number">4.</span> <span class="nav-text">LVS 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Virtual-server-group-s-虚拟服务器组"><span class="nav-number">4.1.</span> <span class="nav-text">Virtual server group(s) ,虚拟服务器组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Virtual-server-s-虚拟服务器"><span class="nav-number">4.2.</span> <span class="nav-text">Virtual server(s) ,虚拟服务器</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

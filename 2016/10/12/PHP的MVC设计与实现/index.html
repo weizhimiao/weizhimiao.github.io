@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="MVC模式，即模型-试图-控制器模式，是将应用程序划分成不同层次的一种方式。 即，    C Control 控制器层 负责业务逻辑的处理。根据用户的请求确定用户可以做什么。之后，调用模型执行操作获得数据。最后调用视图将操作结果呈现给用户。     M Model 模型层 负责加工处理数据 返回结果。   V View 视图层 负责接收信息和显示信息。    一个典型MVC应用程序流程图">
+<meta name="keywords" content="MVC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP魔术方法小结">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/12/PHP的MVC设计与实现/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="MVC模式，即模型-试图-控制器模式，是将应用程序划分成不同层次的一种方式。 即，    C Control 控制器层 负责业务逻辑的处理。根据用户的请求确定用户可以做什么。之后，调用模型执行操作获得数据。最后调用视图将操作结果呈现给用户。     M Model 模型层 负责加工处理数据 返回结果。   V View 视图层 负责接收信息和显示信息。    一个典型MVC应用程序流程图">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161013/mvcYingYongChengXuLiuChengTu.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP魔术方法小结">
+<meta name="twitter:description" content="MVC模式，即模型-试图-控制器模式，是将应用程序划分成不同层次的一种方式。 即，    C Control 控制器层 负责业务逻辑的处理。根据用户的请求确定用户可以做什么。之后，调用模型执行操作获得数据。最后调用视图将操作结果呈现给用户。     M Model 模型层 负责加工处理数据 返回结果。   V View 视图层 负责接收信息和显示信息。    一个典型MVC应用程序流程图">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161013/mvcYingYongChengXuLiuChengTu.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/12/PHP的MVC设计与实现/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>PHP魔术方法小结 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/12/PHP的MVC设计与实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PHP魔术方法小结<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/PHP的MVC设计与实现.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-12 22:30:00" itemprop="dateCreated datePublished" datetime="2016-10-12T22:30:00+08:00">2016-10-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/12/PHP的MVC设计与实现/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/12/PHP的MVC设计与实现/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7.6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>MVC模式，即模型-试图-控制器模式，是将应用程序划分成不同层次的一种方式。</p>
+<p>即，</p>
+<table>
+<thead>
+<tr>
+<th>C</th>
+<th>Control</th>
+<th>控制器层</th>
+<th>负责业务逻辑的处理。根据用户的请求确定用户可以做什么。之后，调用模型执行操作获得数据。最后调用视图将操作结果呈现给用户。</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M</td>
+<td>Model</td>
+<td>模型层</td>
+<td>负责加工处理数据 返回结果。</td>
+</tr>
+<tr>
+<td>V</td>
+<td>View</td>
+<td>视图层</td>
+<td>负责接收信息和显示信息。</td>
+</tr>
+</tbody>
+</table>
+<p>一个典型MVC应用程序流程图</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161013/mvcYingYongChengXuLiuChengTu.png" alt="典型MVC应用程序流程图"></p>
+<a id="more"></a>
+<h2 id="简单实现："><a href="#简单实现：" class="headerlink" title="简单实现："></a>简单实现：</h2><h3 id="文件结构："><a href="#文件结构：" class="headerlink" title="文件结构："></a>文件结构：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ tree shop         </span><br><span class="line">shop</span><br><span class="line">├── Control</span><br><span class="line">│   ├── FlinkControl.class.php</span><br><span class="line">│   ├── GoodsControl.class.php</span><br><span class="line">│   ├── IndexControl.class.php</span><br><span class="line">│   ├── NewsControl.class.php</span><br><span class="line">│   ├── OrderControl.class.php</span><br><span class="line">│   └── UserControl.class.php</span><br><span class="line">├── Model</span><br><span class="line">│   ├── MemcacheModel.class.php</span><br><span class="line">│   └── MysqlModel.class.php</span><br><span class="line">├── Org</span><br><span class="line">│   └── Vcode.class.php</span><br><span class="line">├── Views</span><br><span class="line">├── index.php</span><br><span class="line">└── readme</span><br><span class="line"></span><br><span class="line">4 directories, 11 files</span><br></pre></td></tr></table></figure>
+<h3 id="说明："><a href="#说明：" class="headerlink" title="说明："></a>说明：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Model  文件夹    模型层的Model类（操作数据 MYSQL、Memcached...）</span><br><span class="line">Org    文件夹	  模型层的其他类(不操作数据 分页/验证码...)</span><br><span class="line">Controls文件夹	  控制器层的类</span><br><span class="line">Views  文件夹	  视图层(html页面)</span><br></pre></td></tr></table></figure>
+<h3 id="主要文件内容："><a href="#主要文件内容：" class="headerlink" title="主要文件内容："></a>主要文件内容：</h3><p>index.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">	<span class="comment">//类的自动加载</span></span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">__autoload</span><span class="params">($className)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//包含控制器的类</span></span><br><span class="line">		<span class="keyword">if</span>(strtolower(substr($className,<span class="number">-7</span>))==<span class="string">'control'</span>)&#123;</span><br><span class="line">			<span class="keyword">include</span> <span class="string">'Control/'</span>.$className.<span class="string">'.class.php'</span>;</span><br><span class="line">		&#125;<span class="keyword">elseif</span>(strtolower(substr($className,<span class="number">-5</span>))==<span class="string">'model'</span>)&#123;</span><br><span class="line">			<span class="keyword">include</span> <span class="string">'Model/'</span>.$className.<span class="string">'.class.php'</span>;</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="keyword">include</span> <span class="string">'Org/'</span>.$className.<span class="string">'.class.php'</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//如何调用控制器</span></span><br><span class="line">	<span class="comment">//index.php?m=user&amp;a=add      表示调用用户类中的添加用户方法</span></span><br><span class="line">	<span class="comment">//index.php?m=goods&amp;a=drop    表示调用商品类中的删除商品方法</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//index.php?m=user&amp;a=add  </span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//m=user -&gt;调用UserControl类</span></span><br><span class="line">	$class=!<span class="keyword">empty</span>($_GET[<span class="string">'m'</span>])?strtolower($_GET[<span class="string">'m'</span>]):<span class="string">'Index'</span>;<span class="comment">//$class=user;</span></span><br><span class="line">	$class=ucfirst($class);<span class="comment">//$class=User;</span></span><br><span class="line">	$class.=<span class="string">'Control'</span>;<span class="comment">//$class=UserControl</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//a=add -&gt; add</span></span><br><span class="line">	$method=!<span class="keyword">empty</span>($_GET[<span class="string">'a'</span>])?strtolower($_GET[<span class="string">'a'</span>]):<span class="string">'index'</span>;</span><br><span class="line">	$one=<span class="keyword">new</span> $class;</span><br><span class="line">	$one-&gt;$method();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>Control/UserControl.class.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">	<span class="class"><span class="keyword">class</span> <span class="title">UserControl</span></span>&#123;</span><br><span class="line">		<span class="comment">//控制器不需用属性！！！1</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">//默认的方法index</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span>&#123;</span><br><span class="line">      <span class="comment">//实例化一个模型层的扩展类</span></span><br><span class="line">			<span class="keyword">echo</span> <span class="keyword">new</span> Vcode;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'显示用户列表'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//添加用户</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">add</span><span class="params">()</span></span>&#123;</span><br><span class="line">      <span class="comment">//调用Model 查询友情连接信息</span></span><br><span class="line">			$mysql=<span class="keyword">new</span> MysqlModel;</span><br><span class="line">			<span class="comment">//调用Model类的方法</span></span><br><span class="line">			$mysql-&gt;insert();</span><br><span class="line"></span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'添加用户操作'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//删除用户</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">drop</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'删除用户操作'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//修改用户</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">mod</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'修改用户操作'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//查询用户</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">show</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'查询用户操作'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>Model/MysqlModel.class.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">class</span> <span class="title">MysqlModel</span></span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//连接数据库的方法</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'连接数据库中&lt;br&gt;'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//使用数据库进行查询操作</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">select</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'使用数据库进行查询操作&lt;br&gt;'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//使用数据库进行删除操作</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">delete</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'使用数据库进行删除操作&lt;br&gt;'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//使用数据库进行修改操作</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">update</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'使用数据库进行修改操作&lt;br&gt;'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//使用数据库进行添加操作</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">insert</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'使用数据库进行添加操作&lt;br&gt;'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">'断开数据库连接'</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>Org/Vcode.class.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">	<span class="class"><span class="keyword">class</span>  <span class="title">Vcode</span> </span>&#123;</span><br><span class="line">		<span class="keyword">private</span> $width;                               <span class="comment">//验证码图片的宽度</span></span><br><span class="line">		<span class="keyword">private</span> $height;                              <span class="comment">//验证码图片的高度</span></span><br><span class="line">		<span class="keyword">private</span> $codeNum;                             <span class="comment">//验证码字符的个数</span></span><br><span class="line">		<span class="keyword">private</span> $disturbColorNum;                     <span class="comment">//干扰元素数量</span></span><br><span class="line">		<span class="keyword">private</span> $checkCode;                           <span class="comment">//验证码字符</span></span><br><span class="line">		<span class="keyword">private</span> $image;                               <span class="comment">//验证码资源</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">/**</span></span><br><span class="line"><span class="comment">		 * 构造方法用来实例化验证码对象，并为一些成员属性初使化       </span></span><br><span class="line"><span class="comment">		 * <span class="doctag">@param</span>	int	$width		设置验证码图片的宽度，默认宽度值为80像素        </span></span><br><span class="line"><span class="comment">		 * <span class="doctag">@param</span>	int	$height		设置验证码图片的高度，默认高度值为20像素       </span></span><br><span class="line"><span class="comment">		 * <span class="doctag">@param</span>	int	$codeNum	设置验证码中字母和数字的个数，默认个数为4个  </span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($width=<span class="number">80</span>, $height=<span class="number">20</span>, $codeNum=<span class="number">4</span>)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;width=$width;                     <span class="comment">//为成员属性width初使化</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;height=$height;                     <span class="comment">//为成员属性height初使化</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;codeNum=$codeNum;               <span class="comment">//为成员属性codeNum初使化</span></span><br><span class="line">			$number=floor($height*$width/<span class="number">15</span>);</span><br><span class="line">			<span class="keyword">if</span>($number &gt; <span class="number">240</span>-$codeNum)</span><br><span class="line">				<span class="keyword">$this</span>-&gt;disturbColorNum=<span class="number">240</span>-$codeNum;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="keyword">$this</span>-&gt;disturbColorNum=$number;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;checkCode=<span class="keyword">$this</span>-&gt;createCheckCode();  <span class="comment">//为成员属性checkCode初使化</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">/**</span></span><br><span class="line"><span class="comment">		 * 用于输出验证码图片，也向服务器的SESSION中保存了验证码</span></span><br><span class="line"><span class="comment">		 * 使用echo 输出对象即可</span></span><br><span class="line"><span class="comment">		 * <span class="doctag">@return</span> string	验证码</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line"></span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">__toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">			$_SESSION[<span class="string">"code"</span>]=strtoupper(<span class="keyword">$this</span>-&gt;checkCode);  <span class="comment">//加到session中</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;outImg();              <span class="comment">//输出验证码</span></span><br><span class="line">			<span class="keyword">return</span> <span class="string">''</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">outImg</span><span class="params">()</span></span>&#123;                       <span class="comment">//通过访问该方法向浏览器中输出图像</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;getCreateImage();                 <span class="comment">//调用内部方法创建画布并对其进行初使化</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;setDisturbColor();                 <span class="comment">//向图像中设置一些干扰像素</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;outputText();                     <span class="comment">//向图像中输出随机的字符串</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;outputImage();                    <span class="comment">//生成相应格式的图像并输出</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		<span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">getCreateImage</span><span class="params">()</span></span>&#123;              <span class="comment">//用来创建图像资源，并初使化背影</span></span><br><span class="line">			<span class="keyword">$this</span>-&gt;image=imagecreatetruecolor(<span class="keyword">$this</span>-&gt;width,<span class="keyword">$this</span>-&gt;height);</span><br><span class="line"></span><br><span class="line">			$backColor = imagecolorallocate(<span class="keyword">$this</span>-&gt;image, rand(<span class="number">225</span>,<span class="number">255</span>),rand(<span class="number">225</span>,<span class="number">255</span>),rand(<span class="number">225</span>,<span class="number">255</span>));    <span class="comment">//背景色（随机）</span></span><br><span class="line">			 @imagefill(<span class="keyword">$this</span>-&gt;image, <span class="number">0</span>, <span class="number">0</span>, $backColor);</span><br><span class="line"></span><br><span class="line">			$border=imageColorAllocate(<span class="keyword">$this</span>-&gt;image, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">			imageRectangle(<span class="keyword">$this</span>-&gt;image,<span class="number">0</span>,<span class="number">0</span>,<span class="keyword">$this</span>-&gt;width<span class="number">-1</span>,<span class="keyword">$this</span>-&gt;height<span class="number">-1</span>,$border);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">createCheckCode</span><span class="params">()</span></span>&#123;           </span><br><span class="line">			<span class="comment">//随机生成用户指定个数的字符串,去掉了容易混淆的字符oOLlz和数字012</span></span><br><span class="line">			$code=<span class="string">"3456789abcdefghijkmnpqrstuvwxyABCDEFGHIJKMNPQRSTUVWXY"</span>;</span><br><span class="line">			<span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;<span class="keyword">$this</span>-&gt;codeNum;$i++) &#123;</span><br><span class="line">				$char=$code&#123;rand(<span class="number">0</span>,strlen($code)<span class="number">-1</span>)&#125;;</span><br><span class="line"></span><br><span class="line">				$ascii.=$char;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> $ascii;</span><br><span class="line"></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">setDisturbColor</span><span class="params">()</span> </span>&#123;    </span><br><span class="line">			<span class="comment">//设置干扰像素，向图像中输出不同颜色的100个点</span></span><br><span class="line">			<span class="keyword">for</span>($i=<span class="number">0</span>; $i&lt;=<span class="keyword">$this</span>-&gt;disturbColorNum; $i++) &#123;</span><br><span class="line">				$color = imagecolorallocate(<span class="keyword">$this</span>-&gt;image, rand(<span class="number">0</span>,<span class="number">255</span>), rand(<span class="number">0</span>,<span class="number">255</span>), rand(<span class="number">0</span>,<span class="number">255</span>));</span><br><span class="line">   				imagesetpixel(<span class="keyword">$this</span>-&gt;image,rand(<span class="number">1</span>,<span class="keyword">$this</span>-&gt;width<span class="number">-2</span>),rand(<span class="number">1</span>,<span class="keyword">$this</span>-&gt;height<span class="number">-2</span>),$color);</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">for</span>($i=<span class="number">0</span>; $i&lt;<span class="number">10</span>; $i++)&#123;</span><br><span class="line">				$color=imagecolorallocate(<span class="keyword">$this</span>-&gt;image,rand(<span class="number">0</span>,<span class="number">255</span>),rand(<span class="number">0</span>,<span class="number">255</span>),rand(<span class="number">0</span>,<span class="number">255</span>));</span><br><span class="line">				imagearc(<span class="keyword">$this</span>-&gt;image,rand(<span class="number">-10</span>,<span class="keyword">$this</span>-&gt;width),rand(<span class="number">-10</span>,<span class="keyword">$this</span>-&gt;height),rand(<span class="number">30</span>,<span class="number">300</span>),rand(<span class="number">20</span>,<span class="number">200</span>),<span class="number">55</span>,<span class="number">44</span>,$color);</span><br><span class="line">			&#125;  </span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		<span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">outputText</span><span class="params">()</span> </span>&#123;       </span><br><span class="line">			<span class="comment">//随机颜色、随机摆放、随机字符串向图像中输出</span></span><br><span class="line">			<span class="keyword">for</span> ($i=<span class="number">0</span>;$i&lt;=<span class="keyword">$this</span>-&gt;codeNum;$i++) &#123;</span><br><span class="line">				$fontcolor = imagecolorallocate(<span class="keyword">$this</span>-&gt;image, rand(<span class="number">0</span>,<span class="number">128</span>), rand(<span class="number">0</span>,<span class="number">128</span>), rand(<span class="number">0</span>,<span class="number">128</span>));</span><br><span class="line">				$fontSize=rand(<span class="number">3</span>,<span class="number">5</span>);</span><br><span class="line">				$x = floor(<span class="keyword">$this</span>-&gt;width/<span class="keyword">$this</span>-&gt;codeNum)*$i+<span class="number">3</span>;</span><br><span class="line">   				$y = rand(<span class="number">0</span>,<span class="keyword">$this</span>-&gt;height-imagefontheight($fontSize));</span><br><span class="line">				imagechar(<span class="keyword">$this</span>-&gt;image, $fontSize, $x, $y, <span class="keyword">$this</span>-&gt;checkCode&#123;$i&#125;, $fontcolor);</span><br><span class="line"> 			  &#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">outputImage</span><span class="params">()</span></span>&#123;              </span><br><span class="line">			<span class="comment">//自动检测GD支持的图像类型，并输出图像</span></span><br><span class="line">			<span class="keyword">if</span>(imagetypes() &amp; IMG_GIF)&#123;          <span class="comment">//判断生成GIF格式图像的函数是否存在</span></span><br><span class="line">				header(<span class="string">"Content-type: image/gif"</span>);  <span class="comment">//发送标头信息设置MIME类型为image/gif</span></span><br><span class="line">				imagegif(<span class="keyword">$this</span>-&gt;image);           <span class="comment">//以GIF格式将图像输出到浏览器</span></span><br><span class="line">			&#125;<span class="keyword">elseif</span>(imagetypes() &amp; IMG_JPG)&#123;      <span class="comment">//判断生成JPG格式图像的函数是否存在</span></span><br><span class="line">				header(<span class="string">"Content-type: image/jpeg"</span>); <span class="comment">//发送标头信息设置MIME类型为image/jpeg</span></span><br><span class="line">				imagejpeg(<span class="keyword">$this</span>-&gt;image, <span class="string">""</span>, <span class="number">0.5</span>);   <span class="comment">//以JPEN格式将图像输出到浏览器</span></span><br><span class="line">			&#125;<span class="keyword">elseif</span>(imagetypes() &amp; IMG_PNG)&#123;     <span class="comment">//判断生成PNG格式图像的函数是否存在</span></span><br><span class="line">				header(<span class="string">"Content-type: image/png"</span>);  <span class="comment">//发送标头信息设置MIME类型为image/png</span></span><br><span class="line">				imagepng(<span class="keyword">$this</span>-&gt;image);          <span class="comment">//以PNG格式将图像输出到浏览器</span></span><br><span class="line">			&#125;<span class="keyword">elseif</span>(imagetypes() &amp; IMG_WBMP)&#123;   <span class="comment">//判断生成WBMP格式图像的函数是否存在</span></span><br><span class="line">				 header(<span class="string">"Content-type: image/vnd.wap.wbmp"</span>);   <span class="comment">//发送标头为image/wbmp</span></span><br><span class="line">				 imagewbmp(<span class="keyword">$this</span>-&gt;image);       <span class="comment">//以WBMP格式将图像输出到浏览器</span></span><br><span class="line">			&#125;<span class="keyword">else</span>&#123;                              <span class="comment">//如果没有支持的图像类型</span></span><br><span class="line">				<span class="keyword">die</span>(<span class="string">"PHP不支持图像创建！"</span>);    <span class="comment">//不输出图像，输出一错误消息，并退出程序</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;                      <span class="comment">//当对象结束之前销毁图像资源释放内存</span></span><br><span class="line"> 			imagedestroy(<span class="keyword">$this</span>-&gt;image);            <span class="comment">//调用GD库中的方法销毁图像资源</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/12/PHP的MVC设计与实现/" title="PHP魔术方法小结">https://weizhimiao.github.io/2016/10/12/PHP的MVC设计与实现/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MVC/" rel="tag"># MVC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/12/PHP扩展与应用库(PEAR)/" rel="next" title="PHP扩展与应用库(PEAR)">
+                <i class="fa fa-chevron-left"></i> PHP扩展与应用库(PEAR)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/13/大型网站技术架构剖析/" rel="prev" title="大型网站技术架构剖析">
+                大型网站技术架构剖析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简单实现："><span class="nav-number">1.</span> <span class="nav-text">简单实现：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件结构："><span class="nav-number">1.1.</span> <span class="nav-text">文件结构：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#说明："><span class="nav-number">1.2.</span> <span class="nav-text">说明：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#主要文件内容："><span class="nav-number">1.3.</span> <span class="nav-text">主要文件内容：</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

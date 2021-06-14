@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Memcached,是高性能的分布式内存缓存服务器，主要功能就是通过缓存数据库的查询，减少对数据库的访问次数，来提高动态web应用的速度和可扩展性。 memcached 是以守护程序方法运行于一个或多个服务器中，随时接受客户端的连接操作，客户端可以由各种语言编写，目前一致的客户端api包括 Perl / PHP / Python / Java / C# / C 等等。客户端在与 memcached">
+<meta name="keywords" content="memcached,缓存,memcache">
+<meta property="og:type" content="article">
+<meta property="og:title" content="memcache高速缓存工作原理及应用">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/09/29/memcache高速缓存的工作原理及应用小结/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Memcached,是高性能的分布式内存缓存服务器，主要功能就是通过缓存数据库的查询，减少对数据库的访问次数，来提高动态web应用的速度和可扩展性。 memcached 是以守护程序方法运行于一个或多个服务器中，随时接受客户端的连接操作，客户端可以由各种语言编写，目前一致的客户端api包括 Perl / PHP / Python / Java / C# / C 等等。客户端在与 memcached">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20160929/MemcacheYingYongMoXing.png?1">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20160929/phpmemcache.png?1">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="memcache高速缓存工作原理及应用">
+<meta name="twitter:description" content="Memcached,是高性能的分布式内存缓存服务器，主要功能就是通过缓存数据库的查询，减少对数据库的访问次数，来提高动态web应用的速度和可扩展性。 memcached 是以守护程序方法运行于一个或多个服务器中，随时接受客户端的连接操作，客户端可以由各种语言编写，目前一致的客户端api包括 Perl / PHP / Python / Java / C# / C 等等。客户端在与 memcached">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20160929/MemcacheYingYongMoXing.png?1">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/09/29/memcache高速缓存的工作原理及应用小结/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>memcache高速缓存工作原理及应用 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/09/29/memcache高速缓存的工作原理及应用小结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">memcache高速缓存工作原理及应用<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/memcache高速缓存的工作原理及应用小结.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-09-29 18:30:00" itemprop="dateCreated datePublished" datetime="2016-09-29T18:30:00+08:00">2016-09-29</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/09/29/memcache高速缓存的工作原理及应用小结/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/09/29/memcache高速缓存的工作原理及应用小结/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">10 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Memcached,是高性能的分布式内存缓存服务器，主要功能就是通过缓存数据库的查询，减少对数据库的访问次数，来提高动态web应用的速度和可扩展性。</p>
+<p>memcached 是以守护程序方法运行于一个或多个服务器中，随时接受客户端的连接操作，客户端可以由各种语言编写，目前一致的客户端api包括 Perl / PHP / Python / Java / C# / C 等等。客户端在与 memcached 服务建立连接之后，接下来的事情就是存取对象了， 每个被存取的对象都有一个唯一的标识符 key，存取操作均通过这个 key进行，保存到 memcached 中的对象实际上是放置内存中的，并不是保存在平时的 cache 文件中的，这也是为什么 memcached 能够如此高效快速的原因。</p>
+<p>注意，这些对象并不是持久的， 服务停止之后， 里边的数据就会丢失。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20160929/MemcacheYingYongMoXing.png?1" alt="Memcached应用模型"></p>
+<a id="more"></a>
+<h2 id="Memcached的安装"><a href="#Memcached的安装" class="headerlink" title="Memcached的安装"></a>Memcached的安装</h2><h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>libevent</p>
+<blockquote>
+<p>Libevent 是一个用C语言编写的、轻量级的开源高性能网络库。<br>主要有以下几个亮点：事件驱动（ event-driven），高性能;轻量级，专注于网络，不如 ACE 那么臃肿庞大；源代码相当精炼、易读；跨平台，支持 Windows、 Linux、 BSD 和 Mac Os；支持多种 I/O 多路复用技术， epoll、 poll、 dev/poll、 select 和 kqueue 等；支持 I/O，定时器和信号等事件；注册事件优先级。<br>Libevent 已经被广泛的应用，作为底层的网络库；比如 memcached、 Vomit、 Nylon、 Netchat等等。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget http://n.sinaimg.cn/games/3ece443e/20160929/libevent-2.0.22-stable.tar</span><br><span class="line">tar -vxf libevent-2.0.22-stable.tar</span><br><span class="line">cd libevent-2.0.22-stable</span><br><span class="line">./configure --prefix=/usr/local/libevent</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget http://n.sinaimg.cn/games/3ece443e/20160930/memcached-1.4.31.tar.gz</span><br><span class="line">cd memcached-1.4.31</span><br><span class="line"> ./configure --prefix=/usr/local/memcached --with-libevent=/usr/local/libevent</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<p>查看是否已经安装成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/memcached/</span><br><span class="line">ll</span><br><span class="line">drwxr-xr-x 2 root root 4096 9月  28 10:56 bin</span><br><span class="line">drwxr-xr-x 3 root root 4096 9月  28 10:56 include</span><br><span class="line">drwxr-xr-x 3 root root 4096 9月  28 10:56 share</span><br></pre></td></tr></table></figure></p>
+<h2 id="Memcached管理"><a href="#Memcached管理" class="headerlink" title="Memcached管理"></a>Memcached管理</h2><h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><p>启动Memcached服务器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/memcached/bin/memcached -d -m 128 -u root -p 11211</span><br></pre></td></tr></table></figure></p>
+<p>查看是否启动成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ps aux | grep memcache</span><br><span class="line">root     24428  0.0  0.0 323120   864 ?        Ssl  11:00   0:00 /usr/local/memcached/bin/memcached -d -m 128 -u root -p 11211</span><br><span class="line">root     24436  0.0  0.0 112664   984 pts/0    D+   11:00   0:00 grep --color=auto memcache</span><br></pre></td></tr></table></figure></p>
+<p>或<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">netstat -tlun | grep 11211</span><br><span class="line">tcp        0      0 0.0.0.0:11211           0.0.0.0:*               LISTEN</span><br><span class="line">tcp6       0      0 :::11211                :::*                    LISTEN</span><br><span class="line">udp        0      0 0.0.0.0:11211           0.0.0.0:*</span><br><span class="line">udp6       0      0 :::11211                :::*</span><br></pre></td></tr></table></figure></p>
+<p>设置开机自启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;/usr/local/memcached/bin/memcached -d -m 128 -u root -p 11211&quot; &gt;&gt; /etc/rc.d/rc.local</span><br></pre></td></tr></table></figure></p>
+<p>Memcached启动选项及说明</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-p <num></num></td>
+<td>Memcached监听的TCP端口，要保证该端口号未被占用</td>
+</tr>
+<tr>
+<td>-U <num></num></td>
+<td>指定监听UDP的端口，默认11211，0表示关闭</td>
+</tr>
+<tr>
+<td>-s <file></file></td>
+<td>指定Memcached用于监听的UNIX socket文件</td>
+</tr>
+<tr>
+<td>-A</td>
+<td>enable ascii “shutdown” command</td>
+</tr>
+<tr>
+<td>-a <mask></mask></td>
+<td>设置-s选项指定的UNIX socket文件的权限(默认权限: 0700)</td>
+</tr>
+<tr>
+<td>-l <addr></addr></td>
+<td>监听的服务器IP地址，如果有多个地址的话，使用逗号分隔，格式可以为“IP地址:端口号”，例如：-l 指定192.168.0.184:19830,192.168.0.195:13542；端口号也可以通过-p选项指定</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>指定memcached进程作为一个守护进程启动</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>设置产生core文件大小</td>
+</tr>
+<tr>
+<td>-u <username></username></td>
+<td>运行memcached的用户 (only when run as root)</td>
+</tr>
+<tr>
+<td>-m <num></num></td>
+<td>指定分配给memcached使用的内存，单位是MB(默认: 64 MB)</td>
+</tr>
+<tr>
+<td>-M</td>
+<td>当内存使用超出配置值时，禁止自动清除缓存中的数据项，此时Memcached不可用，直到内存被释放</td>
+</tr>
+<tr>
+<td>-c <num></num></td>
+<td>设置最大运行的并发连接数，默认是1024</td>
+</tr>
+<tr>
+<td>-k</td>
+<td>设置锁定所有分页的内存，对于大缓存应用场景，谨慎使用该选项</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>输出警告和错误信息</td>
+</tr>
+<tr>
+<td>-vv</td>
+<td>打印信息比-v更详细：不仅输出警告和错误信息，也输出客户端请求和响应信息</td>
+</tr>
+<tr>
+<td>-vvv</td>
+<td>extremely verbose (also print internal state transitions)</td>
+</tr>
+<tr>
+<td>-h</td>
+<td>显示Memcached版本和摘要信息</td>
+</tr>
+<tr>
+<td>-i</td>
+<td>打印libevent和Memcached的licenses信息</td>
+</tr>
+<tr>
+<td>-V</td>
+<td>输出Memcached版本号</td>
+</tr>
+<tr>
+<td>-P <file></file></td>
+<td>保存memcached进程的pid文件，（与 -d 一起搭配使用）</td>
+</tr>
+<tr>
+<td>-f <factor></factor></td>
+<td>用于计算缓存数据项的内存块大小的乘数因子，默认是1.25</td>
+</tr>
+<tr>
+<td>-n <bytes></bytes></td>
+<td>为缓存数据项的key、value、flag设置最小分配字节数，默认是48</td>
+</tr>
+<tr>
+<td>-L</td>
+<td>尝试使用大内存分页（pages）</td>
+</tr>
+<tr>
+<td>-D <char></char></td>
+<td>用于统计报告中Key前缀和ID之间的分隔符，默认是冒号“:”  </td>
+</tr>
+<tr>
+<td>-t <num></num></td>
+<td>指定用来处理请求的线程数，默认为4</td>
+</tr>
+<tr>
+<td>-R</td>
+<td>为避免客户端饿死（starvation），对连续达到的客户端请求数设置一个限额，如果超过该设置，会选择另一个连接来处理请求，默认为20</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>禁用CAS</td>
+</tr>
+<tr>
+<td>-b <num></num></td>
+<td>Set the backlog queue limit (default: 1024)</td>
+</tr>
+<tr>
+<td>-B</td>
+<td>指定使用的协议，默认行为是自动协商（autonegotiate），可能使用的选项有auto、ascii、binary。</td>
+</tr>
+<tr>
+<td>-I</td>
+<td>Override the size of each slab page. Adjusts max item size(default: 1mb, min: 1k, max: 128m)</td>
+</tr>
+<tr>
+<td>-F</td>
+<td>禁用flush_all命令</td>
+</tr>
+<tr>
+<td>-o</td>
+<td>指定逗号分隔的选项，一般用于用于扩展或实验性质的选项</td>
+</tr>
+</tbody>
+</table>
+<h3 id="通过telnet连接使用Memcache"><a href="#通过telnet连接使用Memcache" class="headerlink" title="通过telnet连接使用Memcache"></a>通过telnet连接使用Memcache</h3><p>连接<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">telnet 127.0.0.1 11211</span><br></pre></td></tr></table></figure></p>
+<p>命令格式：<command name=""> <key> <flags> <exptime> <bytes>\r\n <data block="">\r\n</data></bytes></exptime></flags></key></p>
+<blockquote>
+<p><command name=""> 可以是”set”, “add”, “replace”</p>
+<p><key> 客户端需要保存数据的key。</key></p>
+<p><flags> 是一个16位的无符号的整数(以十进制的方式表示)。</flags></p>
+<p><exptime> 过期的时间。<br>最后客户端需要加上”\r\n”作为”命令头”的结束标志。即回车</exptime></p>
+</blockquote>
+<p>示例：</p>
+<p>保存一个数据（保存一个『cache_key1=&gt;12345』的键值对到memcached 60s）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set cache_key1 0 60 5</span><br><span class="line">12345</span><br><span class="line">STORED</span><br></pre></td></tr></table></figure></p>
+<p>获取刚保存的值<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">get cache_key1</span><br><span class="line">VALUE cache_key1 0 5</span><br><span class="line">12345</span><br><span class="line">END</span><br></pre></td></tr></table></figure></p>
+<p>其他命令：</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>get</td>
+<td>获取值</td>
+<td>get mykey</td>
+</tr>
+<tr>
+<td>set</td>
+<td>设置值（可以存在可以不存在）</td>
+<td>set mykey 0 60 5</td>
+</tr>
+<tr>
+<td>add</td>
+<td>添加新值</td>
+<td>add newkey 0 60 5</td>
+</tr>
+<tr>
+<td>replace</td>
+<td>替换值（必须已存在）</td>
+<td>replace key 0 60 5</td>
+</tr>
+<tr>
+<td>append</td>
+<td>在原有值之后添加数据</td>
+<td>append key 0 60 15</td>
+</tr>
+<tr>
+<td>prepend</td>
+<td>在原有值之前添加数据</td>
+<td>prepend key 0 60 15</td>
+</tr>
+<tr>
+<td>incr</td>
+<td>Increments numerical key value by given number</td>
+<td>incr mykey 2</td>
+</tr>
+<tr>
+<td>decr</td>
+<td>Decrements numerical key value by given number</td>
+<td>decr mykey 5</td>
+</tr>
+<tr>
+<td>delete</td>
+<td>删除一条数据</td>
+<td>delete mykey</td>
+</tr>
+<tr>
+<td>flush_all</td>
+<td>清除所有数据</td>
+<td>flush_all</td>
+</tr>
+<tr>
+<td></td>
+<td>清除900秒之内的数据</td>
+<td>flush_all 900</td>
+</tr>
+<tr>
+<td>stats</td>
+<td>查看所有状态</td>
+<td>stats</td>
+</tr>
+<tr>
+<td></td>
+<td>Prints memory statistics</td>
+<td>stats slabs</td>
+</tr>
+<tr>
+<td></td>
+<td>Prints memory statistics</td>
+<td>stats malloc</td>
+</tr>
+<tr>
+<td></td>
+<td>Print higher level allocation statistics</td>
+<td>stats items</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>stats detail</td>
+</tr>
+<tr>
+<td></td>
+<td>已使用大小</td>
+<td>stats sizes</td>
+</tr>
+<tr>
+<td></td>
+<td>重置状态</td>
+<td>stats reset</td>
+</tr>
+<tr>
+<td>version</td>
+<td>查看版本</td>
+<td>version</td>
+</tr>
+<tr>
+<td>verbosity</td>
+<td>Increases log level</td>
+<td>verbosity</td>
+</tr>
+<tr>
+<td>quit</td>
+<td>退出telnet连接</td>
+<td>quit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="通过客户端（PHP）连接和使用Memcached"><a href="#通过客户端（PHP）连接和使用Memcached" class="headerlink" title="通过客户端（PHP）连接和使用Memcached"></a>通过客户端（PHP）连接和使用Memcached</h3><p>php扩展Memcached安装</p>
+<p>依赖</p>
+<blockquote>
+<p>libmemcached, 是一个 memcached 的库，客户端库，C 和 C++ 语言实现的客户端库，具有低内存占用率、线程安全、并提供对memcached功能的全面支持。它还采用 多种命令行工具： memcat ， memflush ， memrm ， memstat ，并memslap （负载代）。程序库一直在设计，让不同的散列方法对密钥，分割的钥匙，并使用统一的散列分配。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://launchpadlibrarian.net/165454254/libmemcached-1.0.18.tar.gz</span><br><span class="line">tar -zxvf libmemcached-1.0.18.tar.gz</span><br><span class="line">cd libmemcached-1.0.18</span><br><span class="line">./configure --prefix=/usr/local/libmemcached</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<p>安装扩展<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">wget http://n.sinaimg.cn/games/3ece443e/20160929/memcached-2.2.0.tar</span><br><span class="line">tar -xvf memcached-2.2.0.tar</span><br><span class="line">cd memcached-2.2.0</span><br><span class="line">/usr/local/php56/bin/phpize</span><br><span class="line">./configure --with-php-config=/usr/local/php56/bin/php-config --with-libmemcached-dir=/usr/local/libmemcached  --enable-memcached --disable-memcached-sasl</span><br><span class="line">make &amp;&amp; make install</span><br><span class="line">Installing shared extensions:     /usr/local/php56/lib/php/extensions/no-debug-non-zts-20131226/</span><br></pre></td></tr></table></figure></p>
+<p>查看是否安装成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/php56/lib/php/extensions/no-debug-non-zts-20131226/</span><br><span class="line">ll</span><br><span class="line">-rwxr-xr-x 1 root root  380475 9月  28 22:25 memcached.so</span><br><span class="line">-rwxr-xr-x 1 root root  756714 9月  26 17:32 mysqli.so</span><br><span class="line">-rwxr-xr-x 1 root root 1333912 9月  24 23:31 opcache.a</span><br><span class="line">-rwxr-xr-x 1 root root  618435 9月  24 23:31 opcache.so</span><br></pre></td></tr></table></figure></p>
+<p>修改配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /usr/local/php56/lib/php.ini</span><br><span class="line">extension=/usr/local/php56/lib/php/extensions/no-debug-non-zts-20131226/memcached.so</span><br></pre></td></tr></table></figure></p>
+<p>重启php-fpm<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kill -USR2 `cat /usr/local/php56/var/run/php-fpm.pid`</span><br></pre></td></tr></table></figure></p>
+<p>查看是否已经加载成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/php56/bin/php -m</span><br><span class="line">或通过phpinfo();查看</span><br></pre></td></tr></table></figure></p>
+<p>测试<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi memcache_test.php</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">        $mc = <span class="keyword">new</span> Memcached();</span><br><span class="line">        var_dump($mc);</span><br><span class="line">        $mc-&gt;addServer(<span class="string">'127.0.0.1'</span>, <span class="number">11211</span>);</span><br><span class="line">        $mc-&gt;set(<span class="string">'cache_key'</span>,<span class="string">'mem_value'</span>,<span class="number">30</span>);</span><br><span class="line">        $val = $mc-&gt;get(<span class="string">'cache_key'</span>);</span><br><span class="line">        var_dump($val);</span><br><span class="line">        var_dump($mc-&gt;delete(<span class="string">'cache_key'</span>));</span><br><span class="line">        $mc-&gt;quit();</span><br></pre></td></tr></table></figure>
+<p>访问结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">object(Memcached)#1 (0) &#123; &#125; string(9) &quot;mem_value&quot; bool(true)</span><br></pre></td></tr></table></figure></p>
+<p>php关于memcached 的两种扩展memcache 和 memcached 介绍</p>
+<ol>
+<li><p>目前大多数php环境里使用的都是不带d的memcache版本，这个版本出的比较早，是一个原生版本，完全在php框架内开发的。与之对应的带d的memcached是建立在libmemcached的基础上，所以相对来说，memcached版本的功能更全一些。</p>
+<blockquote>
+<p><a href="http://cn2.php.net/manual/en/book.memcache.php" target="_blank" rel="noopener">memcache:</a></p>
+<p><a href="http://cn2.php.net/manual/en/book.memcached.php" target="_blank" rel="noopener">memcached:</a></p>
+</blockquote>
+</li>
+<li><p>Memcache是原生实现的，支持OO和非OO两套接口并存。而memcached是使用libmemcached，只支持OO接口。</p>
+</li>
+<li>memcached有了一个统一的setOption()来设置设置，而不用在操作的时候设置了。Memcached实现了更多的memcached协议。</li>
+<li>memcached支持Binary Protocol，而memcache不支持。这意味着memcached会有更高的性能。不过memcached目前还不支持长连接。</li>
+<li>另外一点也是大家比较关心的，就是所使用的算法。“一致性hash算法”是当添加或删除存储节点时，对存储在memcached上的数据影响较小的一种算法。在php的两个扩展库中，都可以使用该算法，只是设置方法有所不同。</li>
+</ol>
+<ul>
+<li>Memcache</li>
+</ul>
+<p>修改php.ini添加：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[Memcache]</span><br><span class="line">Memcache.allow_failover = 1</span><br><span class="line">Memcache.hash_strategy =consistent</span><br><span class="line">Memcache.hash_function =crc32</span><br></pre></td></tr></table></figure></p>
+<p>或在php中使用ini_set方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ini_set(‘memcache.hash_strategy&apos;,&apos;standard&apos;);</span><br><span class="line">ini_set(‘memcache.hash_function&apos;,&apos;crc32&apos;);</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>Memcached</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$mem = new memcached();</span><br><span class="line">$mem-&gt;setOption(Memcached::OPT_DISTRIBUTION,Memcached::DISTRIBUTION_CONSISTENT);</span><br><span class="line">$mem-&gt;setOption(Memcached::OPT_LIBKETAMA_COMPATIBLE,true);</span><br></pre></td></tr></table></figure>
+<h2 id="Memcached监控"><a href="#Memcached监控" class="headerlink" title="Memcached监控"></a>Memcached监控</h2><h3 id="利用phpmemcache-php图形监控工具"><a href="#利用phpmemcache-php图形监控工具" class="headerlink" title="利用phpmemcache.php图形监控工具"></a>利用phpmemcache.php图形监控工具</h3><p>下载 phpmemcache.php<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://n.sinaimg.cn/games/3ece443e/20160929/phpmemcache.php</span><br></pre></td></tr></table></figure></p>
+<p>将phpmemcache.php放入web目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv phpmemcache.php /usr/local/nginx/html</span><br></pre></td></tr></table></figure></p>
+<p>修改phpmemcache.php中配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">define(&apos;ADMIN_USERNAME&apos;,&apos;xxxx&apos;);    // 用户名修改，在访问 phpmemcache.php 需要进行认证</span><br><span class="line">define(&apos;ADMIN_PASSWORD&apos;,&apos;xxxx&apos;);    // 密码</span><br><span class="line">define(&apos;DATE_FORMAT&apos;,&apos;Y/m/d H:i:s&apos;);</span><br><span class="line">define(&apos;GRAPH_SIZE&apos;,200);</span><br><span class="line">define(&apos;MAX_ITEM_DUMP&apos;,50);</span><br><span class="line"></span><br><span class="line">$MEMCACHE_SERVERS[] = &apos;127.0.0.1:11211&apos;; // 加入需要监控的memcached服务器</span><br><span class="line">//$MEMCACHE_SERVERS[] = &apos;192.168.200.104:11212&apos;; // add more as an array</span><br></pre></td></tr></table></figure></p>
+<p>浏览器访问<br><img src="http://n.sinaimg.cn/games/3ece443e/20160929/phpmemcache.png?1" alt="phpmemcache浏览器访问效果"></p>
+<h3 id="利用Stats命令查看"><a href="#利用Stats命令查看" class="headerlink" title="利用Stats命令查看"></a>利用Stats命令查看</h3><p>利用stats命令可以查看当前memcached的各种状态<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">telnet 127.0.0.1 11211</span><br><span class="line">Trying 127.0.0.1...</span><br><span class="line">Connected to 127.0.0.1.</span><br><span class="line">Escape character is &apos;^]&apos;.</span><br><span class="line">stats</span><br><span class="line">STAT pid 24732</span><br><span class="line">STAT uptime 66597</span><br><span class="line">STAT time 1475115983</span><br><span class="line">STAT version 1.4.31</span><br><span class="line">STAT libevent 2.0.22-stable</span><br><span class="line">STAT pointer_size 64</span><br><span class="line">STAT rusage_user 6.194421</span><br><span class="line">STAT rusage_system 2.419890</span><br><span class="line">STAT curr_connections 10</span><br><span class="line">STAT total_connections 16</span><br><span class="line">STAT connection_structures 11</span><br><span class="line">STAT reserved_fds 20</span><br><span class="line">STAT cmd_get 5</span><br><span class="line">STAT cmd_set 8</span><br><span class="line">STAT cmd_flush 0</span><br><span class="line">STAT cmd_touch 0</span><br><span class="line">STAT get_hits 4</span><br><span class="line">STAT get_misses 1</span><br><span class="line">STAT get_expired 0</span><br><span class="line">STAT get_flushed 0</span><br><span class="line">STAT delete_misses 0</span><br><span class="line">STAT delete_hits 2</span><br><span class="line">STAT incr_misses 0</span><br><span class="line">STAT incr_hits 0</span><br><span class="line">STAT decr_misses 0</span><br><span class="line">STAT decr_hits 0</span><br><span class="line">STAT cas_misses 0</span><br><span class="line">STAT cas_hits 0</span><br><span class="line">STAT cas_badval 0</span><br><span class="line">STAT touch_hits 0</span><br><span class="line">STAT touch_misses 0</span><br><span class="line">STAT auth_cmds 0</span><br><span class="line">STAT auth_errors 0</span><br><span class="line">STAT bytes_read 3850</span><br><span class="line">STAT bytes_written 293</span><br><span class="line">STAT limit_maxbytes 134217728</span><br><span class="line">STAT accepting_conns 1</span><br><span class="line">STAT listen_disabled_num 0</span><br><span class="line">STAT time_in_listen_disabled_us 0</span><br><span class="line">STAT threads 4</span><br><span class="line">STAT conn_yields 0</span><br><span class="line">STAT hash_power_level 16</span><br><span class="line">STAT hash_bytes 524288</span><br><span class="line">STAT hash_is_expanding 0</span><br><span class="line">STAT malloc_fails 0</span><br><span class="line">STAT log_worker_dropped 0</span><br><span class="line">STAT log_worker_written 0</span><br><span class="line">STAT log_watcher_skipped 0</span><br><span class="line">STAT log_watcher_sent 0</span><br><span class="line">STAT bytes 0</span><br><span class="line">STAT curr_items 0</span><br><span class="line">STAT total_items 6</span><br><span class="line">STAT expired_unfetched 0</span><br><span class="line">STAT evicted_unfetched 0</span><br><span class="line">STAT evictions 0</span><br><span class="line">STAT reclaimed 2</span><br><span class="line">STAT crawler_reclaimed 0</span><br><span class="line">STAT crawler_items_checked 0</span><br><span class="line">STAT lrutail_reflocked 0</span><br><span class="line">END</span><br></pre></td></tr></table></figure></p>
+<p>Stats详解</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pid</td>
+<td>memcache服务器的进程ID</td>
+</tr>
+<tr>
+<td>uptime</td>
+<td>服务器已经运行的秒数</td>
+</tr>
+<tr>
+<td>time</td>
+<td>服务器当前的unix时间戳</td>
+</tr>
+<tr>
+<td>version</td>
+<td>memcache版本</td>
+</tr>
+<tr>
+<td>pointer_size</td>
+<td>当前操作系统的指针大小（32位系统一般是32bit）</td>
+</tr>
+<tr>
+<td>rusage_user</td>
+<td>进程的累计用户时间</td>
+</tr>
+<tr>
+<td>rusage_system</td>
+<td>进程的累计系统时间</td>
+</tr>
+<tr>
+<td>curr_items</td>
+<td>服务器当前存储的items数量</td>
+</tr>
+<tr>
+<td>total_items</td>
+<td>从服务器启动以后存储的items总数量</td>
+</tr>
+<tr>
+<td>bytes</td>
+<td>当前服务器存储items占用的字节数</td>
+</tr>
+<tr>
+<td>curr_connections</td>
+<td>当前打开着的连接数</td>
+</tr>
+<tr>
+<td>total_connections</td>
+<td>从服务器启动以后曾经打开过的连接数</td>
+</tr>
+<tr>
+<td>connection_structures</td>
+<td>服务器分配的连接构造数</td>
+</tr>
+<tr>
+<td>cmd_get</td>
+<td>get命令（获取）总请求次数</td>
+</tr>
+<tr>
+<td>cmd_set</td>
+<td>set命令（保存）总请求次数</td>
+</tr>
+<tr>
+<td>get_hits</td>
+<td>总命中次数</td>
+</tr>
+<tr>
+<td>get_misses</td>
+<td>总未命中次数</td>
+</tr>
+<tr>
+<td>evictions</td>
+<td>为获取空闲内存而删除的items数（分配给memcache的空间用满后需要删除旧的items来得到空间分配给新的items）</td>
+</tr>
+<tr>
+<td>bytes_read</td>
+<td>总读取字节数（请求字节数）</td>
+</tr>
+<tr>
+<td>bytes_written</td>
+<td>总发送字节数（结果字节数）</td>
+</tr>
+<tr>
+<td>limit_maxbytes</td>
+<td>分配给memcache的内存大小（字节）</td>
+</tr>
+<tr>
+<td>threads</td>
+<td>当前线程数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="利用各种监控软件查看（例如：nagios监控memcache的插件）"><a href="#利用各种监控软件查看（例如：nagios监控memcache的插件）" class="headerlink" title="利用各种监控软件查看（例如：nagios监控memcache的插件）"></a>利用各种监控软件查看（例如：nagios监控memcache的插件）</h3><blockquote>
+<p>只以命中率大于和小于为例两种状态。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim check_memcache</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"><span class="keyword">if</span> [ <span class="variable">$#</span> -ne 1 ]</span><br><span class="line"><span class="keyword">then</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"Usage:<span class="variable">$0</span> -c num2"</span></span><br><span class="line"><span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line">cmd_get=`/usr/<span class="built_in">local</span>/nagios/libexec/check_tcp -H localhost -p 11211 -E -s <span class="string">'stats\r\nquit\r\n'</span> -e <span class="string">'uptime'</span> |grep cmd_get | awk <span class="string">'&#123;print $3+0&#125;'</span>`</span><br><span class="line">get_hits=`/usr/<span class="built_in">local</span>/nagios/libexec/check_tcp -H localhost -p 11211 -E -s <span class="string">'stats\r\nquit\r\n'</span> -e <span class="string">'uptime'</span> |grep get_hits | awk <span class="string">'&#123;print $3+0&#125;'</span>`</span><br><span class="line">hit_rate=`<span class="built_in">echo</span> <span class="string">"<span class="variable">$get_hits</span>*100/<span class="variable">$cmd_get</span>"</span>|bc`</span><br><span class="line"><span class="keyword">if</span> [ <span class="variable">$hit_rate</span> -gt <span class="variable">$1</span> ];<span class="keyword">then</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"OK - hit rate is <span class="variable">$hit_rate</span> | hit_rate=<span class="variable">$hit_rate</span>; cmd_get=<span class="variable">$cmd_get</span>; get_hits=<span class="variable">$get_hits</span>"</span></span><br><span class="line"><span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"CRITICAL - hit rate is <span class="variable">$hit_rate</span> | hit_rate=<span class="variable">$hit_rate</span>; cmd_get=<span class="variable">$cmd_get</span>; get_hits=<span class="variable">$get_hits</span>"</span></span><br><span class="line"><span class="built_in">exit</span> 2</span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+<p>测试命中率大于80%为正常为例;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">eg：</span><br><span class="line">sh check_memcache 80</span><br><span class="line">root@ip-10-250-114-95:/liang# sh check_memcache 80</span><br><span class="line">OK - hit rate is 99 | hit_rate=99; cmd_get=142547; get_hits=141880</span><br></pre></td></tr></table></figure></p>
+<p>以上证明命中率99%，即状态为OK.</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/09/29/memcache高速缓存的工作原理及应用小结/" title="memcache高速缓存工作原理及应用">https://weizhimiao.github.io/2016/09/29/memcache高速缓存的工作原理及应用小结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/memcached/" rel="tag"># memcached</a>
+          
+            <a href="/tags/缓存/" rel="tag"># 缓存</a>
+          
+            <a href="/tags/memcache/" rel="tag"># memcache</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/28/Linux服务和进程管理/" rel="next" title="linux服务和进程管理">
+                <i class="fa fa-chevron-left"></i> linux服务和进程管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/30/PHP异常和错误处理/" rel="prev" title="PHP异常和错误处理">
+                PHP异常和错误处理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Memcached的安装"><span class="nav-number">1.</span> <span class="nav-text">Memcached的安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备"><span class="nav-number">1.1.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">1.2.</span> <span class="nav-text">安装</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memcached管理"><span class="nav-number">2.</span> <span class="nav-text">Memcached管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#启动"><span class="nav-number">2.1.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过telnet连接使用Memcache"><span class="nav-number">2.2.</span> <span class="nav-text">通过telnet连接使用Memcache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过客户端（PHP）连接和使用Memcached"><span class="nav-number">2.3.</span> <span class="nav-text">通过客户端（PHP）连接和使用Memcached</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memcached监控"><span class="nav-number">3.</span> <span class="nav-text">Memcached监控</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#利用phpmemcache-php图形监控工具"><span class="nav-number">3.1.</span> <span class="nav-text">利用phpmemcache.php图形监控工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用Stats命令查看"><span class="nav-number">3.2.</span> <span class="nav-text">利用Stats命令查看</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用各种监控软件查看（例如：nagios监控memcache的插件）"><span class="nav-number">3.3.</span> <span class="nav-text">利用各种监控软件查看（例如：nagios监控memcache的插件）</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

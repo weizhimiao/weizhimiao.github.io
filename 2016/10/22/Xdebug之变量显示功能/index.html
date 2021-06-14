@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。">
+<meta name="keywords" content="Xdebug">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Xdebug之变量显示功能">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/8F0658D7-C951-4B12-BC74-92E15E31C44C.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Xdebug之变量显示功能">
+<meta name="twitter:description" content="Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/8F0658D7-C951-4B12-BC74-92E15E31C44C.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Xdebug之变量显示功能 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Xdebug之变量显示功能<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Xdebug之变量显示功能.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-22 20:30:00" itemprop="dateCreated datePublished" datetime="2016-10-22T20:30:00+08:00">2016-10-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/22/Xdebug之变量显示功能/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/22/Xdebug之变量显示功能/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">6.5k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">6 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Xdebug替换了PHP的var_dump（）函数来显示变量。 Xdebug的版本包括不同类型的不同颜色，并且限制了数组元素/对象属性的数量，最大深度和字符串长度。 还有一些其他函数处理可变显示。</p>
+<a id="more"></a>
+<p>有一些设置控制Xdebug修改的var_dump（）函数的输出：</p>
+<ul>
+<li>xdebug.var_display_max_children，</li>
+<li>xdebug.var_display_max_data</li>
+<li><p>xdebug.var_display_max_depth</p>
+<p>这三个设置的效果最好用一个例子。 下面的脚本运行四次，每次使用不同的设置。 您可以使用选项卡查看差异。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">test</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $pub = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">private</span> $priv = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">protected</span> $prot = <span class="number">42</span>;</span><br><span class="line">&#125;</span><br><span class="line">$t = <span class="keyword">new</span> test;</span><br><span class="line">$t-&gt;pub = $t;</span><br><span class="line">$data = <span class="keyword">array</span>(</span><br><span class="line">    <span class="string">'one'</span> =&gt; <span class="string">'a somewhat long string!'</span>,</span><br><span class="line">    <span class="string">'two'</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">        <span class="string">'two.one'</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">'two.one.zero'</span> =&gt; <span class="number">210</span>,</span><br><span class="line">            <span class="string">'two.one.one'</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">                <span class="string">'two.one.one.zero'</span> =&gt; <span class="number">3.141592564</span>,</span><br><span class="line">                <span class="string">'two.one.one.one'</span>  =&gt; <span class="number">2.7</span>,</span><br><span class="line">            ),</span><br><span class="line">        ),</span><br><span class="line">    ),</span><br><span class="line">    <span class="string">'three'</span> =&gt; $t,</span><br><span class="line">    <span class="string">'four'</span> =&gt; range(<span class="number">0</span>, <span class="number">5</span>),</span><br><span class="line">);</span><br><span class="line">var_dump( $data );</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>默认</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</span><br><span class="line">  &apos;two&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      &apos;two.one&apos; =&gt;</span><br><span class="line">        array</span><br><span class="line">          &apos;two.one.zero&apos; =&gt; int 210</span><br><span class="line">          &apos;two.one.one&apos; =&gt;</span><br><span class="line">            array</span><br><span class="line">              ...</span><br><span class="line">  &apos;three&apos; =&gt;</span><br><span class="line">    object(test)[1]</span><br><span class="line">      public &apos;pub&apos; =&gt;</span><br><span class="line">        &amp;object(test)[1]</span><br><span class="line">      private &apos;priv&apos; =&gt; boolean true</span><br><span class="line">      protected &apos;prot&apos; =&gt; int 42</span><br><span class="line">  &apos;four&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      0 =&gt; int 0</span><br><span class="line">      1 =&gt; int 1</span><br><span class="line">      2 =&gt; int 2</span><br><span class="line">      3 =&gt; int 3</span><br><span class="line">      4 =&gt; int 4</span><br><span class="line">      5 =&gt; int 5</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>children=2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</span><br><span class="line">  &apos;two&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      &apos;two.one&apos; =&gt;</span><br><span class="line">        array</span><br><span class="line">          &apos;two.one.zero&apos; =&gt; int 210</span><br><span class="line">          &apos;two.one.one&apos; =&gt;</span><br><span class="line">            array</span><br><span class="line">              ...</span><br><span class="line">  more elements...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>data=16</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long &apos;... (length=23)</span><br><span class="line">  &apos;two&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      &apos;two.one&apos; =&gt;</span><br><span class="line">        array</span><br><span class="line">          &apos;two.one.zero&apos; =&gt; int 210</span><br><span class="line">          &apos;two.one.one&apos; =&gt;</span><br><span class="line">            array</span><br><span class="line">              ...</span><br><span class="line">  &apos;three&apos; =&gt;</span><br><span class="line">    object(test)[1]</span><br><span class="line">      public &apos;pub&apos; =&gt;</span><br><span class="line">        &amp;object(test)[1]</span><br><span class="line">      private &apos;priv&apos; =&gt; boolean true</span><br><span class="line">      protected &apos;prot&apos; =&gt; int 42</span><br><span class="line">  &apos;four&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      0 =&gt; int 0</span><br><span class="line">      1 =&gt; int 1</span><br><span class="line">      2 =&gt; int 2</span><br><span class="line">      3 =&gt; int 3</span><br><span class="line">      4 =&gt; int 4</span><br><span class="line">      5 =&gt; int 5</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>depth=2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  &apos;one&apos; =&gt; string &apos;a somewhat long string!&apos; (length=23)</span><br><span class="line">  &apos;two&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      &apos;two.one&apos; =&gt;</span><br><span class="line">        array</span><br><span class="line">          ...</span><br><span class="line">  &apos;three&apos; =&gt;</span><br><span class="line">    object(test)[1]</span><br><span class="line">      public &apos;pub&apos; =&gt;</span><br><span class="line">        &amp;object(test)[1]</span><br><span class="line">      private &apos;priv&apos; =&gt; boolean true</span><br><span class="line">      protected &apos;prot&apos; =&gt; int 42</span><br><span class="line">  &apos;four&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      0 =&gt; int 0</span><br><span class="line">      1 =&gt; int 1</span><br><span class="line">      2 =&gt; int 2</span><br><span class="line">      3 =&gt; int 3</span><br><span class="line">      4 =&gt; int 4</span><br><span class="line">      5 =&gt; int 5</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>children=3, data=8, depth=1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  &apos;one&apos; =&gt; string &apos;a somewh&apos;... (length=23)</span><br><span class="line">  &apos;two&apos; =&gt;</span><br><span class="line">    array</span><br><span class="line">      ...</span><br><span class="line">  &apos;three&apos; =&gt;</span><br><span class="line">    object(test)[1]</span><br><span class="line">      ...</span><br><span class="line">  more elements...</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-cli-color"><a href="#xdebug-cli-color" class="headerlink" title="xdebug.cli_color"></a><strong>xdebug.cli_color</strong></h3><p>类型：整数，默认值：0，在Xdebug&gt; 2.2中引入</p>
+<ul>
+<li><p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
+</li>
+<li><p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
+</li>
+</ul>
+<p>有关更多信息，请参阅此<a href="http://drck.me/clicolor-9cr" target="_blank" rel="noopener">文章</a>。</p>
+<h3 id="xdebug-overload-var-dump"><a href="#xdebug-overload-var-dump" class="headerlink" title="xdebug.overload_var_dump"></a><strong>xdebug.overload_var_dump</strong></h3><p>类型：boolean，默认值：2，在Xdebug&gt; 2.1中引入</p>
+<ul>
+<li><p>默认情况下，当html_errors php.ini设置为1或2时，Xdebug会自动重载var_dump（）并显示变量。</p>
+</li>
+<li><p>如果您不想要，可以将此设置设置为0，但首先检查它是否不是更聪明的关闭html_errors。</p>
+</li>
+<li><p>您也可以使用2作为此设置的值。除了格式化var_dump（）输出很好，它还将添加文件名和行号到输出。还尊重xdebug.file_link_format设置。 （Xdebug 2.3中的新功能）</p>
+</li>
+</ul>
+<p>在Xdebug 2.4之前，此设置的默认值为1。</p>
+<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
+<ul>
+<li>要禁用任何限制，请使用-1作为值。</li>
+</ul>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
+<ul>
+<li>要禁用任何限制，请使用-1作为值。</li>
+</ul>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
+<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
+<ul>
+<li>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</li>
+</ul>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="void-var-dump（-mixture-var-，…-）"><a href="#void-var-dump（-mixture-var-，…-）" class="headerlink" title="void var_dump（[mixture var [，…]]）"></a><strong>void var_dump（[mixture var [，…]]）</strong></h3><blockquote>
+<p>显示有关变量的详细信息</p>
+</blockquote>
+<p>此函数由Xdebug重载，请参阅xdebug_var_dump（）的说明。</p>
+<h3 id="void-xdebug-debug-zval（-string-varname-，…-）"><a href="#void-xdebug-debug-zval（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval（[string varname [，…]]）"></a><strong>void xdebug_debug_zval（[string varname [，…]]）</strong></h3><blockquote>
+<p>显示有关变量的信息</p>
+</blockquote>
+<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。使用值递归地探索数组。这个函数的实现不同于PHP的debug_zval_dump（）函数，以解决该函数的问题，因为变量本身实际上传递给函数。 Xdebug的版本是更好的，因为它使用变量名称来查找内部符号表中的变量，并直接访问所有的属性，而不必处理实际传递一个变量到一个函数。结果是，该函数返回的信息比PHP自己的用于显示zval信息的函数准确得多。</p>
+<p>从Xdebug 2.3开始支持除了简单变量名（例如下面的“a [2]”）之外的任何东西。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    $a = <span class="keyword">array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">    $b =&amp; $a;</span><br><span class="line">    $c =&amp; $a[<span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">    xdebug_debug_zval(<span class="string">'a'</span>);</span><br><span class="line">    xdebug_debug_zval(<span class="string">"a[2]"</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>结果：(refcount:引用次数，)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a: (refcount=2, is_ref=1)=array (</span><br><span class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</span><br><span class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</span><br><span class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</span><br><span class="line">a[2]: (refcount=2, is_ref=1)=3</span><br></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-debug-zval-stdout（-string-varname-，…-）"><a href="#void-xdebug-debug-zval-stdout（-string-varname-，…-）" class="headerlink" title="void xdebug_debug_zval_stdout（[string varname [，…]]）"></a><strong>void xdebug_debug_zval_stdout（[string varname [，…]]）</strong></h3><blockquote>
+<p>将有关变量的信息返回到stdout。</p>
+</blockquote>
+<p>此函数显示有关一个或多个变量的结构化信息，包括其类型，值和引用计数信息。 使用值递归地探索数组。 与xdebug_debug_zval（）的区别在于，该信息不通过Web服务器API层显示，而是直接显示在stdout上（因此，在Apache以单进程模式运行时，它会在控制台上运行）。</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">    $a = array(1, 2, 3);</span><br><span class="line">    $b =&amp; $a;</span><br><span class="line">    $c =&amp; $a[2];</span><br><span class="line"></span><br><span class="line">    xdebug_debug_zval_stdout(&apos;a&apos;);</span><br></pre></td></tr></table></figure></p>
+<p>返回：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a: (refcount=2, is_ref=1)=array (</span><br><span class="line">	0 =&gt; (refcount=1, is_ref=0)=1,</span><br><span class="line">	1 =&gt; (refcount=1, is_ref=0)=2,</span><br><span class="line">	2 =&gt; (refcount=2, is_ref=1)=3)</span><br></pre></td></tr></table></figure></p>
+<h3 id="void-xdebug-dump-superglobals（）"><a href="#void-xdebug-dump-superglobals（）" class="headerlink" title="void xdebug_dump_superglobals（）"></a><strong>void xdebug_dump_superglobals（）</strong></h3><blockquote>
+<p>显示有关超级全局的信息</p>
+</blockquote>
+<p>此函数转储指定的超级全局元素的值通过php.ini中的xdebug.dump.*选项。 对于下面的示例，php.ini中的设置是：</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">xdebug.dump.GET=*</span><br><span class="line">xdebug.dump.SERVER=REMOTE_ADDR</span><br><span class="line"></span><br><span class="line">Query string:</span><br><span class="line">?var=fourty%20two&amp;array[a]=a&amp;array[9]=b</span><br></pre></td></tr></table></figure></p>
+<p>结果：<br><img src="http://n.sinaimg.cn/games/3ece443e/20161022/8F0658D7-C951-4B12-BC74-92E15E31C44C.png" alt="img"></p>
+<h3 id="void-xdebug-var-dump（-mixed-var-，…-）"><a href="#void-xdebug-var-dump（-mixed-var-，…-）" class="headerlink" title="void xdebug_var_dump（[mixed var [，…]]）"></a><strong>void xdebug_var_dump（[mixed var [，…]]）</strong></h3><blockquote>
+<p>显示有关变量的详细信息</p>
+</blockquote>
+<p>此函数显示有关包含其类型和值的一个或多个表达式的结构化信息。 使用值递归地探索数组。 请参阅变量显示功能的介绍，其中php.ini设置影响此功能。</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">ini_set(&apos;xdebug.var_display_max_children&apos;, 3 );</span><br><span class="line">$c = new stdClass;</span><br><span class="line">$c-&gt;foo = &apos;bar&apos;;</span><br><span class="line">$c-&gt;file = fopen( &apos;/etc/passwd&apos;, &apos;r&apos; );</span><br><span class="line">var_dump(</span><br><span class="line">    array(</span><br><span class="line">        array(TRUE, 2, 3.14, &apos;foo&apos;),</span><br><span class="line">        &apos;object&apos; =&gt; $c</span><br><span class="line">    )</span><br><span class="line">);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure></p>
+<p>结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  0 =&gt;</span><br><span class="line">    array</span><br><span class="line">      0 =&gt; boolean true</span><br><span class="line">      1 =&gt; int 2</span><br><span class="line">      2 =&gt; float 3.14</span><br><span class="line">      more elements...</span><br><span class="line">  &apos;object&apos; =&gt;</span><br><span class="line">    object(stdClass)[1]</span><br><span class="line">      public &apos;foo&apos; =&gt; string &apos;bar&apos; (length=3)</span><br><span class="line">      public &apos;file&apos; =&gt; resource(3, stream)</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/" title="Xdebug之变量显示功能">https://weizhimiao.github.io/2016/10/22/Xdebug之变量显示功能/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Xdebug/" rel="tag"># Xdebug</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/22/Xdebug之堆栈跟踪/" rel="next" title="Xdebug之变量显示功能">
+                <i class="fa fa-chevron-left"></i> Xdebug之变量显示功能
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/22/Xdebug之代码覆盖率分析/" rel="prev" title="Xdebug之代码覆盖率分析">
+                Xdebug之代码覆盖率分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#相关设置"><span class="nav-number">1.</span> <span class="nav-text">相关设置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-cli-color"><span class="nav-number">1.1.</span> <span class="nav-text">xdebug.cli_color</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-overload-var-dump"><span class="nav-number">1.2.</span> <span class="nav-text">xdebug.overload_var_dump</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-var-display-max-children"><span class="nav-number">1.3.</span> <span class="nav-text">xdebug.var_display_max_children</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-var-display-max-data"><span class="nav-number">1.4.</span> <span class="nav-text">xdebug.var_display_max_data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-var-display-max-depth"><span class="nav-number">1.5.</span> <span class="nav-text">xdebug.var_display_max_depth</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关函数"><span class="nav-number">2.</span> <span class="nav-text">相关函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#void-var-dump（-mixture-var-，…-）"><span class="nav-number">2.1.</span> <span class="nav-text">void var_dump（[mixture var [，…]]）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-xdebug-debug-zval（-string-varname-，…-）"><span class="nav-number">2.2.</span> <span class="nav-text">void xdebug_debug_zval（[string varname [，…]]）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-xdebug-debug-zval-stdout（-string-varname-，…-）"><span class="nav-number">2.3.</span> <span class="nav-text">void xdebug_debug_zval_stdout（[string varname [，…]]）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-xdebug-dump-superglobals（）"><span class="nav-number">2.4.</span> <span class="nav-text">void xdebug_dump_superglobals（）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-xdebug-var-dump（-mixed-var-，…-）"><span class="nav-number">2.5.</span> <span class="nav-text">void xdebug_var_dump（[mixed var [，…]]）</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

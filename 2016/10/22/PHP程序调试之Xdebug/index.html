@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Xdebug是一个开放源代码的PHP程序调试器(即一个Debug工具)，可以用来跟踪，调试和分析PHP程序的运行状况。">
+<meta name="keywords" content="Xdebug">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP程序调试之Xdebug">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/22/PHP程序调试之Xdebug/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Xdebug是一个开放源代码的PHP程序调试器(即一个Debug工具)，可以用来跟踪，调试和分析PHP程序的运行状况。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP程序调试之Xdebug">
+<meta name="twitter:description" content="Xdebug是一个开放源代码的PHP程序调试器(即一个Debug工具)，可以用来跟踪，调试和分析PHP程序的运行状况。">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/22/PHP程序调试之Xdebug/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>PHP程序调试之Xdebug | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/22/PHP程序调试之Xdebug/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PHP程序调试之Xdebug<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/PHP程序调试之Xdebug.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-22 18:30:00" itemprop="dateCreated datePublished" datetime="2016-10-22T18:30:00+08:00">2016-10-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/22/PHP程序调试之Xdebug/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/22/PHP程序调试之Xdebug/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">5.9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">5 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Xdebug是一个开放源代码的PHP程序调试器(即一个Debug工具)，可以用来跟踪，调试和分析PHP程序的运行状况。</p>
+<a id="more"></a>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ tar -zxvf xdebug-2.4.1.tgz</span><br><span class="line">$ cd xdebug-2.4.1</span><br><span class="line">$ /usr/local/bin/phpize</span><br><span class="line">$ ./configure</span><br><span class="line">$ make</span><br><span class="line">$ make install</span><br><span class="line">Installing shared extensions:     /usr/local/Cellar/php54/5.4.45_6/lib/php/extensions/no-debug-non-zts-20100525/</span><br></pre></td></tr></table></figure>
+<p>在<code>/usr/local/Cellar/php54/5.4.45_6/lib/php/extensions/no-debug-non-zts-20100525/</code> 查看<code>xdebug.so</code>是否已经生成</p>
+<p>注：<code>/usr/local/Cellar/php54/5.4.45_6/lib/php/extensions/no-debug-non-zts-20100525/</code> 不同的PHP版本路径不同，也不一定要放在该路径，可以在zend_extension_ts中自行指定xdebug.so所在位置。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>修改配置文件 php.ini</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[XDebug]  </span><br><span class="line">zend_extension =&quot;/usr/local/Cellar/php54/5.4.45_6/lib/php/extensions/no-debug-non-zts-20100525/xdebug.so&quot;  </span><br><span class="line"></span><br><span class="line">xdebug.remote_handler=dbgp  </span><br><span class="line">;开启远程调试  </span><br><span class="line">xdebug.remote_enable = On  </span><br><span class="line">;远程主机  </span><br><span class="line">xdebug.remote_host=localhost  </span><br><span class="line">;主机端口  </span><br><span class="line">xdebug.remote_port=9000  </span><br><span class="line">;开启自动跟踪  </span><br><span class="line">xdebug.auto_trace = On  </span><br><span class="line">;开启异常跟踪  </span><br><span class="line">xdebug.show_exception_trace = On  </span><br><span class="line">;开启远程调试自动启动  </span><br><span class="line">xdebug.remote_autostart = On  </span><br><span class="line">;收集变量   </span><br><span class="line">xdebug.collect_vars = On  </span><br><span class="line">;收集返回值   </span><br><span class="line">xdebug.collect_return = On  </span><br><span class="line">;收集参数   </span><br><span class="line">xdebug.collect_params = On  </span><br><span class="line">;设定函数调用监测信息的输出文件的路径。</span><br><span class="line">;xdebug.trace_output_dir=&quot;/home/xdebug_log&quot;  </span><br><span class="line">;显示局部变量  </span><br><span class="line">xdebug.show_local_vars = On  </span><br><span class="line">xdebug.profiler_enable = On  </span><br><span class="line">;设定效能监测信息输出文件的路径。</span><br><span class="line">;xdebug.profiler_output_dir =&quot;/home/xdebug_log&quot;  </span><br><span class="line">xdebug.trace_enable_trigger =On</span><br></pre></td></tr></table></figure>
+<p>注：xdebug是一个zend扩展，所以要用zend_extension来加载，不能使用extensions来加载</p>
+<p>运行<code>php -m</code>查看xdebug模块是否已经加载</p>
+<h3 id="其他配置选项说明："><a href="#其他配置选项说明：" class="headerlink" title="其他配置选项说明："></a>其他配置选项说明：</h3><h4 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h4><p>xdebug.trace_output_dir</p>
+<blockquote>
+<p>日志追踪输出目录</p>
+<p>类型：字符串，默认值：/tmp</p>
+<p>确保php运行用户对该目录有写权限</p>
+</blockquote>
+<p>xdebug.trace_output_name</p>
+<blockquote>
+<p>日志文件名，xdebug提供了一系列的标识符，生成相应格式的文件名</p>
+</blockquote>
+<blockquote>
+<p>类型: string, 默认值: trace.%c</p>
+</blockquote>
+<blockquote>
+<p>此设置确定用于将跟踪转储到的文件的名称。 设置使用格式说明符指定格式，非常类似于sprintf（）和strftime（）。 有几个格式说明符可以用于格式化文件名。 “.xt”扩展名总是自动添加。</p>
+</blockquote>
+<p>可能的格式说明符是：</p>
+<table>
+<thead>
+<tr>
+<th>说明</th>
+<th>含义</th>
+<th>示例</th>
+<th>对应文件名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>%c</td>
+<td>crc32 of the current working directory</td>
+<td>trace.%c</td>
+<td>trace.1258863198.xt</td>
+</tr>
+<tr>
+<td>%p</td>
+<td>pid</td>
+<td>trace.%p</td>
+<td>trace.5174.xt</td>
+</tr>
+<tr>
+<td>%r</td>
+<td>random number</td>
+<td>trace.%r</td>
+<td>trace.072db0.xt</td>
+</tr>
+<tr>
+<td>%s</td>
+<td>script name</td>
+<td>cachegrind.out.%s</td>
+<td>cachegrind.out._home_httpd_html_test_xdebug_test_php</td>
+</tr>
+<tr>
+<td>%t</td>
+<td>timestamp (seconds)</td>
+<td>trace.%t</td>
+<td>trace.1179434742.xt</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>timestamp (microseconds)</td>
+<td>trace.%u</td>
+<td>trace.1179434749_642382.xt</td>
+</tr>
+<tr>
+<td>%H</td>
+<td>$_SERVER[‘HTTP_HOST’]</td>
+<td>trace.%H</td>
+<td>trace.kossu.xt</td>
+</tr>
+<tr>
+<td>%R</td>
+<td>$_SERVER[‘REQUEST_URI’]</td>
+<td>trace.%R</td>
+<td>trace._test_xdebug_test_php_var=1_var2=2.xt</td>
+</tr>
+<tr>
+<td>%U</td>
+<td>$_SERVER[‘UNIQUE_ID’] 3</td>
+<td>trace.%U</td>
+<td>trace.TRX4n38AAAEAAB9gBFkAAAAB.xt</td>
+</tr>
+<tr>
+<td>%S</td>
+<td>session_id (from $_COOKIE if set)</td>
+<td>trace.%S</td>
+<td>trace.c70c1ec2375af58f74b390bbdd2a679d.xt</td>
+</tr>
+<tr>
+<td>%%</td>
+<td>literal %</td>
+<td>trace.%%</td>
+<td>trace.%%.xt</td>
+</tr>
+</tbody>
+</table>
+<p>xdebug.trace_options</p>
+<blockquote>
+<p>记录添加到文件中方式：</p>
+</blockquote>
+<blockquote>
+<p>类型：整数，默认值：0</p>
+</blockquote>
+<blockquote>
+<p>当设置为’1’时，跟踪文件将被附加到，而不是在后续请求中被覆盖。</p>
+</blockquote>
+<h4 id="显示数据"><a href="#显示数据" class="headerlink" title="显示数据"></a>显示数据</h4><p>xdebug.collect_params</p>
+<blockquote>
+<p>类型：整数，默认值：0</p>
+</blockquote>
+<blockquote>
+<p>此设置默认为0，控制function的参数显示选项</p>
+</blockquote>
+<ul>
+<li>0    不显示.</li>
+<li>1    参数类型，值  (例如：array(9))</li>
+<li>2    同上1，只是在CLI模式下略微有区别</li>
+<li>3    所有变量内容</li>
+<li>4    所有变量内容和变量名(例如：array(0 =&gt; 9))</li>
+<li>5    PHP序列化变量内容，没有名称。 （Xdebug 2.3中的新功能）</li>
+</ul>
+<p>xdebug.collect_return</p>
+<blockquote>
+<p>类型：布尔值，默认值：0</p>
+</blockquote>
+<blockquote>
+<p>此设置默认为0，控制Xdebug是否应将函数调用的返回值写入跟踪文件。</p>
+</blockquote>
+<blockquote>
+<p>对于计算机化的跟踪文件（xdebug.trace_format = 1），这只能从Xdebug 2.3起。</p>
+</blockquote>
+<p>xdebug.collect_vars</p>
+<blockquote>
+<p>类型：布尔值，默认值：0</p>
+</blockquote>
+<blockquote>
+<p>此设置告诉Xdebug收集有关在某个范围中使用哪些变量的信息。 这个分析可能很慢，因为Xdebug必须逆向工程PHP的操作码数组。 此设置不会记录不同变量具有的值，因为使用xdebug.collect_params。 仅当您希望使用xdebug_get_declared_vars（）时，才需要启用此设置。</p>
+</blockquote>
+<blockquote>
+<p>显示当前作用域使用了哪些变量，显示变量名，该选项不会记录变量的值，如果需要，使用xdebug.collect_params</p>
+</blockquote>
+<p>xdebug.collect_assignments</p>
+<blockquote>
+<p>类型：boolean，默认值：0，在Xdebug&gt; 2.1中引入</p>
+</blockquote>
+<blockquote>
+<p>此设置（默认为0）控制Xdebug是否应向函数轨迹添加变量分配。</p>
+</blockquote>
+<blockquote>
+<p>1 = 添加一行显示变量赋值（若为1，形如$a = 1;这类Assignment Expression会在trace文件里显示）</p>
+</blockquote>
+<h4 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h4><p>xdebug.trace_format</p>
+<blockquote>
+<p>类型：整数，默认值：0</p>
+</blockquote>
+<blockquote>
+<ul>
+<li>0 = 人可读. 从左至右每列分别表示：时间点, 内存, 内存差 (需要设置xdebug.show_mem_delta=1), 等级, 函数名,函数参数 (需要设置，xdebug.collect_params=1，只要是非零), 当前代码行所在文件名 , 行号;</li>
+<li>1 = 机器可读[1]. 需要借助第三方app，例如：xdebug trace file parser 或者 xdebug trace viewer; 2 = html格式 即table，用browser打开，显示table</li>
+</ul>
+</blockquote>
+<p>xdebug.show_mem_delta</p>
+<blockquote>
+<p>类型：整数，默认值：0</p>
+</blockquote>
+<blockquote>
+<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。 如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
+</blockquote>
+<blockquote>
+<ul>
+<li>1 = 显示每次函数调用内存消耗（内存差）</li>
+</ul>
+</blockquote>
+<h4 id="行为"><a href="#行为" class="headerlink" title="行为"></a>行为</h4><p>xdebug.auto_trace</p>
+<blockquote>
+<p>类型：布尔值，默认值：0</p>
+</blockquote>
+<blockquote>
+<p>当此设置设置为on时，将在脚本运行之前启用函数调用的跟踪。 这使得可以跟踪auto_prepend_file中的代码。</p>
+</blockquote>
+<blockquote>
+<p>1 = 打开自动追踪. （追踪方式有2种，一种是自动追踪，所有php脚本运行时，都会产生trace文件；另一种是触发方式追踪，如下）</p>
+</blockquote>
+<p>xdebug.trace_enable_trigger[2]</p>
+<blockquote>
+<p>类型：boolean，默认值：0，在Xdebug&gt; 2.2中引入</p>
+</blockquote>
+<blockquote>
+<p>当此设置设置为1时，可以使用XDEBUG_TRACE GET / POST参数触发跟踪，或者设置名为XDEBUG_TRACE的cookie。 然后将跟踪数据写入定义的目录。 为了防止Xdebug为每个请求生成跟踪文件，您需要将xdebug.auto_trace设置为0.对触发器本身的访问可以通过xdebug.trace_enable_trigger_value配置。</p>
+</blockquote>
+<blockquote>
+<p>1 = 使用 XDEBUG_TRACE GET/POST 触发追踪, 或者通过设置cookie XDEBUG_TRACE. 为了避免每次请求时，都会生成相应trace追踪文件，你需要把auto_trace设置为0</p>
+</blockquote>
+<blockquote>
+<p>注：该特性只在2.2+版本才能设置<br>[xdebug-general] Re: Is trace_enable_trigger defunct?</p>
+</blockquote>
+<h4 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h4><p>xdebug.var_display_max_depth</p>
+<blockquote>
+<p>类型：整数，默认值：3</p>
+</blockquote>
+<blockquote>
+<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
+</blockquote>
+<blockquote>
+<p>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</p>
+</blockquote>
+<blockquote>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+</blockquote>
+<blockquote>
+<p>数组和对象元素显示深度：主要用在数组嵌套，对象属性嵌套时，显示几级的元素内容. Default 3.</p>
+</blockquote>
+<p>xdebug.var_display_max_data</p>
+<blockquote>
+<p>变量值为字符串时显示多长. Default 512.</p>
+</blockquote>
+<blockquote>
+<p>类型：整数，默认值：512<br>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
+</blockquote>
+<blockquote>
+<p>要禁用任何限制，请使用-1作为值。</p>
+</blockquote>
+<blockquote>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+</blockquote>
+<p>xdebug.var_display_max_children</p>
+<blockquote>
+<p>数组和对象元素显示的个数. Default 128</p>
+</blockquote>
+<blockquote>
+<p>类型：整数，默认值：128<br>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
+</blockquote>
+<blockquote>
+<p>要禁用任何限制，请使用-1作为值。</p>
+</blockquote>
+<blockquote>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+</blockquote>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>一些常用到的xdebug函数</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>void xdebug_enable()</td>
+<td>手动打开，相当于xdebug.default_enable=on</td>
+</tr>
+<tr>
+<td>void var_dump()</td>
+<td>覆写php提供的var_dump，出错时，显示函数堆栈信息，（前提：php.ini里html_errors为1），使用xdebug.overload_var_dump 设置是否覆写</td>
+</tr>
+<tr>
+<td>void xdebug_start_trace( string trace_file_path [, integer options] )</td>
+<td>手动控制需要追踪的代码段 trace_file_path ：文件路径（相对或绝对，若为空）.如果为空，或者不传参， 使用xdebug.trace_output_dir设置的目录options ：XDEBUG_TRACE_APPEND: 1 = 追加文件内容末尾, 0 = 覆写该文件 XDEBUG_TRACE_COMPUTERIZED:2 =同 xdebug.trace_format=1 .XDEBUG_TRACE_HTML: 4 = 输出HTML表格，浏览器打开为一table</td>
+</tr>
+<tr>
+<td>void xdebug_stop_trace()</td>
+<td>停止追踪，代码追踪在该行停止</td>
+</tr>
+<tr>
+<td>string xdebug_get_tracefile_name()</td>
+<td>获得输出文件名，与 xdebug.auto_trace配合使用.</td>
+</tr>
+<tr>
+<td>void xdebug_var_dump([mixed var[,…]])</td>
+<td>输出变量详细信息，相当于php里的var_dump，具体显示请看这里xdebug.show_local_vars     默认为0，不显示；非零时，在php执行出错时，显示出错代码所在作用域所有本地变量（注：这会产生大量信息，因此默认是closed），具体显示差别如下图[3]</td>
+</tr>
+<tr>
+<td>array xdebug_get_declared_vars()</td>
+<td>显示当前作用域中已声明的变量</td>
+</tr>
+<tr>
+<td>array xdebug_get_code_coverage()</td>
+<td>显示某一段代码内，代码执行到哪些行[4]</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/22/PHP程序调试之Xdebug/" title="PHP程序调试之Xdebug">https://weizhimiao.github.io/2016/10/22/PHP程序调试之Xdebug/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Xdebug/" rel="tag"># Xdebug</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/21/apache上运行PHP的几种方式汇总/" rel="next" title="apache上运行PHP的几种方式汇总">
+                <i class="fa fa-chevron-left"></i> apache上运行PHP的几种方式汇总
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/22/Xdebug之常见问题/" rel="prev" title="Xdebug之常见问题">
+                Xdebug之常见问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置"><span class="nav-number">2.</span> <span class="nav-text">配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#其他配置选项说明："><span class="nav-number">2.1.</span> <span class="nav-text">其他配置选项说明：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#日志"><span class="nav-number">2.1.1.</span> <span class="nav-text">日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#显示数据"><span class="nav-number">2.1.2.</span> <span class="nav-text">显示数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#格式"><span class="nav-number">2.1.3.</span> <span class="nav-text">格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#行为"><span class="nav-number">2.1.4.</span> <span class="nav-text">行为</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#限制"><span class="nav-number">2.1.5.</span> <span class="nav-text">限制</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">3.</span> <span class="nav-text">使用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

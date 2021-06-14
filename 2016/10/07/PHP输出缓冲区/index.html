@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="什么是缓冲区?简单而言,缓冲区的作用就是,把输入或者输出的内容先放进内存,而不显示或者读取. 其实缓冲区最本质的作用就是,协调高速CPU和相对缓慢的IO设备(磁盘等)的运作. PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲区,就要知道执行PHP的时候,缓冲区被设置到了什么地方. 当执行PHP的时候,如果碰到了echo print_r之类的会输出数据的代码,PHP就会将要输出的数据">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP输出缓冲区">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/07/PHP输出缓冲区/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="什么是缓冲区?简单而言,缓冲区的作用就是,把输入或者输出的内容先放进内存,而不显示或者读取. 其实缓冲区最本质的作用就是,协调高速CPU和相对缓慢的IO设备(磁盘等)的运作. PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲区,就要知道执行PHP的时候,缓冲区被设置到了什么地方. 当执行PHP的时候,如果碰到了echo print_r之类的会输出数据的代码,PHP就会将要输出的数据">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP输出缓冲区">
+<meta name="twitter:description" content="什么是缓冲区?简单而言,缓冲区的作用就是,把输入或者输出的内容先放进内存,而不显示或者读取. 其实缓冲区最本质的作用就是,协调高速CPU和相对缓慢的IO设备(磁盘等)的运作. PHP在执行的时候,在什么地方有用到缓冲区?想要了解PHP的缓冲区,就要知道执行PHP的时候,缓冲区被设置到了什么地方. 当执行PHP的时候,如果碰到了echo print_r之类的会输出数据的代码,PHP就会将要输出的数据">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/07/PHP输出缓冲区/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>PHP输出缓冲区 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/07/PHP输出缓冲区/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PHP输出缓冲区<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/PHP输出缓冲区.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-07 21:30:00" itemprop="dateCreated datePublished" datetime="2016-10-07T21:30:00+08:00">2016-10-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/07/PHP输出缓冲区/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/07/PHP输出缓冲区/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">3.9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是缓冲区"><a href="#什么是缓冲区" class="headerlink" title="什么是缓冲区?"></a>什么是缓冲区?</h2><p>简单而言,缓冲区的作用就是,把输入或者输出的内容先放进内存,而不显示或者读取.</p>
+<p>其实缓冲区最本质的作用就是,协调高速CPU和相对缓慢的IO设备(磁盘等)的运作.</p>
+<h2 id="PHP在执行的时候-在什么地方有用到缓冲区"><a href="#PHP在执行的时候-在什么地方有用到缓冲区" class="headerlink" title="PHP在执行的时候,在什么地方有用到缓冲区?"></a>PHP在执行的时候,在什么地方有用到缓冲区?</h2><p>想要了解PHP的缓冲区,就要知道执行PHP的时候,缓冲区被设置到了什么地方.</p>
+<p>当执行PHP的时候,如果碰到了echo print_r之类的会输出数据的代码,PHP就会将要输出的数据放到PHP自身的缓冲区,等待输出.</p>
+<p>当PHP自身的缓冲区接到指令,指示要输出缓冲区的内容时,将会把缓冲区内的数据输出到apache上, apache接受到PHP输出的数据,然后再把该数据存在到apache自身的缓冲区内,等到输出。</p>
+<p>当apache接受到指令,只是要输出缓冲区的内容时, 将会把缓冲区的内容输出,返回到浏览器.</p>
+<p>由此可见,PHP要输出数据的时候,将会经过两个缓冲区(先是自身的,然后是apache的),再返回到浏览器.</p>
+<a id="more"></a>
+<h2 id="缓冲区在PHP中起到什么作用"><a href="#缓冲区在PHP中起到什么作用" class="headerlink" title="缓冲区在PHP中起到什么作用?"></a>缓冲区在PHP中起到什么作用?</h2><h3 id="最常见的就是在使用header函数之前"><a href="#最常见的就是在使用header函数之前" class="headerlink" title="最常见的就是在使用header函数之前"></a>最常见的就是在使用header函数之前</h3><p>header();函数要求在其之前不能有输出。如在header之前有输出时会报错： Cannot modify header information – headers already sent by;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;this is test&quot;;</span><br><span class="line">header(&quot;LOCATION http://www.baidu.com&quot;);</span><br></pre></td></tr></table></figure>
+<p>出现这个错误的原因是, 在header之前已经输出了某些数据,而输出这些数据的同时, apache将会同时发送一个响应状态到浏览器上(既然有输出,即这个请求是有效的),而其后你又再次使用header函数发送http头,则会返回这个错误,错误的意思是:HTTP头已经发送出去了,你不能对他再做修改.</p>
+<p>为什么使用缓冲区可以避免这个错误呢?</p>
+<p>因为header函数是不受缓冲区影响的,当一碰到header函数的时候,PHP马上执行apache发送这一个http头都浏览器.<br>而输出的数据PHP打开输出缓冲区后, 这些数据将会存放在缓冲区,等待输出.这样就可以避免了之前所发生的错误.</p>
+<h3 id="通过PHP写文件下载程序的时候"><a href="#通过PHP写文件下载程序的时候" class="headerlink" title="通过PHP写文件下载程序的时候."></a>通过PHP写文件下载程序的时候.</h3><p>为了让文件下载更安全,同时提高更多的可控性,很多朋友都喜欢用PHP写文件下载页面.</p>
+<p>其原理很简单,就是通过fwrite把文件内容读出并显示,然后通过header来发送HTTP头,让浏览器知道这是一个附件,这样就可以达到提供下载的效果.</p>
+<p>如果用上面的办法提供下载页面,会碰到一个效率问题,如果一个文件很大,假设为100M,那么在不开启缓冲区输出的情况下,必须要把100M数据全部读出,然后一次返回到页面上,如果这样做,用户将会在所有数据读完之后才会得到响应,降低了用户体验感.</p>
+<p>如果开启了输出缓冲区,当PHP程序读完文件的某一段,然后马上输出到apache,然后让apache马上返回到浏览器,这样就可以减少用户等待时间.</p>
+<p>那后面的数据怎么办呢?</p>
+<p>我们可以写一个while循环,一直一段一段地读取文件，每读一段,就马上输出,直到把文件全部输出为止,这样浏览器就可以持续地接受到数据,而不必等到所有文件读取完毕.</p>
+<p>另外,该做法还解决了另外一个很严重的问题.</p>
+<p>例如一个文件是100M,如果不开启缓冲区的情况下,则需要把100M文件全部读入内存,然后再输出.</p>
+<p>但是,如果PHP程序做了内存限制呢?<br>为了保证服务器的稳定,管理员通常会把PHP的执行内存设一个限制(通过php.ini总的memory_limit, 其默认值是8M), 也就是每个PHP程序使用的内存不能使用超过这个值的内存.</p>
+<p>假设该值为8M,而要读入的文件是100M,根本就没有足够的内存来读入该文件.这个时候,我们就需要用到上面的办法来解决这个问题,每次只读某一段,这样就可以避免了内存的限制</p>
+<h3 id="静态文件缓存"><a href="#静态文件缓存" class="headerlink" title="静态文件缓存"></a>静态文件缓存</h3><p>现在很多公司有这么一个需求, 就是某一个页面在第一次访问的时候,会执行PHP,然后把显示的内容返回到浏览器,同时需要把这次显示的内容保存到服务器上,这样下次访问的时候,就直接把保存在服务器上的文件直接显示,而不需要通过PHP来做操作这就是所谓的”静态页面缓存”.</p>
+<p>那怎么样才能做到把内容返回到浏览器的同时把数据保存到服务器上呢?</p>
+<p>这就要用到输出缓冲区了.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ob_start();</span><br><span class="line">echo &apos;aaa&apos;;</span><br><span class="line">$string = ob_get_contents();</span><br><span class="line">file_put_contents(&apos;a.html&apos;, $string);</span><br><span class="line">ob_flush();</span><br><span class="line">flush();</span><br></pre></td></tr></table></figure>
+<h2 id="与输出缓冲区有关的配置"><a href="#与输出缓冲区有关的配置" class="headerlink" title="与输出缓冲区有关的配置"></a>与输出缓冲区有关的配置</h2><p>在PHP.INI中,有两个跟缓冲区紧密相关的配置项</p>
+<h3 id="output-buffering"><a href="#output-buffering" class="headerlink" title="output_buffering"></a>output_buffering</h3><p>该配置直接影响的是php本身的缓冲区,有3种配置参数.on/off/xK(x为某个整型数值);<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">on    - 开启缓冲区</span><br><span class="line">off    - 关闭缓冲区</span><br><span class="line">256k    - 开启缓冲区,而且当缓冲区的内容超过256k的时候,自动刷新缓冲区(把数据发送到apache);</span><br></pre></td></tr></table></figure></p>
+<h3 id="implicit-flush"><a href="#implicit-flush" class="headerlink" title="implicit_flush"></a>implicit_flush</h3><p>该配置直接影响apache的缓冲区,有2种配置参数. on/off<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">on    - 自动刷新apache缓冲区,也就是,当php发送数据到apache的缓冲区的时候,不需要等待其他指令,直接就把输出返回到浏览器</span><br><span class="line">off    - 不自动刷新apache缓冲区,接受到数据后,等待刷新指令</span><br></pre></td></tr></table></figure></p>
+<h2 id="与缓冲区有关的函数"><a href="#与缓冲区有关的函数" class="headerlink" title="与缓冲区有关的函数"></a>与缓冲区有关的函数</h2><ul>
+<li><p>ob_implicit_flush</p>
+<blockquote>
+<p>作用和implicit_flush一样,是否自动刷新apache的缓冲区</p>
+</blockquote>
+</li>
+<li><p>flush</p>
+<blockquote>
+<p>作用是发送指令到apache,让apache刷新自身的输出缓冲区.</p>
+</blockquote>
+</li>
+<li><p>ob_start</p>
+<blockquote>
+<p>打开输出缓冲区,无论php.ini的文件如何配置,如果使用该函数,即使output_buffering设置成off,也会打开输出缓冲区</p>
+<p>ob_start函数还接受一个参数,该参数是一个函数的回调,意思是,在输入缓冲区内容之前,需要使用调用传递进来的参数把缓冲区的内容处理一次,再放入缓冲区内</p>
+</blockquote>
+</li>
+<li><p>ob_flush</p>
+<blockquote>
+<p>指示php本身刷新自身的缓冲区,把数据发送到apache</p>
+</blockquote>
+</li>
+<li><p>ob_clean</p>
+<blockquote>
+<p>清除php缓冲区里面的内容</p>
+</blockquote>
+</li>
+<li><p>ob_end_clean</p>
+<blockquote>
+<p>清除php缓冲区内的内容,并且关闭输出缓冲区</p>
+</blockquote>
+</li>
+<li><p>ob_end_flush</p>
+<blockquote>
+<p>把php自身的缓冲区里的内容发送到apache,并把清除自身缓冲区内的内容</p>
+</blockquote>
+</li>
+<li><p>ob_get_clean</p>
+<blockquote>
+<p>获取缓冲区的内容之后,清除缓冲区.</p>
+</blockquote>
+</li>
+<li><p>ob_get_contents</p>
+<blockquote>
+<p>获取输出缓冲区里的内容</p>
+</blockquote>
+</li>
+<li><p>ob_get_flush</p>
+<blockquote>
+<p>获取缓冲区里的内容,并且把这些内容发送到apache</p>
+</blockquote>
+</li>
+<li><p>ob_get_length</p>
+<blockquote>
+<p>获取缓冲区里内容的长度</p>
+</blockquote>
+</li>
+<li><p>ob_list_handlers</p>
+<blockquote>
+<p>获取运行ob_start时,所回调的函数名称, 例如:</p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ob_start(‘ob_gzhandler’);</span><br><span class="line">print_r(ob_list_handlers);</span><br></pre></td></tr></table></figure>
+<p>将打印出ob_gzhandler;</p>
+<ul>
+<li>ob_gzhandler<blockquote>
+<p>该函数的作用是作为ob_start的回调参数, 在缓冲区刷新之前,会调用该函数对数据进行到底gzip或者deflate压缩.这个函数需要zlib扩展的支持.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="使用缓冲区的相关内容"><a href="#使用缓冲区的相关内容" class="headerlink" title="使用缓冲区的相关内容"></a>使用缓冲区的相关内容</h2><ul>
+<li><p>ob_flush和flush的次序关系.</p>
+<blockquote>
+<p>上面的分析可以看出,ob_flush是和php自身相关的,而flush操作的是apache的缓冲区,所有我们在使用这两个函数的时候,需要先执行ob_flush,<br>再执行flush,因为我们需要先把数据从PHP上发送到apache,然后再由apache返回到浏览器.如果php还没有把数据刷新到apache,就调用了flush,则apache无任何数据返回到浏览器.</p>
+</blockquote>
+</li>
+<li><p>有的浏览器,如果接受到的字符太少,则不会把数据显示出来</p>
+<blockquote>
+<p>例如老版的IE(必须要大于256k才显示).这样就会造成一个疑问, 明明在php和apache都进行了刷新缓冲区的操作,但是浏览器就是没有出现自己想要的数据,也许就是这个原因造成的.所以才测试的时候,可以在输出数据的后面加上多个空格,以填满数据,确定不会浏览器造成这类诡异的问题.</p>
+</blockquote>
+</li>
+<li><p>有些webserver,他自身的输出缓冲区会有一些限制</p>
+<blockquote>
+<p>比如nginx,他有一个配置fastcgi_buffer_size 4k, 就是是表明,当自身的输出缓冲区的内容达到4K才会刷新,所以为了保证内容的数据,可以添加以下代码,保证内容长度</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">  echo str_repeat(&quot; &quot;,4096);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+</li>
+<li><p>在apache中,如果你开启了mod_gzip的压缩模块,这样可能会导致你的flush函数刷新不成功</p>
+<blockquote>
+<p>其原因是,mod_gzip有自己的输出缓冲区,当php执行了flush函数,指示apache刷新输出缓冲区,但是内容需要压缩,apache就把内容输出到自身的mod_gzip模块,mod_gzip也有自身的输出 缓冲区,他也不会马上输出,所以造成了内容不能马上输出.为了改善这个情况,可以关闭mod_gzip模块,或者在httpd.conf增加以下内容,以禁止压缩</p>
+</blockquote>
+</li>
+</ul>
+<p>转自：<a href="http://www.keepmyway.com/index.php/124.html" target="_blank" rel="noopener">http://www.keepmyway.com/index.php/124.html</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/07/PHP输出缓冲区/" title="PHP输出缓冲区">https://weizhimiao.github.io/2016/10/07/PHP输出缓冲区/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/07/PHP项目权限控制实现小结/" rel="next" title="PHP项目权限控制实现小结">
+                <i class="fa fa-chevron-left"></i> PHP项目权限控制实现小结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/08/Linux常用工具命令之rsync/" rel="prev" title="Linux常用工具命令之rsync">
+                Linux常用工具命令之rsync <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是缓冲区"><span class="nav-number">1.</span> <span class="nav-text">什么是缓冲区?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PHP在执行的时候-在什么地方有用到缓冲区"><span class="nav-number">2.</span> <span class="nav-text">PHP在执行的时候,在什么地方有用到缓冲区?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓冲区在PHP中起到什么作用"><span class="nav-number">3.</span> <span class="nav-text">缓冲区在PHP中起到什么作用?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#最常见的就是在使用header函数之前"><span class="nav-number">3.1.</span> <span class="nav-text">最常见的就是在使用header函数之前</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过PHP写文件下载程序的时候"><span class="nav-number">3.2.</span> <span class="nav-text">通过PHP写文件下载程序的时候.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#静态文件缓存"><span class="nav-number">3.3.</span> <span class="nav-text">静态文件缓存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#与输出缓冲区有关的配置"><span class="nav-number">4.</span> <span class="nav-text">与输出缓冲区有关的配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#output-buffering"><span class="nav-number">4.1.</span> <span class="nav-text">output_buffering</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#implicit-flush"><span class="nav-number">4.2.</span> <span class="nav-text">implicit_flush</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#与缓冲区有关的函数"><span class="nav-number">5.</span> <span class="nav-text">与缓冲区有关的函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用缓冲区的相关内容"><span class="nav-number">6.</span> <span class="nav-text">使用缓冲区的相关内容</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

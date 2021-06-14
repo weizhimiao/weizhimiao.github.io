@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Nginx配置主要分成四部分：main、server、upstream 和 location，每部分包含若干个指令。main(全局设置)  该部分设置的指令将影响其它所有部分的设置；  server(主机设置)  该部分的指令主要用于指定虚拟主机域名、IP和端口；  upstream(上游服务器设置)  该部分的指令用于设置一系列的后端服务器，设置反向代理及后端服务器的负载均衡；  locatio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx配置整理">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/03/Nginx配置整理/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Nginx配置主要分成四部分：main、server、upstream 和 location，每部分包含若干个指令。main(全局设置)  该部分设置的指令将影响其它所有部分的设置；  server(主机设置)  该部分的指令主要用于指定虚拟主机域名、IP和端口；  upstream(上游服务器设置)  该部分的指令用于设置一系列的后端服务器，设置反向代理及后端服务器的负载均衡；  locatio">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Nginx配置整理">
+<meta name="twitter:description" content="Nginx配置主要分成四部分：main、server、upstream 和 location，每部分包含若干个指令。main(全局设置)  该部分设置的指令将影响其它所有部分的设置；  server(主机设置)  该部分的指令主要用于指定虚拟主机域名、IP和端口；  upstream(上游服务器设置)  该部分的指令用于设置一系列的后端服务器，设置反向代理及后端服务器的负载均衡；  locatio">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/03/Nginx配置整理/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Nginx配置整理 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/03/Nginx配置整理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Nginx配置整理<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Nginx配置整理.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-03 22:30:00" itemprop="dateCreated datePublished" datetime="2016-10-03T22:30:00+08:00">2016-10-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Nginx/" itemprop="url" rel="index"><span itemprop="name">Nginx</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/03/Nginx配置整理/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/03/Nginx配置整理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">9.6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">9 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Nginx配置主要分成四部分：main、server、upstream 和 location，每部分包含若干个指令。<br>main(全局设置)</p>
+<blockquote>
+<p>该部分设置的指令将影响其它所有部分的设置；</p>
+</blockquote>
+<p>server(主机设置)</p>
+<blockquote>
+<p>该部分的指令主要用于指定虚拟主机域名、IP和端口；</p>
+</blockquote>
+<p>upstream(上游服务器设置)</p>
+<blockquote>
+<p>该部分的指令用于设置一系列的后端服务器，设置反向代理及后端服务器的负载均衡；</p>
+</blockquote>
+<p>location(URL匹配特定位置后的设置)</p>
+<blockquote>
+<p>该部分用于匹配网页位置（比如，根目录“/”,“/images”,等等）。</p>
+</blockquote>
+<p>Nginx本身是模块化设计。全局的配置区段负责全局的各个方面，对于不同的协议可以单独划分成一个部分。我们可以通过在这些单独的协议配置中（http或mail）指定server来定义每一个请求应该被如何处理，以便请求被路由到特定的IP地址或端口上。在http区段中，使用location来匹配URI请求，这些location又可以嵌套使用或者按照一定顺序使用，以确保请求被路由到正确的文件系统区域或者其他地方。</p>
+<p><strong>他们之间的关系式：</strong> server继承main，location继承server；upstream既不会继承指令也不会被继承。它有自己的特殊指令，不需要在其他地方的应用。</p>
+<a id="more"></a>
+<h2 id="基本配置格式"><a href="#基本配置格式" class="headerlink" title="基本配置格式"></a>基本配置格式</h2><p>Nginx的配置文件由若干部分组成。但每一部分都是通过下列的方法定义。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;section&gt; &#123;</span><br><span class="line">  &lt;directive&gt;&lt;parameters&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>Tips:</strong></p>
+<ul>
+<li>每一个指令行都由分号结束（;），这标志着一行结束。</li>
+<li>大括号（{}）实际上表示一个新上下文（context），常称为『节，部分（section）』</li>
+</ul>
+<h2 id="Nginx的全局配置"><a href="#Nginx的全局配置" class="headerlink" title="Nginx的全局配置"></a>Nginx的全局配置</h2><p>全局配置顾名思义就是对整个server都有效的参数。全局配置部分可能包含配置指令（如，user、worker_processes），也包括『节、部分（section）（如，events）』。这部分配置一般放在 nginx.conf 文件的顶部。</p>
+<p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">user nginx;</span><br><span class="line">worker_processes auto;</span><br><span class="line">error_log /var/log/nginx/error.log;</span><br><span class="line">pid /run/nginx.pid;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    use epoll   #使用网络IO模型，epoll模型比select模型效率高很多</span><br><span class="line">    worker_connections 1024;    #每个worker能够处理的最大连接数，最大值取决于ulimit -n的值</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>主要配置指令及含义</p>
+<table>
+<thead>
+<tr>
+<th>配置指令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user</td>
+<td>配置worker进程运行的用户和用户组，第一个参数为user，第二个为group（如果忽略了group，那么group与user同名）</td>
+</tr>
+<tr>
+<td>worker_processes</td>
+<td>指定worker进程启动的数量。这些进程用于处理客户的连接。通常该值会设置成CPU处理器核心数相同的数量。默认值是”auto”，也是按照这样去设置数量</td>
+</tr>
+<tr>
+<td>error_log</td>
+<td>设置错误日志文件位置。如果在其他的区段中没有设置其他的error_log,那么这个日志文件将会记录所有的错误。该指令的第二个参数指定了被记录的错误信息级别（debug[注，debug级别的错误只有在nginx编译的时候配置了 –with-debug选项才可以使用]、info、notice、warn、error、crit、alert、emsg）</td>
+</tr>
+<tr>
+<td>pid</td>
+<td>设置记录主进程ID的文件地址。通常设置该值来方便我们对nginx的管理</td>
+</tr>
+<tr>
+<td>use</td>
+<td>该指令指示我们使用什么样的连接方式。该指令需要写在 events 区段里面。</td>
+</tr>
+<tr>
+<td>worker_connections</td>
+<td>配置一个工作进程能够接受并发连接的最大数。这个连接包括，客户连接和向上游服务器的连接，但也不仅限于此。通常该配置同use一样写在events里面</td>
+</tr>
+</tbody>
+</table>
+<h2 id="include指令"><a href="#include指令" class="headerlink" title="include指令"></a>include指令</h2><p>在Nginx配置文件中可以使用include指令将其他位置存放的配置文件加载进来，来方便配置管理和增强配置文件的可读性。</p>
+<p><strong>Tips：</strong><br>使用include文件，要确保被包含的文件自身符合nginx配置语法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">include /etc/nginx/default.d/*.conf;</span><br></pre></td></tr></table></figure></p>
+<p>路径中出现通配符表示可以匹配多个文件。<br>nginx配置文件的语法错误可以通过nginx的 -t 选项来进行测试。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/path/to/nginx -t -c &lt;path-to-nginx.conf&gt;</span><br></pre></td></tr></table></figure></p>
+<p><strong>注：</strong> 该命令只能检查语法错误，具体到某个功能性的测试还需要我们自己有针对性的去测。</p>
+<h2 id="Http的server部分"><a href="#Http的server部分" class="headerlink" title="Http的server部分"></a>Http的server部分</h2><p>通常我们提到的server部分，具体指的是Http的server部分。所以，其在Http配置的context是可用的。该部分用于处理http连接，因此该模块下提供了相当数量的指令。</p>
+<h3 id="客户端指令"><a href="#客户端指令" class="headerlink" title="客户端指令"></a>客户端指令</h3><blockquote>
+<p>用于处理客户端连接本身的各个方面，以及不同类型的客户端</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>chunked_transfer_encoding</td>
+<td>在发给客户端的响应中允许禁用http/1.1标准的块传输编码</td>
+</tr>
+<tr>
+<td>client_body_buffer_size</td>
+<td>为了阻止临时文件写到磁盘，可以通过该指令为客户端请求体设置缓存大小，默认的缓存大小为两个内存页面</td>
+</tr>
+<tr>
+<td>client_body_in_file_only</td>
+<td>用于调试或者是进一步处理客户端请求体。该指令能够将客户端请求体强制写入到磁盘文件</td>
+</tr>
+<tr>
+<td>client_body_in_single_buffer</td>
+<td>为了减少拷贝的操作，使用该指令强制Nginx将整个客户端请求体保存到单个缓存中</td>
+</tr>
+<tr>
+<td>client_body_temp_path</td>
+<td>定义一个命令路径用于保存客户端请求体</td>
+</tr>
+<tr>
+<td>clent_body_timeout</td>
+<td>指定客户端成功读取的两个操作之间的时间间隔</td>
+</tr>
+<tr>
+<td>client_header_buffer_size</td>
+<td>为客户端请求头指定一个缓存大小，当请求头大于1kB时会用到这个设置。</td>
+</tr>
+<tr>
+<td>client_header_timeout</td>
+<td>读取整个客户端头的超时时间</td>
+</tr>
+<tr>
+<td>client_max_body_size</td>
+<td>定义允许最大的客户端请求头，如果大于该值，那么客户端将会是413（request entity too large）错误</td>
+</tr>
+<tr>
+<td>keepalive_disable</td>
+<td>对某些类型的客户端禁用keep-alive请求功能。</td>
+</tr>
+<tr>
+<td>keepalive_requests</td>
+<td>定义在一个keep-alive关闭之前可以接收多少个请求</td>
+</tr>
+<tr>
+<td>keepalive_timeout</td>
+<td>指定keep-alive连接持续多久。第二个参数用于在响应头中这只”Keep-Alive”头</td>
+</tr>
+<tr>
+<td>large_client_header_buffers</td>
+<td>定义最大数量和最大客户端请求头的大小</td>
+</tr>
+<tr>
+<td>msie_padding</td>
+<td>为了填充响应的大小至512字节，对于MSIE客户端，大于400的状态码会被添加注释以便满足512字节，通过启用该命令可以阻止这种行为</td>
+</tr>
+<tr>
+<td>msie_refresh</td>
+<td>对于MSIE客户端，可启用发送一个refresh头</td>
+</tr>
+</tbody>
+</table>
+<h3 id="文件I-O指令"><a href="#文件I-O指令" class="headerlink" title="文件I/O指令"></a>文件I/O指令</h3><blockquote>
+<p>用于控制Nginx如何投递静态文件。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>aio</td>
+<td>启用异步文件I/O。FreeBSD系统下，该值可能被用于sendfile预加载数据。Linux下需要directio指令，自动禁用sendfile</td>
+</tr>
+<tr>
+<td>directio</td>
+<td>用于启用操作系统特定的标识或者功能提供大于给定参数的文件。Linux下使用aio时需要使用该指令。</td>
+</tr>
+<tr>
+<td>directio_alignment</td>
+<td>设置directio算法。默认值是512，通常已经足够，但是在Linux的XFS下推荐增加至4K</td>
+</tr>
+<tr>
+<td>open_file_cache</td>
+<td>配置一个缓存用于存放打开的文件描述符、目录查询和文件查询错误</td>
+</tr>
+<tr>
+<td>open_file_cache_errors</td>
+<td>按照open_file_cache，启用文件查询错误缓存</td>
+</tr>
+<tr>
+<td>open_file_cache_min_uses</td>
+<td>open_file_cache缓存的文件描述符保留在缓存中，使用该指令配置最少使用文件描述符的次数</td>
+</tr>
+<tr>
+<td>open_file_cache_valid</td>
+<td>指定对open_file_cache缓存有效性检查的时间间隔</td>
+</tr>
+<tr>
+<td>postpone_output</td>
+<td>指定Nginx发送给客户端最小的数值，如果可能的话，没有数据会发送，直到达到此值</td>
+</tr>
+<tr>
+<td>read_ahead</td>
+<td>如果可能的话，内核将预读文件到设定的参数大小</td>
+</tr>
+<tr>
+<td>sendfile</td>
+<td>使用sendfile（2）直接复制数据从一个到另一个文件描述符</td>
+</tr>
+<tr>
+<td>sendfile_max_chunk</td>
+<td>设置在一个sendfile(2)拷贝中最大数据的大小，这是为了阻止worker”贪婪”</td>
+</tr>
+</tbody>
+</table>
+<h3 id="Hash指令"><a href="#Hash指令" class="headerlink" title="Hash指令"></a>Hash指令</h3><blockquote>
+<p>控制Nginx 分配给某些变量多大的静态文件</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>server_names_hash_bucket_size</td>
+<td>指定用于保存server_name哈希表大小的”桶”</td>
+</tr>
+<tr>
+<td>server_names_hash_max_size</td>
+<td>指定的server_name哈希表的最大值的大小</td>
+</tr>
+<tr>
+<td>types_hash_bucket_size</td>
+<td>指定用于存放哈希表的”桶”的大小</td>
+</tr>
+<tr>
+<td>types_hash_max_size</td>
+<td>指定哈希类型表的最大值的大小</td>
+</tr>
+<tr>
+<td>variables_hash_bucket_size</td>
+<td>指定用于存放保留变量”桶”的大小</td>
+</tr>
+<tr>
+<td>variables_hash_max_size</td>
+<td>指定存放保留变量最大哈希值的大小</td>
+</tr>
+</tbody>
+</table>
+<h3 id="Socket指令"><a href="#Socket指令" class="headerlink" title="Socket指令"></a>Socket指令</h3><blockquote>
+<p>描述Nginx如何设置创建TCP套接字的变量选项</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lingering_close</td>
+<td>指定如何保持客户端的连接，以便用于更多数据的传输</td>
+</tr>
+<tr>
+<td>lingering_time</td>
+<td>在使用lingering_close指令的连接中，使用该指令指定客户端连接为了处理更多的数据需要保持打开连接的时间</td>
+</tr>
+<tr>
+<td>lingering_timeout</td>
+<td>结合lingering_close，该指令显示Nginx在关闭客户端连接之前，为获得更多数据会等待多久</td>
+</tr>
+<tr>
+<td>reset_timeout_connection</td>
+<td>使用这个指令之后，超时的连接会被立即关闭，释放相关的内存。默认的状态是处于FIN_WAIT1，这种状态将会一直保持连接</td>
+</tr>
+<tr>
+<td>send_lowat</td>
+<td>如果非零，Nginx将会在客户端套接字尝试减少发送操作</td>
+</tr>
+<tr>
+<td>send_timeout</td>
+<td>在两次成功的客户端接收响应的写操作之间设置一个超时时间</td>
+</tr>
+<tr>
+<td>tcp_nodelay</td>
+<td>启用或禁用TCP_NODELAY选项，用于keep-alive连接</td>
+</tr>
+<tr>
+<td>tcp_nopush</td>
+<td>仅依赖于sendfile的使用。它能够使Nginx在一个数据包中尝试发送响应头，以及在数据包中发送一个完整的文件</td>
+</tr>
+</tbody>
+</table>
+<h3 id="server部分"><a href="#server部分" class="headerlink" title="server部分"></a>server部分</h3><p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    ...</span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80 default_server;</span><br><span class="line">        server_name  _;</span><br><span class="line">        root         /usr/share/nginx/html;</span><br><span class="line"></span><br><span class="line">        # Load configuration files for the default server block.</span><br><span class="line">        include /etc/nginx/default.d/*.conf;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        error_page 404 /404.html;</span><br><span class="line">            location = /40x.html &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        error_page 500 502 503 504 /50x.html;</span><br><span class="line">            location = /50x.html &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>一个虚拟服务器由listen和server_name指令组合定义。</p>
+<p><strong>listen</strong></p>
+<blockquote>
+<p>指令定义一个IP地址/端口组合或者UNIX套接字路径。示例</p>
+<ul>
+<li>listen address[:port];</li>
+<li>listen port;</li>
+<li>listen unix:path;</li>
+</ul>
+</blockquote>
+<p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">listen     127.0.0.1:80;</span><br><span class="line">listen     localhost:80;</span><br><span class="line">listen     127.0.0.1:8080;</span><br><span class="line">listen     localhost:8080;</span><br><span class="line">listen     192.168.3.105:80;</span><br><span class="line">listen     192.168.3.105:8080;</span><br><span class="line">listen     80;</span><br><span class="line">listen     *:80;</span><br><span class="line">listen     8080;</span><br><span class="line">listen     *:8080;</span><br><span class="line">listen     12.34.56.77:80;</span><br><span class="line">listen     12.34.56.78:80;</span><br><span class="line">listen     12.34.56.79:80;</span><br></pre></td></tr></table></figure></p>
+<p>另外，listen还有其他的一些可选参数。常用到的有<br>default_server，表示定义这样的一个组合：（address:port）默认的请求被绑定于此<br>ssl，表明该端口仅接受Https的连接</p>
+<p><strong>server_name</strong></p>
+<blockquote>
+<p>用来指定域名。</p>
+</blockquote>
+<p>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">server_name   nginx.cn;</span><br><span class="line">server_name   nginx.cn www.nginx.cn;</span><br><span class="line">server_name   *.nginx.cn;</span><br><span class="line">server_name   .nginx.cn;</span><br><span class="line">server_name   nginx.*;</span><br><span class="line">server_name   nginx.cng bucknell.net brackley.org;</span><br><span class="line">server_name   localhost litchfield bleddington;</span><br><span class="line">server_name   &quot;&quot;;</span><br></pre></td></tr></table></figure></p>
+<p>除了普通字符串外，Nginx也接受通配符作为Server_name的参数。</p>
+<ul>
+<li>使用通配符替代部分子域名： *.example.com</li>
+<li>代替顶级域部分： <a href="http://www.example." target="_blank" rel="noopener">www.example.</a>*</li>
+<li>匹配子域和域本身： .example.com 能匹配 *.example.com 和example.com</li>
+</ul>
+<p>另外，在域名前加上（~），正则表达式也可应用于 server_name.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server_name ~^www\.example\.com$</span><br><span class="line">server_name ~^www(\d+).example\.(com)$</span><br></pre></td></tr></table></figure></p>
+<p>对于后一种方式是利用捕获，可以在以后的引用中进一步配置（用$1,$2等）指令中使用。</p>
+<h2 id="location部分"><a href="#location部分" class="headerlink" title="location部分"></a>location部分</h2><p>location指令可以用在虚拟服务器server部分，并且意味着提供来自客户端的URI或者内部的重定向访问。</p>
+<p>location定义：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">location [modifier] uri &#123;...&#125;</span><br></pre></td></tr></table></figure></p>
+<p>或者是命名location<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">location @name &#123;...&#125;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>命名location仅对内部访问重定向，在进入一个location之前他会保留被请求的URI部分。且命名location只能存在与server级别的定义。</p>
+</blockquote>
+<p>示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">location / &#123; &#125;</span><br><span class="line">location /images/ &#123; &#125;</span><br><span class="line">location /blog/ &#123; &#125;</span><br><span class="line">location /planet/ &#123; &#125;</span><br><span class="line">location /planet/blog/ &#123; &#125;</span><br><span class="line"></span><br><span class="line">location ~ IndexPage.php$ &#123; &#125;</span><br><span class="line">location ~ ^/BlogPlanet(/|/index.php)$ &#123; &#125;</span><br><span class="line"></span><br><span class="line">location ~* .(pl|cgi|perl|prl)$ &#123; &#125;</span><br><span class="line">location ~* .(md|mdwn|txt|mkdn)$ &#123; &#125;</span><br><span class="line"></span><br><span class="line">location ^~ /images/IndexPage/ &#123; &#125;</span><br><span class="line">location ^~ /blog/BlogPlanet/ &#123; &#125;</span><br><span class="line"></span><br><span class="line">location = / &#123; &#125;</span><br></pre></td></tr></table></figure></p>
+<p>当一个请求进入时，URI将会被检测匹配一个最佳的location。</p>
+<ul>
+<li>没有正则表达式的location被认为是最佳的匹配，独立于含有正则表达式的location。</li>
+<li>在配置文件中按照查找顺序进行正则匹配，在查到第一个正则表达式匹配时结束查找，将请求交由这个location处理。<br><strong>Tips：</strong><br>这里匹配的解码URI，如在URL中的”%20”,将会匹配location中的””(空格)。</li>
+</ul>
+<p>location常见的修饰符</p>
+<table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>=</td>
+<td>使用精确匹配并且终止搜索</td>
+</tr>
+<tr>
+<td>~</td>
+<td>区分大小写的正则表达式匹配</td>
+</tr>
+<tr>
+<td>~*</td>
+<td>不去分大小写的正则表达式匹配</td>
+</tr>
+<tr>
+<td>^~</td>
+<td>如果该location是最佳的匹配，那么对于匹配这个location的字符串不在进行正则表达式检测。</td>
+</tr>
+</tbody>
+</table>
+<p>仅用于location中的指令</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>alias</td>
+<td>定义location的其他名字，在文件系统中能够找到。</td>
+</tr>
+<tr>
+<td>internal</td>
+<td>指定一个仅用于内部请求的location（其他指定定义的重定向，rewrite请求，error请求等）</td>
+</tr>
+<tr>
+<td>limit_except</td>
+<td>限定一个location可以执行的Http操作（如，GET或HEAD）</td>
+</tr>
+</tbody>
+</table>
+<p>命名location的使用（一般与try_files配合使用）<br>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">  try_files $uri $uri/ $mongrel;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location @mongrel &#123;</span><br><span class="line">  proxy_pass http://appserver;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面一段配置表示，如果给定的URI作为一个文件没有被找到，那么处理将会通过代理被传递到appserver</p>
+<p>location的嵌套使用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">root /var/www</span><br><span class="line"></span><br><span class="line">location / &#123;</span><br><span class="line">  location ^~ /css &#123;</span><br><span class="line">    location ~* /css.*\.css$ &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>实践表明正则表达式location被嵌套在基于字符串的location是最佳的配置方式</strong></p>
+<h2 id="完整的配置文件示例"><a href="#完整的配置文件示例" class="headerlink" title="完整的配置文件示例"></a>完整的配置文件示例</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"># For more information on configuration, see:</span><br><span class="line">#   * Official English Documentation: http://nginx.org/en/docs/</span><br><span class="line">#   * Official Russian Documentation: http://nginx.org/ru/docs/</span><br><span class="line"></span><br><span class="line">user nginx;</span><br><span class="line">worker_processes auto;</span><br><span class="line">error_log /var/log/nginx/error.log;</span><br><span class="line">pid /run/nginx.pid;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections 1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    log_format  main  &apos;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &apos;</span><br><span class="line">                      &apos;$status $body_bytes_sent &quot;$http_referer&quot; &apos;</span><br><span class="line">                      &apos;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&apos;;</span><br><span class="line"></span><br><span class="line">    access_log  /var/log/nginx/access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile            on;</span><br><span class="line">    tcp_nopush          on;</span><br><span class="line">    tcp_nodelay         on;</span><br><span class="line">    keepalive_timeout   65;</span><br><span class="line">    types_hash_max_size 2048;</span><br><span class="line"></span><br><span class="line">    include             /etc/nginx/mime.types;</span><br><span class="line">    default_type        application/octet-stream;</span><br><span class="line"></span><br><span class="line">    # Load modular configuration files from the /etc/nginx/conf.d directory.</span><br><span class="line">    # See http://nginx.org/en/docs/ngx_core_module.html#include</span><br><span class="line">    # for more information.</span><br><span class="line">    include /etc/nginx/conf.d/*.conf;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80 default_server;</span><br><span class="line">        listen       [::]:80 default_server;</span><br><span class="line">        server_name  _;</span><br><span class="line">        root         /usr/share/nginx/html;</span><br><span class="line"></span><br><span class="line">        # Load configuration files for the default server block.</span><br><span class="line">        include /etc/nginx/default.d/*.conf;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        error_page 404 /404.html;</span><br><span class="line">            location = /40x.html &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        error_page 500 502 503 504 /50x.html;</span><br><span class="line">            location = /50x.html &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/03/Nginx配置整理/" title="Nginx配置整理">https://weizhimiao.github.io/2016/10/03/Nginx配置整理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/01/Memcached分布式部署算法整理/" rel="next" title="Memcached分布式部署算法整理">
+                <i class="fa fa-chevron-left"></i> Memcached分布式部署算法整理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/04/Nginx虚拟主机设置/" rel="prev" title="Nginx虚拟主机配置">
+                Nginx虚拟主机配置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本配置格式"><span class="nav-number">1.</span> <span class="nav-text">基本配置格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx的全局配置"><span class="nav-number">2.</span> <span class="nav-text">Nginx的全局配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#include指令"><span class="nav-number">3.</span> <span class="nav-text">include指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Http的server部分"><span class="nav-number">4.</span> <span class="nav-text">Http的server部分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#客户端指令"><span class="nav-number">4.1.</span> <span class="nav-text">客户端指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件I-O指令"><span class="nav-number">4.2.</span> <span class="nav-text">文件I/O指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hash指令"><span class="nav-number">4.3.</span> <span class="nav-text">Hash指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Socket指令"><span class="nav-number">4.4.</span> <span class="nav-text">Socket指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#server部分"><span class="nav-number">4.5.</span> <span class="nav-text">server部分</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#location部分"><span class="nav-number">5.</span> <span class="nav-text">location部分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#完整的配置文件示例"><span class="nav-number">6.</span> <span class="nav-text">完整的配置文件示例</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

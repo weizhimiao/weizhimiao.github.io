@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、A">
+<meta name="keywords" content="ELK,Elasticsearch,Logstash,Kibana">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用ELK搭建自己的日志分析系统">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、A">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://www.ibm.com/developerworks/cn/opensource/os-cn-elk/img001.png">
+<meta property="og:image" content="https://static-www.elastic.co/assets/blt8a9ac25aedbd9ca7/logstash-img1.png?q=414">
+<meta property="og:image" content="http://wx4.sinaimg.cn/mw690/8e242e12ly1fevtki0lwkj20xc0gota6.jpg">
+<meta property="og:image" content="http://wx1.sinaimg.cn/mw690/8e242e12ly1fevxyyb4rej21kw0zk0v4.jpg">
+<meta property="og:image" content="http://wx3.sinaimg.cn/mw690/8e242e12ly1fewnxhoiqyj21hc0u0tdk.jpg">
+<meta property="og:image" content="http://wx1.sinaimg.cn/mw690/8e242e12ly1few1y2tl0uj21h30prtfm.jpg">
+<meta property="og:image" content="http://wx2.sinaimg.cn/mw690/8e242e12ly1fewv6vsm41j21kw0fggr5.jpg">
+<meta property="og:image" content="http://wx1.sinaimg.cn/mw690/8e242e12ly1fewv89jhhdj21kw0w6wlv.jpg">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用ELK搭建自己的日志分析系统">
+<meta name="twitter:description" content="不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、A">
+<meta name="twitter:image" content="https://www.ibm.com/developerworks/cn/opensource/os-cn-elk/img001.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>利用ELK搭建自己的日志分析系统 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">利用ELK搭建自己的日志分析系统<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/利用ELK搭建自己的日志分析系统.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-04-23 20:30:00" itemprop="dateCreated datePublished" datetime="2017-04-23T20:30:00+08:00">2017-04-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/ELK/" itemprop="url" rel="index"><span itemprop="name">ELK</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/04/23/利用ELK搭建自己的日志分析系统/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/04/23/利用ELK搭建自己的日志分析系统/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">25k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">23 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>不管是用于记录，监控或者程序的Debug，日志，对于任何系统来说都是一个及其重要的部分。但一般日志的数据量会比较大，并且分散在各个地方。如果管理的服务器或者程序比较少的情况我们还可以逐一登录到各个服务器去查看，分析。但如果服务器或者程序的数量比较多了之后这种方法就显得力不从心。基于此，一些集中式的日志系统也就应用而生。<br>目前比较有名成熟的有，Splunk(商业)、FaceBook 的Scribe、Apache 的 Chukwa<br>Cloudera 的 Fluentd、还有ELK 等等。</p>
+<a id="more"></a>
+<h2 id="ELK简介"><a href="#ELK简介" class="headerlink" title="ELK简介"></a>ELK简介</h2><p>ELK不是一款软件，是三个软件产品的首字母缩写，Elasticsearch，Logstash 和 Kibana。这三款软件都是开源的，现在归于 Elastic.co 公司。</p>
+<center><br><img src="https://www.ibm.com/developerworks/cn/opensource/os-cn-elk/img001.png" alt="ELK协议栈"><br></center>
+
+<h3 id="Elasticsearch"><a href="#Elasticsearch" class="headerlink" title="Elasticsearch"></a>Elasticsearch</h3><p>Elasticsearch 是一个实时的分布式搜索和分析引擎，它可以用于全文搜索，结构化搜索以及分析。它是一个建立在全文搜索引擎 Apache Lucene 基础上的搜索引擎，使用 Java 语言编写。作为ELK协议栈的核心，它用于集中存储数据。目前，最新最新的版本是 5.3。</p>
+<p>特点：</p>
+<ul>
+<li>实时（准实时）</li>
+<li>分布式</li>
+<li>面向文档</li>
+<li>高可用性，易扩展，支持集群（Cluster）、分片和复制（Shards 和 Replicas）。</li>
+<li>接口友好（RESTful）</li>
+</ul>
+<h3 id="Logstash"><a href="#Logstash" class="headerlink" title="Logstash"></a>Logstash</h3><p>Logstash 是一个具有实时渠道能力的数据收集引擎。使用 JRuby 语言编写。其作者是世界著名的运维工程师乔丹西塞 (JordanSissel)。目前最新的版本是 5.3。</p>
+<p>特点</p>
+<ul>
+<li>几乎可以访问任何数据</li>
+<li>可以和多种外部应用结合</li>
+<li>支持弹性扩展</li>
+</ul>
+<center><br><img src="https://static-www.elastic.co/assets/blt8a9ac25aedbd9ca7/logstash-img1.png?q=414" alt="logstash"><br></center>
+
+<p>组成部分</p>
+<ul>
+<li>INPUTS, 从各种地方获取各种数据数据</li>
+<li>FILTERS, 过滤处理获取到的数据</li>
+<li>OUTPUTS, 将处理完的数据输出到指定地方（消息队列，或者 ElasticSearch中）</li>
+</ul>
+<h3 id="Kibana"><a href="#Kibana" class="headerlink" title="Kibana"></a>Kibana</h3><p>Kibana 是一款基于 Apache 开源协议，使用 JavaScript 语言编写，为 Elasticsearch 提供分析和可视化的 Web 平台。它可以在 Elasticsearch 的索引中查找，交互数据，并生成各种维度的表图。目前最新的版本是 5.3。</p>
+<h2 id="ELK-日志分析系统的搭建"><a href="#ELK-日志分析系统的搭建" class="headerlink" title="ELK 日志分析系统的搭建"></a>ELK 日志分析系统的搭建</h2><h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><h4 id="服务器配置："><a href="#服务器配置：" class="headerlink" title="服务器配置："></a>服务器配置：</h4><ul>
+<li>系统：CentOS 7.3 64</li>
+<li>配置：CPU：2核 内存：4G</li>
+<li>实例<ul>
+<li>10.47.45.66(内)</li>
+<li>10.30.70.120(内)</li>
+<li>10.47.45.32(内)</li>
+</ul>
+</li>
+</ul>
+<h4 id="用到的软件或文件"><a href="#用到的软件或文件" class="headerlink" title="用到的软件或文件"></a>用到的软件或文件</h4><ul>
+<li>JDK 8 （jdk-8u131-linux-x64.tar.gz）</li>
+<li>elasticsearch(<a href="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.zip" target="_blank" rel="noopener">https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.zip</a>)</li>
+<li>kibana(<a href="https://artifacts.elastic.co/downloads/kibana/kibana-5.3.0-linux-x86_64.tar.gz" target="_blank" rel="noopener">https://artifacts.elastic.co/downloads/kibana/kibana-5.3.0-linux-x86_64.tar.gz</a>)</li>
+<li>x-pack (<a href="https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.3.0ll.zip" target="_blank" rel="noopener">https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.3.0ll.zip</a>)</li>
+<li>logstash(<a href="https://artifacts.elastic.co/downloads/logstash/logstash-5.3.0.zip" target="_blank" rel="noopener">https://artifacts.elastic.co/downloads/logstash/logstash-5.3.0.zip</a>)</li>
+<li>Nginx</li>
+<li>metricbeat(<a href="https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-5.3.1-x86_64.rpm" target="_blank" rel="noopener">https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-5.3.1-x86_64.rpm</a>)</li>
+</ul>
+<h4 id="规划"><a href="#规划" class="headerlink" title="规划"></a>规划</h4><center><br><img src="http://wx4.sinaimg.cn/mw690/8e242e12ly1fevtki0lwkj20xc0gota6.jpg" alt="ELK日志系统架构图"><br></center>
+
+<blockquote>
+<p>这里将会用三台服务器来模拟一个简单的集群环境</p>
+</blockquote>
+<p>ElasticSearch集群</p>
+<ul>
+<li>服务器节点<ul>
+<li>【主节点】10.47.45.66(内)</li>
+<li>【数据节点】10.30.70.120(内)</li>
+<li>【数据节点】10.47.45.32(内)</li>
+</ul>
+</li>
+<li>将要安装的软件或插件<ul>
+<li>ElasticSearch</li>
+<li>ElasticSearch x-pack插件</li>
+</ul>
+</li>
+</ul>
+<p>Kibana</p>
+<ul>
+<li>服务器节点<ul>
+<li>10.47.45.66(内)</li>
+</ul>
+</li>
+<li>将要安装的软件或插件<ul>
+<li>Nginx（提供前端代理）</li>
+<li>Kibana（提供Kibana UI）</li>
+<li>Kibana x-pack插件</li>
+</ul>
+</li>
+</ul>
+<p>Logstash</p>
+<ul>
+<li>服务器节点<ul>
+<li>10.47.45.32(内)</li>
+</ul>
+</li>
+<li>将要安装的软件或插件<ul>
+<li>Apache(模拟产生访问日志)</li>
+<li>Logstash</li>
+<li>beats</li>
+</ul>
+</li>
+</ul>
+<h3 id="具体安装与配置过程"><a href="#具体安装与配置过程" class="headerlink" title="具体安装与配置过程"></a>具体安装与配置过程</h3><ol>
+<li>JDK（所有节点）的安装与配置</li>
+<li>ElasticSearch 的安装与配置</li>
+<li>Kibana 的安装与配置</li>
+<li>Nginx 的安装与配置</li>
+<li>Logstash 的安装与配置</li>
+<li>Apache、beats 的安装与配置</li>
+<li>验证</li>
+</ol>
+<h4 id="JDK-8-的安装与配置"><a href="#JDK-8-的安装与配置" class="headerlink" title="JDK 8 的安装与配置"></a>JDK 8 的安装与配置</h4><blockquote>
+<p>安装范围：所有节点</p>
+</blockquote>
+<p>Elasticsearch 5.3对Java的版本至少是 Java 8.<br>查看当前的Java 版本,及 JAVA_HOME 环境变量的设置：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">java -version</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$JAVA_HOME</span></span><br></pre></td></tr></table></figure></p>
+<p>如果没有安装，或版本不满足，则需要安装并配置</p>
+<p>下载解压<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz?AuthParam=1492857236_f012353e60ed757db930682d071feefc -O jdk-8u131-linux-x64.tar.gz</span><br><span class="line">tar -zxf jdk-8u131-linux-x64.tar.gz</span><br><span class="line">mv jdk1.8.0_131 /usr/<span class="built_in">local</span>/</span><br></pre></td></tr></table></figure></p>
+<p>配置环境变量<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/bashrc</span><br></pre></td></tr></table></figure></p>
+<p>在文件底部追加下面两行<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> JAVA_HOME=/usr/<span class="built_in">local</span>/jdk1.8.0_131</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:<span class="variable">$JAVA_HOME</span>/bin</span><br></pre></td></tr></table></figure></p>
+<p>加载，使之生效<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> /etc/bashrc</span><br></pre></td></tr></table></figure></p>
+<p>测试<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">java -version</span><br><span class="line">java version <span class="string">"1.8.0_131"</span></span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_131-b11)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.131-b11, mixed mode)</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$JAVA_HOME</span></span><br><span class="line">/usr/<span class="built_in">local</span>/jdk1.8.0_131</span><br></pre></td></tr></table></figure></p>
+<h4 id="ElasticSearch-的安装与配置"><a href="#ElasticSearch-的安装与配置" class="headerlink" title="ElasticSearch 的安装与配置"></a>ElasticSearch 的安装与配置</h4><blockquote>
+<p>在三台ElasticSearch节点上分别安装，并按照节点的类型，分别修改相应配置</p>
+</blockquote>
+<h5 id="下载并解压-Elasticsearch"><a href="#下载并解压-Elasticsearch" class="headerlink" title="下载并解压 Elasticsearch"></a>下载并解压 Elasticsearch</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.zip</span><br><span class="line">unzip elasticsearch-5.3.0.zip</span><br><span class="line">mv elasticsearch-5.3.0 /usr/<span class="built_in">local</span>/</span><br></pre></td></tr></table></figure>
+<p>Elasticsearch 的目录结构如下：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── bin</span><br><span class="line">│   ├── elasticsearch</span><br><span class="line">│   ├── elasticsearch.bat</span><br><span class="line">│   ├── elasticsearch.in.bat</span><br><span class="line">│   ├── elasticsearch.in.sh</span><br><span class="line">│   ├── elasticsearch-keystore</span><br><span class="line">│   ├── elasticsearch-keystore.bat</span><br><span class="line">│   ├── elasticsearch-plugin</span><br><span class="line">│   ├── elasticsearch-plugin.bat</span><br><span class="line">│   ├── elasticsearch-service.bat</span><br><span class="line">│   ├── elasticsearch-service-mgr.exe</span><br><span class="line">│   ├── elasticsearch-service-x64.exe</span><br><span class="line">│   ├── elasticsearch-service-x86.exe</span><br><span class="line">│   ├── elasticsearch-systemd-pre-exec</span><br><span class="line">│   ├── elasticsearch-translog</span><br><span class="line">│   └── elasticsearch-translog.bat</span><br><span class="line">├── config</span><br><span class="line">│   ├── elasticsearch.yml</span><br><span class="line">│   ├── jvm.options</span><br><span class="line">│   └── log4j2.properties</span><br><span class="line">├── lib</span><br><span class="line">│   ├── elasticsearch-5.3.0.jar</span><br><span class="line">│   ├── HdrHistogram-2.1.6.jar</span><br><span class="line">│   ├── hppc-0.7.1.jar</span><br><span class="line">│   ├── jackson-core-2.8.6.jar</span><br><span class="line">│   ├── jackson-dataformat-cbor-2.8.6.jar</span><br><span class="line">│   ├── jackson-dataformat-smile-2.8.6.jar</span><br><span class="line">│   ├── jackson-dataformat-yaml-2.8.6.jar</span><br><span class="line">│   ├── java-version-checker-5.3.0.jar</span><br><span class="line">│   ├── jna-4.2.2.jar</span><br><span class="line">│   ├── joda-time-2.9.5.jar</span><br><span class="line">│   ├── jopt-simple-5.0.2.jar</span><br><span class="line">│   ├── jts-1.13.jar</span><br><span class="line">│   ├── log4j-1.2-api-2.7.jar</span><br><span class="line">│   ├── log4j-api-2.7.jar</span><br><span class="line">│   ├── log4j-core-2.7.jar</span><br><span class="line">│   ├── lucene-analyzers-common-6.4.1.jar</span><br><span class="line">│   ├── lucene-backward-codecs-6.4.1.jar</span><br><span class="line">│   ├── lucene-core-6.4.1.jar</span><br><span class="line">│   ├── lucene-grouping-6.4.1.jar</span><br><span class="line">│   ├── lucene-highlighter-6.4.1.jar</span><br><span class="line">│   ├── lucene-join-6.4.1.jar</span><br><span class="line">│   ├── lucene-memory-6.4.1.jar</span><br><span class="line">│   ├── lucene-misc-6.4.1.jar</span><br><span class="line">│   ├── lucene-queries-6.4.1.jar</span><br><span class="line">│   ├── lucene-queryparser-6.4.1.jar</span><br><span class="line">│   ├── lucene-sandbox-6.4.1.jar</span><br><span class="line">│   ├── lucene-spatial3d-6.4.1.jar</span><br><span class="line">│   ├── lucene-spatial-6.4.1.jar</span><br><span class="line">│   ├── lucene-spatial-extras-6.4.1.jar</span><br><span class="line">│   ├── lucene-suggest-6.4.1.jar</span><br><span class="line">│   ├── securesm-1.1.jar</span><br><span class="line">│   ├── snakeyaml-1.15.jar</span><br><span class="line">│   ├── spatial4j-0.6.jar</span><br><span class="line">│   └── t-digest-3.0.jar</span><br><span class="line">├── LICENSE.txt</span><br><span class="line">├── modules</span><br><span class="line">│   ├── aggs-matrix-stats</span><br><span class="line">│   ├── ingest-common</span><br><span class="line">│   ├── lang-expression</span><br><span class="line">│   ├── lang-groovy</span><br><span class="line">│   ├── lang-mustache</span><br><span class="line">│   ├── lang-painless</span><br><span class="line">│   ├── percolator</span><br><span class="line">│   ├── reindex</span><br><span class="line">│   ├── transport-netty3</span><br><span class="line">│   └── transport-netty4</span><br><span class="line">├── NOTICE.txt</span><br><span class="line">├── plugins</span><br><span class="line">└── README.textile</span><br></pre></td></tr></table></figure></p>
+<h5 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h5><p>ElasticSearch默认有三个配置文件：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">config/</span><br><span class="line">├── elasticsearch.yml <span class="comment"># 基本配置</span></span><br><span class="line">├── jvm.options       <span class="comment"># java虚拟机的相关配置</span></span><br><span class="line">└── log4j2.properties <span class="comment"># 日志相关配置</span></span><br></pre></td></tr></table></figure></p>
+<p>elasticsearch了配置文件示例<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ======================== Elasticsearch Configuration =========================</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># <span class="doctag">NOTE:</span> Elasticsearch comes with reasonable defaults for most settings.</span></span><br><span class="line"><span class="comment">#       Before you set out to tweak and tune the configuration, make sure you</span></span><br><span class="line"><span class="comment">#       understand what are you trying to accomplish and the consequences.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># The primary way of configuring a node is via this file. This template lists</span></span><br><span class="line"><span class="comment"># the most important settings you may want to configure for a production cluster.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Please consult the documentation for further information on configuration options:</span></span><br><span class="line"><span class="comment"># https://www.elastic.co/guide/en/elasticsearch/reference/index.html</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># ---------------------------------- Cluster -----------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Use a descriptive name for your cluster:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#cluster.name: my-application</span></span><br><span class="line"><span class="string">cluster.name:</span> <span class="string">zhimiao-app</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># ------------------------------------ Node ------------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Use a descriptive name for the node:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#node.name: node-1</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Add custom attributes to the node:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#node.attr.rack: r1</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"></span><br><span class="line"><span class="string">node.master:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="string">node.data:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ----------------------------------- Paths ------------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Path to directory where to store the data (separate multiple locations by comma):</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#path.data: /path/to/data</span></span><br><span class="line"><span class="string">path.data:</span> <span class="string">/data/elasticData</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Path to log files:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#path.logs: /path/to/logs</span></span><br><span class="line"><span class="string">path.logs:</span> <span class="string">/data/logs</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># ----------------------------------- Memory -----------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Lock the memory on startup:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#bootstrap.memory_lock: true</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Make sure that the heap size is set to about half the memory available</span></span><br><span class="line"><span class="comment"># on the system and that the owner of the process is allowed to use this</span></span><br><span class="line"><span class="comment"># limit.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Elasticsearch performs poorly when the system is swapping the memory.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># ---------------------------------- Network -----------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Set the bind address to a specific IP (IPv4 or IPv6):</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#network.host: 192.168.0.1</span></span><br><span class="line"><span class="string">network.host:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Set a custom port for HTTP:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#http.port: 9200</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># For more information, consult the network module documentation.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># --------------------------------- Discovery ----------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Pass an initial list of hosts to perform discovery when new node is started:</span></span><br><span class="line"><span class="comment"># The default list of hosts is ["127.0.0.1", "[::1]"]</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#discovery.zen.ping.unicast.hosts: ["host1", "host2"]</span></span><br><span class="line"><span class="string">discovery.zen.ping.unicast.hosts:</span> <span class="string">["10.47.45.66",</span> <span class="string">"10.30.70.120"</span><span class="string">,"10.47.45.32"]</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Prevent the "split brain" by configuring the majority of nodes (total number of master-eligible nodes / 2 + 1):</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#discovery.zen.minimum_master_nodes: 3</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># For more information, consult the zen discovery module documentation.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># ---------------------------------- Gateway -----------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Block initial recovery after a full cluster restart until N nodes are started:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#gateway.recover_after_nodes: 3</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># For more information, consult the gateway module documentation.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># ---------------------------------- Various -----------------------------------</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Require explicit names when deleting indices:</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#action.destructive_requires_name: true</span></span><br></pre></td></tr></table></figure></p>
+<p>关于配置的几点简单说明</p>
+<ul>
+<li>cluster.name ，集群的名称标识将会被用于群集的自动发现。如果在同一个网络上的正在运行多个群集，则需要确保该集群的所有节点上使用的是相同的名称。</li>
+<li>node.master ，允许此节点可以作为主节点（默认启用）。</li>
+<li>node.data ， 允许此节点可以用来存储数据（默认启用）。</li>
+<li>path.data ， 索引数据存储的路径，可以配置多个位置</li>
+<li>path.logs ， 日志文件路径</li>
+<li>discovery.zen.ping.unicast.hosts ， 集群的初始清单</li>
+</ul>
+<p>ElasticSearch 集群角色规划</p>
+<ul>
+<li><p>如果想让这个节点只能作为ElasticSearch集群的主节点，而不存储数据，则应该这样配置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="string">node.master:</span> <span class="literal">true</span></span><br><span class="line"><span class="string">node.data:</span> <span class="literal">false</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果希望这个节点只作为数据节点，而不会成为主节点，则应该这样配置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="string">node.master:</span> <span class="literal">false</span></span><br><span class="line"><span class="string">node.data:</span> <span class="literal">true</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果希望这个节点既不是不是主节点，又不是数据节点，而是充当“搜索负载平衡器”（取从节点的数据，聚集结果等），则可以这样配置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="string">node.master:</span> <span class="literal">false</span></span><br><span class="line"><span class="string">node.data:</span> <span class="literal">false</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h5 id="安装x-pack插件"><a href="#安装x-pack插件" class="headerlink" title="安装x-pack插件"></a>安装x-pack插件</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ sudo /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch-plugin  install x-pack</span><br><span class="line"> [=================================================] 100%  </span><br><span class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><br><span class="line">@     WARNING: plugin requires additional permissions     @</span><br><span class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><br><span class="line">* java.lang.RuntimePermission accessClassInPackage.com.sun.activation.registries</span><br><span class="line">* java.lang.RuntimePermission getClassLoader</span><br><span class="line">* java.lang.RuntimePermission setContextClassLoader</span><br><span class="line">* java.lang.RuntimePermission setFactory</span><br><span class="line">* java.security.SecurityPermission createPolicy.JavaPolicy</span><br><span class="line">* java.security.SecurityPermission getPolicy</span><br><span class="line">* java.security.SecurityPermission putProviderProperty.BC</span><br><span class="line">* java.security.SecurityPermission setPolicy</span><br><span class="line">* java.util.PropertyPermission * <span class="built_in">read</span>,write</span><br><span class="line">* java.util.PropertyPermission sun.nio.ch.bugLevel write</span><br><span class="line">* javax.net.ssl.SSLPermission setHostnameVerifier</span><br><span class="line">See http://docs.oracle.com/javase/8/docs/technotes/guides/security/permissions.html</span><br><span class="line"><span class="keyword">for</span> descriptions of what these permissions allow and the associated risks.</span><br><span class="line"></span><br><span class="line">Continue with installation? [y/N]y</span><br><span class="line">-&gt; Installed x-pack</span><br></pre></td></tr></table></figure>
+<p>x-pack插件的安装需要在线下载安装包，所以对于网络环境比较差或者一些离线的服务器，可以离线下载 x-pack 安装包，来手动指定。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">$ wget  https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.3.0ll.zip</span><br><span class="line"></span><br><span class="line">$ sudo /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch-plugin  install file:///home/datanode/x-pack-5.3.0.zip</span><br><span class="line">-&gt; Downloading file:///root/x-pack-5.3.0.zip</span><br><span class="line">[=================================================] 100%  </span><br><span class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><br><span class="line">@     WARNING: plugin requires additional permissions     @</span><br><span class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><br><span class="line">* java.lang.RuntimePermission accessClassInPackage.com.sun.activation.registries</span><br><span class="line">* java.lang.RuntimePermission getClassLoader</span><br><span class="line">* java.lang.RuntimePermission setContextClassLoader</span><br><span class="line">* java.lang.RuntimePermission setFactory</span><br><span class="line">* java.security.SecurityPermission createPolicy.JavaPolicy</span><br><span class="line">* java.security.SecurityPermission getPolicy</span><br><span class="line">* java.security.SecurityPermission putProviderProperty.BC</span><br><span class="line">* java.security.SecurityPermission setPolicy</span><br><span class="line">* java.util.PropertyPermission * <span class="built_in">read</span>,write</span><br><span class="line">* java.util.PropertyPermission sun.nio.ch.bugLevel write</span><br><span class="line">* javax.net.ssl.SSLPermission setHostnameVerifier</span><br><span class="line">See http://docs.oracle.com/javase/8/docs/technotes/guides/security/permissions.html</span><br><span class="line"><span class="keyword">for</span> descriptions of what these permissions allow and the associated risks.</span><br><span class="line"></span><br><span class="line">Continue with installation? [y/N]y</span><br><span class="line">-&gt; Installed x-pack</span><br></pre></td></tr></table></figure>
+<h5 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch -d</span><br></pre></td></tr></table></figure>
+<h5 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h5><ol>
+<li><p>查看端口</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ netstat -tlun</span><br><span class="line">Active Internet connections (only servers)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State      </span><br><span class="line">tcp        0      0 127.0.0.1:9200          0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 127.0.0.1:9300          0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     </span><br><span class="line">udp        0      0 47.90.15.84:123         0.0.0.0:*                          </span><br><span class="line">udp        0      0 10.27.46.180:123        0.0.0.0:*                          </span><br><span class="line">udp        0      0 127.0.0.1:123           0.0.0.0:*                          </span><br><span class="line">udp        0      0 0.0.0.0:123             0.0.0.0:*                          </span><br><span class="line">udp6       0      0 :::123                  :::*</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用REST API</p>
+<blockquote>
+<p>由于我们已经安装x-pack，所以在使用 REST API 进行请求的时候需要加上认证信息。默认：</p>
+<ul>
+<li>用户名为：<code>elastic</code></li>
+</ul>
+<ul>
+<li>密码为：<code>changeme</code></li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://localhost:9200 -u elastic</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"name"</span> : <span class="string">"E0QjUN9"</span>,</span><br><span class="line">  <span class="string">"cluster_name"</span> : <span class="string">"elasticsearch"</span>,</span><br><span class="line">  <span class="string">"cluster_uuid"</span> : <span class="string">"oSsjMVpETViMkzUCf110Cw"</span>,</span><br><span class="line">  <span class="string">"version"</span> : &#123;</span><br><span class="line">    <span class="string">"number"</span> : <span class="string">"5.3.0"</span>,</span><br><span class="line">    <span class="string">"build_hash"</span> : <span class="string">"3adb13b"</span>,</span><br><span class="line">    <span class="string">"build_date"</span> : <span class="string">"2017-03-23T03:31:50.652Z"</span>,</span><br><span class="line">    <span class="string">"build_snapshot"</span> : <span class="literal">false</span>,</span><br><span class="line">    <span class="string">"lucene_version"</span> : <span class="string">"6.4.1"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"tagline"</span> : <span class="string">"You Know, for Search"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="ElasticSearch的简单管理"><a href="#ElasticSearch的简单管理" class="headerlink" title="ElasticSearch的简单管理"></a>ElasticSearch的简单管理</h5><p>启动<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ /usr/<span class="built_in">local</span>/elasticsearch-5.3.0/bin/elasticsearch  -d</span><br></pre></td></tr></table></figure></p>
+<p>设置开机自启动<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">"/usr/local/elasticsearch-5.3.0/bin/elasticsearch -d"</span> &gt; /etc/rc.local</span><br></pre></td></tr></table></figure></p>
+<p>如何关闭elasticsearch</p>
+<ul>
+<li>方法一：如果节点与控制台相连并且当前elasticsearch是使用-f选项运行，则只需要按下Ctrl+C组合键即可</li>
+<li>方法二：通过发送TERM信号来终止服务器进程 kill -9 进程ID</li>
+<li>方法三：使用REST API</li>
+</ul>
+<p>前两种就不说了，简单说一下第三种，</p>
+<ul>
+<li><p>关闭整个集群</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPOST http://localhost:9200/_cluster/nodes/_shutdown -u elastic</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>关闭单个节点</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPOST  http://127.0.0.1:9200/_cluster/nodes/2ens0yuEQ12G6ct1UDpihQ/_shutdown -u elastic</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<blockquote>
+<p>2ens0yuEQ12G6ct1UDpihQ ，为要关闭的节点标志符<br>-<br>查看节点标志符，可以从elasticsearch日志中或者通过REST API中获得<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">curl http://localhost:9200/_nodes/?pretty -u elastic</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"cluster_name"</span> : <span class="string">"elasticsearch"</span>,</span><br><span class="line">  <span class="string">"nodes"</span> : &#123;</span><br><span class="line">    <span class="string">"13QfvIdATEurGAhVAlO6tQ"</span> : &#123;</span><br><span class="line">      <span class="string">"name"</span> : <span class="string">"Edwin Jarvis"</span>,</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h5 id="安装或者启动时可能会遇到的问题列表："><a href="#安装或者启动时可能会遇到的问题列表：" class="headerlink" title="安装或者启动时可能会遇到的问题列表："></a>安装或者启动时可能会遇到的问题列表：</h5><ol>
+<li>can not run elasticsearch as root</li>
+</ol>
+<p>解决：新建一个专门运行和管理ElasticSearch 的用户。切换到该用户下重新运行。</p>
+<ol start="2">
+<li>max file descriptors [65535] for elasticsearch process is too low, increase to at least [65536]</li>
+</ol>
+<p>解决：切换到root用户，编辑limits.conf 添加类似如下内容<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/security/limits.conf</span><br></pre></td></tr></table></figure></p>
+<p>修改文件末尾如下内容:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">* soft nofile 655350</span><br><span class="line">* hard nofile 655350</span><br></pre></td></tr></table></figure></p>
+<p>然后切换回用户，使用<code>ulimit -a</code> 查看是否已经更改(对应的是<code>open file</code> 选项)</p>
+<ol start="3">
+<li>max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]</li>
+</ol>
+<p>解决：切换到root用户修改配置sysctl.conf<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysctl.conf</span><br></pre></td></tr></table></figure></p>
+<p>添加下面配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm.max_map_count=655300</span><br></pre></td></tr></table></figure></p>
+<p>并执行命令：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sysctl -p</span><br></pre></td></tr></table></figure></p>
+<p>然后，切换回用户，重新运行 ElasticSearch</p>
+<h4 id="Kibana-的安装与配置"><a href="#Kibana-的安装与配置" class="headerlink" title="Kibana 的安装与配置"></a>Kibana 的安装与配置</h4><h5 id="下载并解压-Kibana"><a href="#下载并解压-Kibana" class="headerlink" title="下载并解压 Kibana"></a>下载并解压 Kibana</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://artifacts.elastic.co/downloads/kibana/kibana-5.3.0-linux-x86_64.tar.gz</span><br><span class="line">$ tar -zxf kibana-5.3.0-linux-x86_64.tar.gz</span><br><span class="line">sudo mv kibana-5.3.0-linux-x86_64 /usr/<span class="built_in">local</span>/</span><br></pre></td></tr></table></figure>
+<h5 id="安装-x-pack-插件"><a href="#安装-x-pack-插件" class="headerlink" title="安装 x-pack 插件"></a>安装 x-pack 插件</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kibana-plugin  install x-pack</span><br></pre></td></tr></table></figure>
+<p>离线安装</p>
+<p>同ElasticSearch 的x-pack插件一样，在安装时需要在线下载安装包，所以对于网络环境比较差或者一些离线的服务器，也需要离线下载 x-pack 安装包，来手动指定。</p>
+<blockquote>
+<p>Elasticsearch，Kibana和Logstash的插件都包含在同一个zip文件中,即 之前下载过的 x-pack-5.3.0ll.zip</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo /usr/<span class="built_in">local</span>/kibana-5.3.0-linux-x86_64/bin/kibana-plugin  install file:///home/datanode/x-pack-5.3.0.zip</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>安装过程可能会比较长（请耐心等待）…</p>
+</blockquote>
+<h5 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> /usr/<span class="built_in">local</span>/kibana-5.3.0-linux-x86_64</span><br><span class="line">$ vi config/kibana.yml</span><br></pre></td></tr></table></figure>
+<p>kibana.yml 示例<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Kibana is served by a back end server. This setting specifies the port to use.</span></span><br><span class="line"><span class="comment">#server.port: 5601</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Specifies the address to which the Kibana server will bind. IP addresses and host names are both valid values.</span></span><br><span class="line"><span class="comment"># The default is 'localhost', which usually means remote machines will not be able to connect.</span></span><br><span class="line"><span class="comment"># To allow connections from remote users, set this parameter to a non-loopback address.</span></span><br><span class="line"><span class="comment">#server.host: "127.0.0.1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Enables you to specify a path to mount Kibana at if you are running behind a proxy. This only affects</span></span><br><span class="line"><span class="comment"># the URLs generated by Kibana, your proxy is expected to remove the basePath value before forwarding requests</span></span><br><span class="line"><span class="comment"># to Kibana. This setting cannot end in a slash.</span></span><br><span class="line"><span class="comment">#server.basePath: ""</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The maximum payload size in bytes for incoming server requests.</span></span><br><span class="line"><span class="comment">#server.maxPayloadBytes: 1048576</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The Kibana server's name.  This is used for display purposes.</span></span><br><span class="line"><span class="comment">#server.name: "your-hostname"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The URL of the Elasticsearch instance to use for all your queries.</span></span><br><span class="line"><span class="string">elasticsearch.url:</span> <span class="string">"http://10.30.70.120:9200"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># When this setting's value is true Kibana uses the hostname specified in the server.host</span></span><br><span class="line"><span class="comment"># setting. When the value of this setting is false, Kibana uses the hostname of the host</span></span><br><span class="line"><span class="comment"># that connects to this Kibana instance.</span></span><br><span class="line"><span class="comment">#elasticsearch.preserveHost: true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Kibana uses an index in Elasticsearch to store saved searches, visualizations and</span></span><br><span class="line"><span class="comment"># dashboards. Kibana creates a new index if the index doesn't already exist.</span></span><br><span class="line"><span class="comment">#kibana.index: ".kibana"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The default application to load.</span></span><br><span class="line"><span class="comment">#kibana.defaultAppId: "discover"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If your Elasticsearch is protected with basic authentication, these settings provide</span></span><br><span class="line"><span class="comment"># the username and password that the Kibana server uses to perform maintenance on the Kibana</span></span><br><span class="line"><span class="comment"># index at startup. Your Kibana users still need to authenticate with Elasticsearch, which</span></span><br><span class="line"><span class="comment"># is proxied through the Kibana server.</span></span><br><span class="line"><span class="comment">#elasticsearch.username: "user"</span></span><br><span class="line"><span class="comment">#elasticsearch.password: "pass"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Enables SSL and paths to the PEM-format SSL certificate and SSL key files, respectively.</span></span><br><span class="line"><span class="comment"># These settings enable SSL for outgoing requests from the Kibana server to the browser.</span></span><br><span class="line"><span class="comment">#server.ssl.enabled: false</span></span><br><span class="line"><span class="comment">#server.ssl.certificate: /path/to/your/server.crt</span></span><br><span class="line"><span class="comment">#server.ssl.key: /path/to/your/server.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Optional settings that provide the paths to the PEM-format SSL certificate and key files.</span></span><br><span class="line"><span class="comment"># These files validate that your Elasticsearch backend uses the same key files.</span></span><br><span class="line"><span class="comment">#elasticsearch.ssl.certificate: /path/to/your/client.crt</span></span><br><span class="line"><span class="comment">#elasticsearch.ssl.key: /path/to/your/client.key</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Optional setting that enables you to specify a path to the PEM file for the certificate</span></span><br><span class="line"><span class="comment"># authority for your Elasticsearch instance.</span></span><br><span class="line"><span class="comment">#elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># To disregard the validity of SSL certificates, change this setting's value to 'none'.</span></span><br><span class="line"><span class="comment">#elasticsearch.ssl.verificationMode: full</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Time in milliseconds to wait for Elasticsearch to respond to pings. Defaults to the value of</span></span><br><span class="line"><span class="comment"># the elasticsearch.requestTimeout setting.</span></span><br><span class="line"><span class="comment">#elasticsearch.pingTimeout: 1500</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Time in milliseconds to wait for responses from the back end or Elasticsearch. This value</span></span><br><span class="line"><span class="comment"># must be a positive integer.</span></span><br><span class="line"><span class="comment">#elasticsearch.requestTimeout: 30000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># List of Kibana client-side headers to send to Elasticsearch. To send *no* client-side</span></span><br><span class="line"><span class="comment"># headers, set this value to [] (an empty list).</span></span><br><span class="line"><span class="comment">#elasticsearch.requestHeadersWhitelist: [ authorization ]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Header names and values that are sent to Elasticsearch. Any custom headers cannot be overwritten</span></span><br><span class="line"><span class="comment"># by client-side headers, regardless of the elasticsearch.requestHeadersWhitelist configuration.</span></span><br><span class="line"><span class="comment">#elasticsearch.customHeaders: &#123;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Time in milliseconds for Elasticsearch to wait for responses from shards. Set to 0 to disable.</span></span><br><span class="line"><span class="comment">#elasticsearch.shardTimeout: 0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Time in milliseconds to wait for Elasticsearch at Kibana startup before retrying.</span></span><br><span class="line"><span class="comment">#elasticsearch.startupTimeout: 5000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Specifies the path where Kibana creates the process ID file.</span></span><br><span class="line"><span class="comment">#pid.file: /var/run/kibana.pid</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Enables you specify a file where Kibana stores log output.</span></span><br><span class="line"><span class="comment">#logging.dest: stdout</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set the value of this setting to true to suppress all logging output.</span></span><br><span class="line"><span class="comment">#logging.silent: false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set the value of this setting to true to suppress all logging output other than error messages.</span></span><br><span class="line"><span class="comment">#logging.quiet: false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set the value of this setting to true to log all events, including system usage information</span></span><br><span class="line"><span class="comment"># and all requests.</span></span><br><span class="line"><span class="comment">#logging.verbose: false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set the interval in milliseconds to sample system and process performance</span></span><br><span class="line"><span class="comment"># metrics. Minimum is 100ms. Defaults to 5000.</span></span><br><span class="line"><span class="comment">#ops.interval: 5000</span></span><br></pre></td></tr></table></figure></p>
+<p>配置文件简单说明</p>
+<ul>
+<li><p><code>server.host</code> , 配置Kibana服务器绑定地址。IP地址或者域名</p>
+<blockquote>
+<p>默认是 “localhost”。远程用户无法连接。如果需要通过网络进行直接访问，则需要将该参数设置为非环回地址。</p>
+<p>这里我将它设置为 “127.0.0.1”，即表示远程用户无法直接访问，需要通过之后安装配置的Nginx进行代理访问。</p>
+</blockquote>
+</li>
+<li><p><code>elasticsearch.url</code> , 指向 Elasticsearch 实例</p>
+</li>
+</ul>
+<h5 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nohup /usr/<span class="built_in">local</span>/kibana-5.3.0-linux-x86_64/bin/kibana &amp;</span><br></pre></td></tr></table></figure>
+<p>查看是否已经运行<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps aux | grep kiba</span><br></pre></td></tr></table></figure></p>
+<p>或<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ netstat -tlun | grep 5601</span><br><span class="line">tcp        0      0 127.0.0.1:5601          0.0.0.0:*               LISTEN</span><br></pre></td></tr></table></figure></p>
+<h4 id="Nginx-的安装与配置"><a href="#Nginx-的安装与配置" class="headerlink" title="Nginx 的安装与配置"></a>Nginx 的安装与配置</h4><p>安装<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># yum install nginx -y</span></span><br></pre></td></tr></table></figure></p>
+<p>验证<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># nginx -t</span></span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br></pre></td></tr></table></figure></p>
+<p>添加配置<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># vi /etc/nginx/conf.d/kibana.conf</span></span><br></pre></td></tr></table></figure></p>
+<p>kibana.conf 示例<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name 47.90.15.84;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://127.0.0.1:5601;</span><br><span class="line">        proxy_http_version 1.1;</span><br><span class="line">        proxy_set_header Upgrade $http_upgrade;</span><br><span class="line">        proxy_set_header Connection 'upgrade';</span><br><span class="line">        proxy_set_header Host $host;</span><br><span class="line">        proxy_cache_bypass $http_upgrade;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>启动 Nginx<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># nginx</span><br></pre></td></tr></table></figure></p>
+<p>验证</p>
+<p>浏览器打开 <code>http://47.90.15.84</code>，能看到登录界面，则说明配置成功</p>
+<center><br><img src="http://wx1.sinaimg.cn/mw690/8e242e12ly1fevxyyb4rej21kw0zk0v4.jpg" alt="登录页面"><br></center>
+
+<blockquote>
+<p>默认账号</p>
+<ul>
+<li>username: elastic</li>
+<li>password: changeme</li>
+</ul>
+</blockquote>
+<h4 id="Logstash-的安装与配置"><a href="#Logstash-的安装与配置" class="headerlink" title="Logstash 的安装与配置"></a>Logstash 的安装与配置</h4><h5 id="下载并解压-Logstash"><a href="#下载并解压-Logstash" class="headerlink" title="下载并解压 Logstash"></a>下载并解压 Logstash</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># wget https://artifacts.elastic.co/downloads/logstash/logstash-5.3.0.zip</span><br><span class="line"># unzip logstash-5.3.0.zip</span><br><span class="line"># mv logstash-5.3.0 /usr/local/</span><br></pre></td></tr></table></figure>
+<h5 id="测试-Logstash"><a href="#测试-Logstash" class="headerlink" title="测试 Logstash"></a>测试 Logstash</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/logstash-5.3.0</span><br><span class="line">bin/logstash -e &apos;input &#123; stdin &#123; &#125; &#125; output &#123; stdout &#123;&#125; &#125;&apos;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>-e 选项表示直接从命令行指定配置</p>
+</blockquote>
+<p>待 Logstash 启动， 看到 “Pipeline main started” ，在命令行中输入 “hello logstash”，将会看到<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hello logstash</span><br><span class="line">2017-04-22T17:19:31.051Z iZj6c1rlufgkgsimhzuumaZ hello logstash</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>Logstash 将时间戳和主机名添加到了消息中</p>
+</blockquote>
+<h5 id="添加一个-Logstash-配置文件，将我们上面安装的Nginx-的访问日志作为input，输出到-ElasticSearch-中"><a href="#添加一个-Logstash-配置文件，将我们上面安装的Nginx-的访问日志作为input，输出到-ElasticSearch-中" class="headerlink" title="添加一个 Logstash 配置文件，将我们上面安装的Nginx 的访问日志作为input，输出到 ElasticSearch 中"></a>添加一个 Logstash 配置文件，将我们上面安装的Nginx 的访问日志作为input，输出到 ElasticSearch 中</h5><p>Nginx 访问日志的位置：<code>/var/log/nginx/access.log</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi first-pipeline.conf</span><br></pre></td></tr></table></figure>
+<p>first-pipeline.conf 示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">  file &#123;</span><br><span class="line">    path =&gt; &quot;/var/log/nginx/access.log&quot;</span><br><span class="line">    type =&gt; &quot;nginx&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">filter &#123;</span><br><span class="line">    grok &#123;</span><br><span class="line">        match =&gt; &#123; &quot;message&quot; =&gt; &quot;%&#123;COMBINEDAPACHELOG&#125;&quot;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    geoip &#123;</span><br><span class="line">        source =&gt; &quot;clientip&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">output &#123;</span><br><span class="line">    #stdout &#123; codec =&gt; rubydebug &#125;</span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">        hosts =&gt; [&quot;10.30.70.120:9200&quot;,&quot;10.47.45.32:9200&quot;]</span><br><span class="line">        user =&gt; &quot;elastic&quot;</span><br><span class="line">        password =&gt; &quot;changeme&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>配置文件简析</p>
+<ul>
+<li><p>input 区块</p>
+<blockquote>
+<p>使用了 input 的file 插件， 该插件跟踪 path 路径下的文件变化，并将数据读取到 Logstash。</p>
+</blockquote>
+</li>
+<li><p>filter 区块</p>
+<blockquote>
+<ul>
+<li>该区块应用了 grok 插件，会将非结构化的日志数据转化为可查询的结构化的数据</li>
+<li>geoip插件将IP地址转换为实际地址坐标信息</li>
+</ul>
+</blockquote>
+</li>
+<li><p>output区块</p>
+<blockquote>
+<ul>
+<li>该区块使用了 ElasticSearch 插件，直接将数据输出到 ElasticSearch集群中</li>
+<li>stdout插件则会直接将结果输出到控制台。（开发时将其打开，方便调试）</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h5 id="测试-amp-运行"><a href="#测试-amp-运行" class="headerlink" title="测试&amp;运行"></a>测试&amp;运行</h5><p>测试配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/logstash-5.3.0/bin/logstash -f first-pipeline.conf --config.test_and_exit</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>–config.test_and_exit , 测试我们编写的配置文件</li>
+</ul>
+<p>如果测试通过，用下面的命令启动 Logstash<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/logstash -f first-pipeline.conf --config.reload.automatic</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>–config.reload.automatic ,启用自动重新加载配置</li>
+</ul>
+<blockquote>
+<p>启用自动重新加载配置，之后每次修改配置文件时不必停止再重新启动Logstash。</p>
+</blockquote>
+<h5 id="验证-1"><a href="#验证-1" class="headerlink" title="验证"></a>验证</h5><p>浏览器打开 <code>http://47.90.15.84</code> ，登录 Kibana</p>
+<p>添加“<code>logstash-*</code>” 索引</p>
+<center><br><img src="http://wx3.sinaimg.cn/mw690/8e242e12ly1fewnxhoiqyj21hc0u0tdk.jpg" alt="添加索引"><br></center>
+
+<p>然后再 Discovery 中查看是否有数据被写入</p>
+<center><br><img src="http://wx1.sinaimg.cn/mw690/8e242e12ly1few1y2tl0uj21h30prtfm.jpg" alt="验证效果"><br></center>
+
+<h4 id="beats-的安装与配置"><a href="#beats-的安装与配置" class="headerlink" title="beats 的安装与配置"></a>beats 的安装与配置</h4><p>Beats是作为代理在服务器上安装的开源的 data shippers，能将各种不同类型的操作数据（如， wireData、LogFiles、Metrics、WinEvent）直接发送到 Elasticsearch，或者通过Logstash将其发送到Elasticsearch。我们可以使用它来解析和转换我们需要收集的各种数据。</p>
+<p>这里以 Metricbeat 为例，来监控我们想要监控的服务器。</p>
+<h5 id="步骤1：安装Metricbeat"><a href="#步骤1：安装Metricbeat" class="headerlink" title="步骤1：安装Metricbeat"></a>步骤1：安装Metricbeat</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -L -O https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-5.3.1-x86_64.rpm</span><br><span class="line">sudo  rpm -vi metricbeat-5.3.1-x86_64.rpm</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>yum 包管理工具安装：<a href="https://www.elastic.co/guide/en/beats/metricbeat/5.3/setup-repositories.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/beats/metricbeat/5.3/setup-repositories.html</a></p>
+</blockquote>
+<p>测试<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">metricbeat -version</span><br></pre></td></tr></table></figure></p>
+<h5 id="步骤2：配置Metricbeat"><a href="#步骤2：配置Metricbeat" class="headerlink" title="步骤2：配置Metricbeat"></a>步骤2：配置Metricbeat</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/metricbeat/metricbeat.yml</span><br></pre></td></tr></table></figure>
+<p>内容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">metricbeat.modules:</span><br><span class="line">- module: system</span><br><span class="line"> metricsets:</span><br><span class="line">   - cpu</span><br><span class="line">   - load</span><br><span class="line">   - core</span><br><span class="line">   - diskio</span><br><span class="line">   - filesystem</span><br><span class="line">   - fsstat</span><br><span class="line">   - memory</span><br><span class="line">   - network</span><br><span class="line">   - process</span><br><span class="line">   - socket</span><br><span class="line"> enabled: true</span><br><span class="line"> period: 10s</span><br><span class="line"> processes: [&apos;.*&apos;]</span><br><span class="line">- module: nginx</span><br><span class="line"> metricsets: [&quot;stubstatus&quot;]</span><br><span class="line"> enabled: true</span><br><span class="line"> period: 10s</span><br><span class="line"> hosts: [&quot;http://127.0.0.1&quot;]</span><br><span class="line"> server_status_path: &quot;NginxStatus&quot;</span><br><span class="line"></span><br><span class="line">output.elasticsearch:</span><br><span class="line"> hosts: [&quot;10.30.70.120:9200&quot;,&quot;10.47.45.32:9200&quot;]</span><br><span class="line"> username: &quot;elastic&quot;</span><br><span class="line"> password: &quot;changeme&quot;</span><br><span class="line"></span><br><span class="line">logging.level: debug</span><br></pre></td></tr></table></figure></p>
+<p>配置文件检查<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># metricbeat.sh -c metricbeat.yml  -configtest</span><br></pre></td></tr></table></figure></p>
+<p>显示 <code>Config OK</code> 则说明配置文件语法正确</p>
+<h5 id="第3步：加载索引模板Elasticsearch"><a href="#第3步：加载索引模板Elasticsearch" class="headerlink" title="第3步：加载索引模板Elasticsearch"></a>第3步：加载索引模板Elasticsearch</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -H &apos;Content-Type: application/json&apos; -XPUT &apos;http://10.30.70.120:9200/_template/metricbeat&apos; -d@/etc/metricbeat/metricbeat.template.json -u elastic:changeme</span><br></pre></td></tr></table></figure>
+<p>有如下显示则表示加载成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;acknowledged&quot;:true&#125;</span><br></pre></td></tr></table></figure></p>
+<h5 id="第4步：启动Metricbeat"><a href="#第4步：启动Metricbeat" class="headerlink" title="第4步：启动Metricbeat"></a>第4步：启动Metricbeat</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/metricbeat start</span><br></pre></td></tr></table></figure>
+<p>验证服务器的统计信息是否被正确的已经发送在Elasticsearch中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XGET &apos;http://10.30.70.120:9200/metricbeat-*/_search?pretty&apos; -u elastic:changeme</span><br></pre></td></tr></table></figure></p>
+<h5 id="第5步：导入Kibana仪表板模板"><a href="#第5步：导入Kibana仪表板模板" class="headerlink" title="第5步：导入Kibana仪表板模板"></a>第5步：导入Kibana仪表板模板</h5><p><code>Metricbeat</code>自带了 <code>scripts/import_dashboards</code> 导入工具，我们可以使用它来导入例如dashboards, visualizations。该脚本还会为Metricbeat创建<code>metricbeat-*</code> 索引。</p>
+<blockquote>
+<p>我们可以通过 scripts/import_dashboards 后跟相应的选项，来控制是否只导入 dashboards 或者 index。</p>
+<ul>
+<li><code>-only-index</code> , 只创建索引</li>
+<li><code>-only-dashboards</code> , 只导入 仪表盘</li>
+</ul>
+</blockquote>
+<p>由于我们采用的是 rpm包 安装的 Metricbeat，所以该脚本是在<code>/usr/share/metricbeat/</code> 下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># cd /usr/share/metricbeat/</span><br><span class="line"># ./scripts/import_dashboards -es http://10.30.70.120:9200 -user elastic -pass changeme</span><br><span class="line">Create temporary directory /tmp/tmp252960117</span><br><span class="line">Downloading https://artifacts.elastic.co/downloads/beats/beats-dashboards/beats-dashboards-5.3.0.zip</span><br><span class="line">Unzip archive /tmp/tmp252960117</span><br><span class="line">Importing Kibana from /tmp/tmp252960117/beats-dashboards-5.3.0/filebeat</span><br><span class="line">...</span><br><span class="line">Importing Kibana from /tmp/tmp252960117/beats-dashboards-5.3.0/packetbeat</span><br><span class="line">Importing Kibana from /tmp/tmp252960117/beats-dashboards-5.3.0/winlogbeat</span><br></pre></td></tr></table></figure>
+<p>导入之后，我们登录 Kibana 查看</p>
+<center><br><br><img src="http://wx2.sinaimg.cn/mw690/8e242e12ly1fewv6vsm41j21kw0fggr5.jpg" alt="img"><br><br><img src="http://wx1.sinaimg.cn/mw690/8e242e12ly1fewv89jhhdj21kw0w6wlv.jpg" alt="img"><br><br></center>
+
+<p>点击其中相应的 dashboard 我们就能查看到相应的参数。</p>
+<h4 id="over"><a href="#over" class="headerlink" title="over~"></a>over~</h4><p>到此，这个简单的日志分析系统的架构就算基本搭建出来了。</p>
+<p>对于搭建过程中遇到的其它问题和上述相关软件的使用，留待以后慢慢整理~~~~</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/" title="利用ELK搭建自己的日志分析系统">https://weizhimiao.github.io/2017/04/23/利用ELK搭建自己的日志分析系统/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ELK/" rel="tag"># ELK</a>
+          
+            <a href="/tags/Elasticsearch/" rel="tag"># Elasticsearch</a>
+          
+            <a href="/tags/Logstash/" rel="tag"># Logstash</a>
+          
+            <a href="/tags/Kibana/" rel="tag"># Kibana</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/29/浅谈Web客户端追踪/" rel="next" title="浅谈Web客户端追踪[转]">
+                <i class="fa fa-chevron-left"></i> 浅谈Web客户端追踪[转]
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/15/systemctl命令完全指南/" rel="prev" title="systemctl 命令完全指南">
+                systemctl 命令完全指南 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#ELK简介"><span class="nav-number">1.</span> <span class="nav-text">ELK简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Elasticsearch"><span class="nav-number">1.1.</span> <span class="nav-text">Elasticsearch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Logstash"><span class="nav-number">1.2.</span> <span class="nav-text">Logstash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kibana"><span class="nav-number">1.3.</span> <span class="nav-text">Kibana</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ELK-日志分析系统的搭建"><span class="nav-number">2.</span> <span class="nav-text">ELK 日志分析系统的搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备"><span class="nav-number">2.1.</span> <span class="nav-text">准备</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#服务器配置："><span class="nav-number">2.1.1.</span> <span class="nav-text">服务器配置：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用到的软件或文件"><span class="nav-number">2.1.2.</span> <span class="nav-text">用到的软件或文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#规划"><span class="nav-number">2.1.3.</span> <span class="nav-text">规划</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体安装与配置过程"><span class="nav-number">2.2.</span> <span class="nav-text">具体安装与配置过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JDK-8-的安装与配置"><span class="nav-number">2.2.1.</span> <span class="nav-text">JDK 8 的安装与配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ElasticSearch-的安装与配置"><span class="nav-number">2.2.2.</span> <span class="nav-text">ElasticSearch 的安装与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#下载并解压-Elasticsearch"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">下载并解压 Elasticsearch</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置"><span class="nav-number">2.2.2.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装x-pack插件"><span class="nav-number">2.2.2.3.</span> <span class="nav-text">安装x-pack插件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启动"><span class="nav-number">2.2.2.4.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#验证"><span class="nav-number">2.2.2.5.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ElasticSearch的简单管理"><span class="nav-number">2.2.2.6.</span> <span class="nav-text">ElasticSearch的简单管理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装或者启动时可能会遇到的问题列表："><span class="nav-number">2.2.2.7.</span> <span class="nav-text">安装或者启动时可能会遇到的问题列表：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Kibana-的安装与配置"><span class="nav-number">2.2.3.</span> <span class="nav-text">Kibana 的安装与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#下载并解压-Kibana"><span class="nav-number">2.2.3.1.</span> <span class="nav-text">下载并解压 Kibana</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装-x-pack-插件"><span class="nav-number">2.2.3.2.</span> <span class="nav-text">安装 x-pack 插件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置-1"><span class="nav-number">2.2.3.3.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#运行"><span class="nav-number">2.2.3.4.</span> <span class="nav-text">运行</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Nginx-的安装与配置"><span class="nav-number">2.2.4.</span> <span class="nav-text">Nginx 的安装与配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Logstash-的安装与配置"><span class="nav-number">2.2.5.</span> <span class="nav-text">Logstash 的安装与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#下载并解压-Logstash"><span class="nav-number">2.2.5.1.</span> <span class="nav-text">下载并解压 Logstash</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#测试-Logstash"><span class="nav-number">2.2.5.2.</span> <span class="nav-text">测试 Logstash</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#添加一个-Logstash-配置文件，将我们上面安装的Nginx-的访问日志作为input，输出到-ElasticSearch-中"><span class="nav-number">2.2.5.3.</span> <span class="nav-text">添加一个 Logstash 配置文件，将我们上面安装的Nginx 的访问日志作为input，输出到 ElasticSearch 中</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#测试-amp-运行"><span class="nav-number">2.2.5.4.</span> <span class="nav-text">测试&amp;运行</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#验证-1"><span class="nav-number">2.2.5.5.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#beats-的安装与配置"><span class="nav-number">2.2.6.</span> <span class="nav-text">beats 的安装与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#步骤1：安装Metricbeat"><span class="nav-number">2.2.6.1.</span> <span class="nav-text">步骤1：安装Metricbeat</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#步骤2：配置Metricbeat"><span class="nav-number">2.2.6.2.</span> <span class="nav-text">步骤2：配置Metricbeat</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#第3步：加载索引模板Elasticsearch"><span class="nav-number">2.2.6.3.</span> <span class="nav-text">第3步：加载索引模板Elasticsearch</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#第4步：启动Metricbeat"><span class="nav-number">2.2.6.4.</span> <span class="nav-text">第4步：启动Metricbeat</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#第5步：导入Kibana仪表板模板"><span class="nav-number">2.2.6.5.</span> <span class="nav-text">第5步：导入Kibana仪表板模板</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#over"><span class="nav-number">2.2.7.</span> <span class="nav-text">over~</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

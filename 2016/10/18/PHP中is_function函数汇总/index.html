@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta property="og:type" content="article">
+<meta property="og:title" content="PHP中is_func函数汇总">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/18/PHP中is_function函数汇总/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161018/is_func.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP中is_func函数汇总">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161018/is_func.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/18/PHP中is_function函数汇总/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>PHP中is_func函数汇总 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/18/PHP中is_function函数汇总/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PHP中is_func函数汇总<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/PHP中is_function函数汇总.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-18 18:30:00" itemprop="dateCreated datePublished" datetime="2016-10-18T18:30:00+08:00">2016-10-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/18/PHP中is_function函数汇总/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/18/PHP中is_function函数汇总/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4.5k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="http://n.sinaimg.cn/games/3ece443e/20161018/is_func.png" alt="PHP中is_func函数汇总"></p>
+<a id="more"></a>
+<h2 id="is-float"><a href="#is-float" class="headerlink" title="is_float"></a>is_float</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_float — 检测变量是否是浮点型</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_float ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是 float 则返回 TRUE，否则返回 FALSE。</p>
+<h2 id="is-soap-fault"><a href="#is-soap-fault" class="headerlink" title="is_soap_fault"></a>is_soap_fault</h2><blockquote>
+<p>is_soap_fault — 检查SOAP调用是否失败</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_soap_fault ( mixed $object )</span><br></pre></td></tr></table></figure></p>
+<p>此函数用于检查SOAP调用是否失败，但不使用异常。 要使用它，请创建一个SoapClient对象，将异常选项设置为零或FALSE。 在这种情况下，SOAP方法将返回封装故障详细信息（faultcode，faultstring，faultactor和faultdetails）的特殊SoapFault对象。</p>
+<p>如果未设置异常，那么SOAP调用将在错误时抛出异常。 is_soap_fault（）检查给定的参数是否是SoapFault对象。</p>
+<h2 id="is-bool"><a href="#is-bool" class="headerlink" title="is_bool"></a>is_bool</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_bool — 检测变量是否是布尔型</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_bool ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是 boolean 则返回 TRUE。</p>
+<h2 id="is-integer"><a href="#is-integer" class="headerlink" title="is_integer"></a>is_integer</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_integer — is_int() 的别名</p>
+</blockquote>
+<p>描述</p>
+<p>此函数是 is_int() 的别名函数。</p>
+<h2 id="is-dir"><a href="#is-dir" class="headerlink" title="is_dir"></a>is_dir</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_dir — 判断给定文件名是否是一个目录</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_dir ( string $filename )</span><br></pre></td></tr></table></figure></p>
+<p>判断给定文件名是否是一个目录。</p>
+<h2 id="is-writeable"><a href="#is-writeable" class="headerlink" title="is_writeable"></a>is_writeable</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_writeable — is_writable() 的别名</p>
+</blockquote>
+<p>说明</p>
+<p>此函数是该函数的别名：is_writable()。</p>
+<h2 id="is-real"><a href="#is-real" class="headerlink" title="is_real"></a>is_real</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_real — is_float() 的别名</p>
+</blockquote>
+<p>描述</p>
+<p>此函数是 is_float() 的别名函数。</p>
+<h2 id="is-file"><a href="#is-file" class="headerlink" title="is_file"></a>is_file</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_file — 判断给定文件名是否为一个正常的文件</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_file ( string $filename )</span><br></pre></td></tr></table></figure></p>
+<p>判断给定文件名是否为一个正常的文件。</p>
+<h2 id="is-subclass-of"><a href="#is-subclass-of" class="headerlink" title="is_subclass_of"></a>is_subclass_of</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_subclass_of — 如果此对象是该类的子类，则返回 TRUE</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_subclass_of ( object $object , string $class_name )</span><br></pre></td></tr></table></figure></p>
+<p>如果对象 object 所属类是类 class_name 的子类，则返回 TRUE，否则返回 FALSE。</p>
+<h2 id="is-tainted"><a href="#is-tainted" class="headerlink" title="is_tainted"></a>is_tainted</h2><blockquote>
+<p>(PECL taint &gt;=0.1.0)</p>
+<p>is_tainted — 检查字符串是否被污染</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_tainted ( string $string )</span><br></pre></td></tr></table></figure></p>
+<p>检查字符串是否被污染</p>
+<h2 id="is-resource"><a href="#is-resource" class="headerlink" title="is_resource"></a>is_resource</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_resource — 检测变量是否为资源类型</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_resource ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果给出的参数 var 是 resource 类型，is_resource() 返回 TRUE，否则返回 FALSE。</p>
+<p>PHP中<a href="http://php.net/manual/zh/resource.php" target="_blank" rel="noopener">资源类型列表</a></p>
+<h2 id="is-readable"><a href="#is-readable" class="headerlink" title="is_readable"></a>is_readable</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_readable — 判断给定文件名是否可读</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_readable ( string $filename )</span><br></pre></td></tr></table></figure></p>
+<p>判断给定文件名是否存在并且可读。</p>
+<h2 id="is-writable"><a href="#is-writable" class="headerlink" title="is_writable"></a>is_writable</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_writable — 判断给定的文件名是否可写</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_writable ( string $filename )</span><br></pre></td></tr></table></figure></p>
+<p>如果文件存在并且可写则返回 TRUE。filename 参数可以是一个允许进行是否可写检查的目录名。</p>
+<p><strong>记住 PHP 也许只能以运行 webserver 的用户名（通常为 ‘nobody’）来访问文件。不计入安全模式的限制。</strong></p>
+<h2 id="is-scalar"><a href="#is-scalar" class="headerlink" title="is_scalar"></a>is_scalar</h2><blockquote>
+<p>PHP 4 &gt;= 4.0.5, PHP 5, PHP 7)</p>
+<p>is_scalar — 检测变量是否是一个标量</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_scalar ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果给出的变量参数 var 是一个标量，is_scalar() 返回 TRUE，否则返回 FALSE。</p>
+<p>标量变量是指那些包含了 integer、float、string 或 boolean的变量，而 array、object 和 resource 则不是标量。</p>
+<h2 id="is-long"><a href="#is-long" class="headerlink" title="is_long"></a>is_long</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_long — is_int() 的别名</p>
+</blockquote>
+<p>描述</p>
+<p>此函数是 is_int() 的别名函数。</p>
+<h2 id="is-double"><a href="#is-double" class="headerlink" title="is_double"></a>is_double</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_double — is_float() 的别名</p>
+</blockquote>
+<p>描述</p>
+<p>此函数是 is_float() 的别名函数。</p>
+<h2 id="is-array"><a href="#is-array" class="headerlink" title="is_array"></a>is_array</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_array — 检测变量是否是数组</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_array ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是 array，则返回 TRUE，否则返回 FALSE。</p>
+<h2 id="is-object"><a href="#is-object" class="headerlink" title="is_object"></a>is_object</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_object — 检测变量是否是一个对象</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_object ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是一个 object 则返回 TRUE，否则返回 FALSE。</p>
+<h2 id="is-null"><a href="#is-null" class="headerlink" title="is_null"></a>is_null</h2><blockquote>
+<p>(PHP 4 &gt;= 4.0.4, PHP 5, PHP 7)</p>
+<p>is_null — 检测变量是否为 NULL</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_null ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是 null 则返回 TRUE，否则返回 FALSE。</p>
+<p>查看 NULL 类型获知变量什么时候被认为是 NULL，而什么时候不是。</p>
+<p>特殊的 NULL 值表示一个变量没有值。NULL 类型唯一可能的值就是 NULL。在下列情况下一个变量被认为是 NULL：</p>
+<ul>
+<li><p>被赋值为 NULL。</p>
+</li>
+<li><p>尚未被赋值。</p>
+</li>
+<li><p>被 unset()。</p>
+</li>
+</ul>
+<h2 id="is-string"><a href="#is-string" class="headerlink" title="is_string"></a>is_string</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_string — 检测变量是否是字符串</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_string ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是 string 则返回 TRUE，否则返回 FALSE。</p>
+<h2 id="is-finite"><a href="#is-finite" class="headerlink" title="is_finite"></a>is_finite</h2><blockquote>
+<p>(PHP 4 &gt;= 4.2.0, PHP 5, PHP 7)</p>
+<p>is_finite — 判断是否为有限值</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_finite ( float $val )</span><br></pre></td></tr></table></figure></p>
+<p>检查 val 是否是是本机平台上浮点数所允许范围中的一个合法的有限值。</p>
+<h2 id="is-callable"><a href="#is-callable" class="headerlink" title="is_callable"></a>is_callable</h2><blockquote>
+<p>(PHP 4 &gt;= 4.0.6, PHP 5, PHP 7)</p>
+<p>is_callable — 检测参数是否为合法的可调用结构</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_callable ( callable $name [, bool $syntax_only = false [, string &amp;$callable_name ]] )</span><br></pre></td></tr></table></figure></p>
+<p>验证变量的内容能否作为函数调用。 这可以检查包含有效函数名的变量，或者一个数组，包含了正确编码的对象以及函数名。</p>
+<h2 id="is-numeric"><a href="#is-numeric" class="headerlink" title="is_numeric"></a>is_numeric</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_numeric — 检测变量是否为数字或数字字符串</p>
+</blockquote>
+<p>描述<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_numeric ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是数字和数字字符串则返回 TRUE，否则返回 FALSE。</p>
+<h2 id="is-infinite"><a href="#is-infinite" class="headerlink" title="is_infinite"></a>is_infinite</h2><blockquote>
+<p>(PHP 4 &gt;= 4.2.0, PHP 5, PHP 7)</p>
+<p>is_infinite — 判断是否为无限值</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_infinite ( float $val )</span><br></pre></td></tr></table></figure></p>
+<p>如果 val 为无穷大（正的或负的），例如 log(0) 的结果或者任何超出本平台的浮点数范围的值，则返回 TRUE。</p>
+<h2 id="is-executable"><a href="#is-executable" class="headerlink" title="is_executable"></a>is_executable</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_executable — 判断给定文件名是否可执行</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_executable ( string $filename )</span><br></pre></td></tr></table></figure></p>
+<p>判断给定文件名是否可执行。</p>
+<h2 id="is-int"><a href="#is-int" class="headerlink" title="is_int"></a>is_int</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_int — 检测变量是否是整数</p>
+</blockquote>
+<p>描述 ¶<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_int ( mixed $var )</span><br></pre></td></tr></table></figure></p>
+<p>如果 var 是 integer 则返回 TRUE，否则返回 FALSE。</p>
+<p><strong>Note:</strong><br>若想测试一个变量是否是数字或数字字符串（如表单输入，它们通常为字符串），必须使用 is_numeric()。</p>
+<h2 id="is-nan"><a href="#is-nan" class="headerlink" title="is_nan"></a>is_nan</h2><blockquote>
+<p>(PHP 4 &gt;= 4.2.0, PHP 5, PHP 7)</p>
+<p>is_nan — 判断是否为合法数值</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_nan ( float $val )</span><br></pre></td></tr></table></figure></p>
+<p>如果 val 为“非数值”，例如 acos(1.01) 的结果，则返回 TRUE。</p>
+<h2 id="is-link"><a href="#is-link" class="headerlink" title="is_link"></a>is_link</h2><blockquote>
+<p>(PHP 4, PHP 5, PHP 7)</p>
+<p>is_link — 判断给定文件名是否为一个符号连接</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_link ( string $filename )</span><br></pre></td></tr></table></figure></p>
+<p>判断给定文件名是否为一个符号连接。</p>
+<h2 id="is-uploaded-file"><a href="#is-uploaded-file" class="headerlink" title="is_uploaded_file"></a>is_uploaded_file</h2><blockquote>
+<p>(PHP 4 &gt;= 4.0.3, PHP 5, PHP 7)</p>
+<p>is_uploaded_file — 判断文件是否是通过 HTTP POST 上传的</p>
+</blockquote>
+<p>说明<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool is_uploaded_file ( string $filename )</span><br></pre></td></tr></table></figure></p>
+<p>如果 filename 所给出的文件是通过 HTTP POST 上传的则返回 TRUE。这可以用来确保恶意的用户无法欺骗脚本去访问本不能访问的文件，例如 /etc/passwd。</p>
+<p><strong>这种检查显得格外重要</strong>，如果上传的文件有可能会造成对用户或本系统的其他用户显示其内容的话。</p>
+<p>为了能使 is_uploaded_file() 函数正常工作，变量指定类似于 $_FILES[‘userfile’][‘tmp_name’] 的变量，而在从客户端上传的文件名 $_FILES[‘userfile’][‘name’] 不能正常运作。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/18/PHP中is_function函数汇总/" title="PHP中is_func函数汇总">https://weizhimiao.github.io/2016/10/18/PHP中is_function函数汇总/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/14/PHP常见设计模式之工厂模式/" rel="next" title="PHP常见设计模式之工厂模式">
+                <i class="fa fa-chevron-left"></i> PHP常见设计模式之工厂模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/18/PHP常见设计模式之观察者模式/" rel="prev" title="PHP常见设计模式之观察者模式">
+                PHP常见设计模式之观察者模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#is-float"><span class="nav-number">1.</span> <span class="nav-text">is_float</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-soap-fault"><span class="nav-number">2.</span> <span class="nav-text">is_soap_fault</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-bool"><span class="nav-number">3.</span> <span class="nav-text">is_bool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-integer"><span class="nav-number">4.</span> <span class="nav-text">is_integer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-dir"><span class="nav-number">5.</span> <span class="nav-text">is_dir</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-writeable"><span class="nav-number">6.</span> <span class="nav-text">is_writeable</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-real"><span class="nav-number">7.</span> <span class="nav-text">is_real</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-file"><span class="nav-number">8.</span> <span class="nav-text">is_file</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-subclass-of"><span class="nav-number">9.</span> <span class="nav-text">is_subclass_of</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-tainted"><span class="nav-number">10.</span> <span class="nav-text">is_tainted</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-resource"><span class="nav-number">11.</span> <span class="nav-text">is_resource</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-readable"><span class="nav-number">12.</span> <span class="nav-text">is_readable</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-writable"><span class="nav-number">13.</span> <span class="nav-text">is_writable</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-scalar"><span class="nav-number">14.</span> <span class="nav-text">is_scalar</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-long"><span class="nav-number">15.</span> <span class="nav-text">is_long</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-double"><span class="nav-number">16.</span> <span class="nav-text">is_double</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-array"><span class="nav-number">17.</span> <span class="nav-text">is_array</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-object"><span class="nav-number">18.</span> <span class="nav-text">is_object</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-null"><span class="nav-number">19.</span> <span class="nav-text">is_null</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-string"><span class="nav-number">20.</span> <span class="nav-text">is_string</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-finite"><span class="nav-number">21.</span> <span class="nav-text">is_finite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-callable"><span class="nav-number">22.</span> <span class="nav-text">is_callable</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-numeric"><span class="nav-number">23.</span> <span class="nav-text">is_numeric</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-infinite"><span class="nav-number">24.</span> <span class="nav-text">is_infinite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-executable"><span class="nav-number">25.</span> <span class="nav-text">is_executable</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-int"><span class="nav-number">26.</span> <span class="nav-text">is_int</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-nan"><span class="nav-number">27.</span> <span class="nav-text">is_nan</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-link"><span class="nav-number">28.</span> <span class="nav-text">is_link</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#is-uploaded-file"><span class="nav-number">29.</span> <span class="nav-text">is_uploaded_file</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

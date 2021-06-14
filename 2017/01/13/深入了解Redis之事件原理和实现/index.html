@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Redis服务器是一个事件驱动程序，其主要处理的事件主要可分为以下两类：  文件事件(file event)  Redis服务器通过套接字与客户端（或者其他Redis服务器）进行连接，而文件事件就是服务器对套接字操作的抽象。服务器与客户端（或者其他服务器）的通信会产生相应的文件事件，而服务器则通过监听并处理这些事件来完成一系列网络通信。   时间事件(time event)  Redis服务器中的">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入了解Redis之事件原理和实现">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/01/13/深入了解Redis之事件原理和实现/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Redis服务器是一个事件驱动程序，其主要处理的事件主要可分为以下两类：  文件事件(file event)  Redis服务器通过套接字与客户端（或者其他Redis服务器）进行连接，而文件事件就是服务器对套接字操作的抽象。服务器与客户端（或者其他服务器）的通信会产生相应的文件事件，而服务器则通过监听并处理这些事件来完成一系列网络通信。   时间事件(time event)  Redis服务器中的">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/WenJianShiJianChuLiQiDeSiGeZuChengBuFen.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiDuiKeHuDuanDeLianJieQingQiuJinXingYingDa.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiJieShouKeHuDuanFaLaiDeMingLingQingQiu.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiXiangKeHuDuanFaSongMingLingHuiFu.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/KeHuDuanHeFuWuQiDeTongXinGuoCheng.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/YongLianBiaoLianJieQiLaiDeSanGeShiJianShiJian.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/ShiJianChuLiJiaoDuXiaDeFuWuQiYunXingLiuCheng.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入了解Redis之事件原理和实现">
+<meta name="twitter:description" content="Redis服务器是一个事件驱动程序，其主要处理的事件主要可分为以下两类：  文件事件(file event)  Redis服务器通过套接字与客户端（或者其他Redis服务器）进行连接，而文件事件就是服务器对套接字操作的抽象。服务器与客户端（或者其他服务器）的通信会产生相应的文件事件，而服务器则通过监听并处理这些事件来完成一系列网络通信。   时间事件(time event)  Redis服务器中的">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/WenJianShiJianChuLiQiDeSiGeZuChengBuFen.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/01/13/深入了解Redis之事件原理和实现/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>深入了解Redis之事件原理和实现 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/01/13/深入了解Redis之事件原理和实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入了解Redis之事件原理和实现<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/深入了解Redis之事件原理和实现.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-01-13 20:30:00" itemprop="dateCreated datePublished" datetime="2017-01-13T20:30:00+08:00">2017-01-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/01/13/深入了解Redis之事件原理和实现/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/01/13/深入了解Redis之事件原理和实现/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">3.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">3 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Redis服务器是一个事件驱动程序，其主要处理的事件主要可分为以下两类：</p>
+<ul>
+<li><p>文件事件(file event)</p>
+<blockquote>
+<p>Redis服务器通过套接字与客户端（或者其他Redis服务器）进行连接，而文件事件就是服务器对套接字操作的抽象。服务器与客户端（或者其他服务器）的通信会产生相应的文件事件，而服务器则通过监听并处理这些事件来完成一系列网络通信。</p>
+</blockquote>
+</li>
+<li><p>时间事件(time event)</p>
+<blockquote>
+<p>Redis服务器中的一些操作（如，serverCron函数）需要在指定的时间点执行，而时间事件就是对这类定时操作的抽象。</p>
+</blockquote>
+</li>
+</ul>
+<a id="more"></a>
+<h2 id="文件事件"><a href="#文件事件" class="headerlink" title="文件事件"></a>文件事件</h2><p>文件事件是对套接字操作的抽象，每当一个套接字准备好执行连接应答（accept）、写入、读取、关闭等操作时，就会产生一个文件事件。</p>
+<p>Redis基于Reactor模式开发了自己的文件事件（网络事件）处理器（file event handler）。其构成可分为四个部分，套接字、I/O多路复用程序、文件事件分派器（dispatcher），以及事件处理器。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/WenJianShiJianChuLiQiDeSiGeZuChengBuFen.png" alt="事件处理器的四个组成部分"></p>
+<ul>
+<li>因为一个服务器通常会连接多个套接字，所以多个文件事件可能会并发的出现</li>
+<li>I/O多路复用程序负责监听多个套接字，并向文件事件分派器传送那些产生了事件的套接字。（尽管会有多个文件事件同时出现，但是I/O多路复用程序会将之转化成一个有序的队列，依次将其传送给文件事件分派器。并且等上一个套接字处理完毕之后，I/O多路复用程序才会继续向文件事件分派器传送下一个套接字）</li>
+<li>文件事件分派器接受I/O多路复用程序传送过来的套接字，并根据套接字产生的事件类型，调用相应的事件处理器。<blockquote>
+<p>服务器会为执行不同任务的套接字关联不同的事件处理器，如有应答处理器、命令请求处理器、命令回复处理器。</p>
+</blockquote>
+<h3 id="I-O多路复用程序的实现方式"><a href="#I-O多路复用程序的实现方式" class="headerlink" title="I/O多路复用程序的实现方式"></a>I/O多路复用程序的实现方式</h3></li>
+</ul>
+<p>Redis的I/O复用程序的功能都是通过包装了常见的I/O多路复用函数库来实现的</p>
+<ul>
+<li>select</li>
+<li>epoll</li>
+<li>evport</li>
+<li>kqueue</li>
+</ul>
+<p>I/O多路复用函数库的选择</p>
+<blockquote>
+<p>Redis用每个函数库都实现了相同的API，程序会在编译时自动判断当前系统下哪种多路复用函数库性能最高，而选择其作为Redis的I/O多路复用程序的底层实现。</p>
+</blockquote>
+<h3 id="文件事件的类型"><a href="#文件事件的类型" class="headerlink" title="文件事件的类型"></a>文件事件的类型</h3><ul>
+<li><p>AE_READABLE 事件</p>
+<blockquote>
+<p>当套接字变得可读时（客户端对套接字执行write操作，或者执行close操作），或者有新的应答（acceptable）套接字出现时（客户端对服务器的监听套接字执行connect操作）</p>
+</blockquote>
+</li>
+<li><p>AE_WRITABLE 事件</p>
+<blockquote>
+<p>当套接字变得可写时（客户端对套接字执行read操作）</p>
+</blockquote>
+</li>
+</ul>
+<p>I/O多路复用程序允许服务器同时监听套接字的 AE_READABLE 和 AE_WRITABLE 事件，并且如果一个套接字同时出现这两种事件，那么文件分派器会优先处理 AE_READABLE 事件，然后才会处理 AE_WRITABLE 事件。</p>
+<h3 id="文件事件处理器"><a href="#文件事件处理器" class="headerlink" title="文件事件处理器"></a>文件事件处理器</h3><ul>
+<li>连接应答处理器</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiDuiKeHuDuanDeLianJieQingQiuJinXingYingDa.png" alt="服务器对客户端的连接请求进行应答"></p>
+<p>当Redis服务器进行初始化的时候，会将连接应答处理器和服务器监听套接字的 AE_READABLE 事件关联起来，当有客户端与服务器监听的套接字进行连接时，套接字就会产生 AE_READABLE 事件，引发连接应答处理器执行，并执行相应的套接字应答操作。</p>
+<ul>
+<li>命令请求处理器</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiJieShouKeHuDuanFaLaiDeMingLingQingQiu.png" alt="服务器接收客户端发来的命令请求"><br>当一个客户端通过连接应答处理器成功连接到服务器之后，服务器会将客户端套接字的 AE_READABLE 事件和命令请求处理器关联起来，当客户端向服务器端发送请求命令的时候，套接字就会产生 AE_READABLE 事件，引发命令请求处理器执行，并执行相应的套接字读入操作。</p>
+<p>在客户端与服务器连接的整个过程中，服务器都会一直为客户端套接字的 AE_READABLE 事件关联命令请求处理器。</p>
+<ul>
+<li>命令回复处理器</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiXiangKeHuDuanFaSongMingLingHuiFu.png" alt="服务器向客户端发送命令回复"></p>
+<p>当客户端有命令回复需要传送给客户端的时候，服务器会将客户端套接字的 AE_WRITABLE 事件和命令回复处理器关联起来，当客户端准备好接受服务器传回的命令回复时，就会产生 AE_WRITABLE 事件，引发命令回复处理器执行，并执行相应的套接字写入操作。</p>
+<h3 id="一次完整的客户端与服务器连接事件的示例"><a href="#一次完整的客户端与服务器连接事件的示例" class="headerlink" title="一次完整的客户端与服务器连接事件的示例"></a>一次完整的客户端与服务器连接事件的示例</h3><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/KeHuDuanHeFuWuQiDeTongXinGuoCheng.png" alt="客户端和服务器的通信过程"></p>
+<p>假设一个Redis服务器正在运行，那么这个服务器的监听套接字的 AE_READABLE 事件应该正在处于监听状态下，而该事件所对应的处理器为连接应答处理器。</p>
+<p>这是如果有一个Redis客户端向服务器发起连接，那么监听套接字将会产生 AE_READABLE 事件，I/O多路复用程序将会将这个 AE_READABLE 事件传送给文件事件分派器，文件分派器将其分给连接应答处理器触发其执行。</p>
+<p>应答处理器会对客户端的连接请求进行应答，然后创建客户端套接字，以及客户端状态，并将客户端的套接字的 AE_READABLE 事件与命令请求处理器进行关联，使得客户端可以向主服务器发送命令请求。</p>
+<p>之后，假设客户端向主服务器发送命令请求，那么客户端套接字将产生 AE_READABLE 事件，引发命令请求处理器执行，处理器读取客户端的命令内容，然后传给相关程序去执行。</p>
+<p>执行程序执行完毕将会有对应的回复，为了将这些命令回复传送给客户端，服务器会将客户端套接字的 AE_WRITABLE 事件与命令回复处理器进行关联。当客户端尝试读取命令回复的时候，客户端套接字将会产生 AE_WRITABLE 事件，触发命令回复处理器执行，当命令回复处理器将命令回复全部写入到套接字之后，服务器就会解除客户端套接字的 AE_WRITABLE 事件与命令回复处理器之间的关联。</p>
+<h2 id="时间事件"><a href="#时间事件" class="headerlink" title="时间事件"></a>时间事件</h2><p>Redis的时间事件分为以下两类：</p>
+<ul>
+<li>定时事件</li>
+<li>周期性事件</li>
+</ul>
+<blockquote>
+<p>目前版本的Redis只使用周期性事件，而没有使用定时事件。</p>
+</blockquote>
+<h3 id="时间事件的组成"><a href="#时间事件的组成" class="headerlink" title="时间事件的组成"></a>时间事件的组成</h3><p>一个时间事件由以下三个属性组成，</p>
+<ul>
+<li><p>id，服务器为时间事件生成的全局唯一的ID（标志号）。该ID是自增的，即新的事件ID总是比旧事件ID要大。</p>
+</li>
+<li><p>when，毫秒精度的时间戳，记录了事件的到达（arrive）时间</p>
+</li>
+<li><p>timeProc，时间事件处理器，一个函数</p>
+</li>
+</ul>
+<p>不管是定期时间事件和还是周期性时间事件，其组成都是由这三个属性构成。其不同取决于时间事件处理器的返回值</p>
+<ul>
+<li>如果事件处理器返回 AE_NOMARE ,那么这个事件就是定时事件。该事件在第一次之后就会被删除，之后不在到达。</li>
+<li>如果事件处理器返回 非AE_NOMARE 的整数值，那么这个事件就是周期性事件，该事件在到达之后，服务器会根据这个返回的值，对时间事件的 when 属性进行更新，让这个事件在一段时间之后可以再次到达。</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>Redis 服务器将所有的时间事件都放在了一个无序列表中，每当时间事件执行器运行时，它就会遍历成哥链表，查找所有已到达的时间事件，并调用相应的事件处理器。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/YongLianBiaoLianJieQiLaiDeSanGeShiJianShiJian.png" alt="时间事件实现"></p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><p>持续运行的Redis服务器需要定期的对自身的资源和状态进行检查和调整，从而确保服务器可以长期、稳定的运行，这些定期操作是由 serverCron 函数负责执行。它的主要工作有，</p>
+<ul>
+<li>更新服务器的各类统计信息，比如时间、内存占用、数据库占用情况等</li>
+<li>清理数据库中过期的键</li>
+<li>关闭和清理连接失效的客户端</li>
+<li>尝试进行AOF或RDB持久化操作</li>
+<li>如果服务器是主服务器，那么对从服务器进行定期数据同步</li>
+<li>如果处于集群模式，对集群进行定期同步和连接测试</li>
+</ul>
+<p>Redis以周期性时间事件方式来运行 serverCron 函数，直至服务器关闭为止。</p>
+<h2 id="文件事件和时间事件的关系"><a href="#文件事件和时间事件的关系" class="headerlink" title="文件事件和时间事件的关系"></a>文件事件和时间事件的关系</h2><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/ShiJianChuLiJiaoDuXiaDeFuWuQiYunXingLiuCheng.png" alt="事件角度下的服务器运行流程"></p>
+<p>文件事件和时间事件之间是合作关系，服务器会轮流处理这两种事件。并且由于文件事件和时间事件的处理都是同步、有序、原子地执行的，服务器也不会终端正在执行的事件处理，也不会对事件进行抢占。</p>
+<h3 id="Redis事件调度和执行的几条规则"><a href="#Redis事件调度和执行的几条规则" class="headerlink" title="Redis事件调度和执行的几条规则"></a>Redis事件调度和执行的几条规则</h3><ul>
+<li><p>由于文件事件是随机出现的，如果等待并处理完一次文件事件之后，仍然未有任何事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时，服务器就可以开始处理到达的时间事件了。</p>
+</li>
+<li><p>因为时间事件在文件事件之后执行，并且事件之间不会出现抢占，所以时间事件的实际处理时间一般会比设定的时间稍晚一些。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/01/13/深入了解Redis之事件原理和实现/" title="深入了解Redis之事件原理和实现">https://weizhimiao.github.io/2017/01/13/深入了解Redis之事件原理和实现/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/12/深入了解Redis之Redis的持久化方式/" rel="next" title="深入了解Redis之Redis的持久化方式">
+                <i class="fa fa-chevron-left"></i> 深入了解Redis之Redis的持久化方式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/01/22/深入了解Redis之客户端C-服务器S设计与实现/" rel="prev" title="深入了解Redis之客户端C-服务器S设计与实现">
+                深入了解Redis之客户端C-服务器S设计与实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#文件事件"><span class="nav-number">1.</span> <span class="nav-text">文件事件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I-O多路复用程序的实现方式"><span class="nav-number">1.1.</span> <span class="nav-text">I/O多路复用程序的实现方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件事件的类型"><span class="nav-number">1.2.</span> <span class="nav-text">文件事件的类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件事件处理器"><span class="nav-number">1.3.</span> <span class="nav-text">文件事件处理器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一次完整的客户端与服务器连接事件的示例"><span class="nav-number">1.4.</span> <span class="nav-text">一次完整的客户端与服务器连接事件的示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#时间事件"><span class="nav-number">2.</span> <span class="nav-text">时间事件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#时间事件的组成"><span class="nav-number">2.1.</span> <span class="nav-text">时间事件的组成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">2.2.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实例"><span class="nav-number">2.3.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件事件和时间事件的关系"><span class="nav-number">3.</span> <span class="nav-text">文件事件和时间事件的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis事件调度和执行的几条规则"><span class="nav-number">3.1.</span> <span class="nav-text">Redis事件调度和执行的几条规则</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

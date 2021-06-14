@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Apache是世界使用排名第一的Web服务器软件。它可以运行在几乎所有广泛使用的计算机平台上，由于其跨平台和安全性被广泛使用，是最流行的Web服务器端软件之一。Apache的安装无外乎两种方式：  二进制包安装 源码包安装">
+<meta name="keywords" content="Apache,Web服务器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache的安装">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/08/09/Apache安装汇总/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Apache是世界使用排名第一的Web服务器软件。它可以运行在几乎所有广泛使用的计算机平台上，由于其跨平台和安全性被广泛使用，是最流行的Web服务器端软件之一。Apache的安装无外乎两种方式：  二进制包安装 源码包安装">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache的安装">
+<meta name="twitter:description" content="Apache是世界使用排名第一的Web服务器软件。它可以运行在几乎所有广泛使用的计算机平台上，由于其跨平台和安全性被广泛使用，是最流行的Web服务器端软件之一。Apache的安装无外乎两种方式：  二进制包安装 源码包安装">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/08/09/Apache安装汇总/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Apache的安装 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/08/09/Apache安装汇总/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Apache的安装<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Apache安装汇总.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-08-09 14:00:00" itemprop="dateCreated datePublished" datetime="2016-08-09T14:00:00+08:00">2016-08-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Apache/" itemprop="url" rel="index"><span itemprop="name">Apache</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/08/09/Apache安装汇总/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/08/09/Apache安装汇总/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">18k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">17 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Apache是世界使用排名第一的Web服务器软件。它可以运行在几乎所有广泛使用的计算机平台上，由于其跨平台和安全性被广泛使用，是最流行的Web服务器端软件之一。<br>Apache的安装无外乎两种方式：</p>
+<ul>
+<li>二进制包安装</li>
+<li>源码包安装</li>
+</ul>
+<a id="more"></a>
+<p>接下来我将会演示和记录通过源码包来安装apache到服务器。<br>环境：阿里云 Centos 7.2 64</p>
+<h2 id="安装前准备工作"><a href="#安装前准备工作" class="headerlink" title="安装前准备工作"></a>安装前准备工作</h2><p>通过源码包安装，我们需要将源码编译成计算机运行的二进制，因此我们需要编译工具。</p>
+<h3 id="gcc安装"><a href="#gcc安装" class="headerlink" title="gcc安装"></a>gcc安装</h3><p>GNU编译器套件（GNU Compiler Collection）包括C、C++、Objective-C、Fortran、Java、Ada和Go语言的前端，也包括了这些语言的库（如libstdc++、libgcj等等）。GCC的初衷是为GNU操作系统专门编写的一款编译器。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ28v78hcmrZ ~]# gcc</span><br><span class="line">gcc: 致命错误：没有输入文件</span><br><span class="line">编译中断。</span><br><span class="line">[root@iZ28v78hcmrZ ~]# yum install gcc</span><br><span class="line">···</span><br><span class="line">作为依赖被升级:</span><br><span class="line">  cpp.x86_64 0:4.8.5-4.el7            gcc-c++.x86_64 0:4.8.5-4.el7            gcc-gfortran.x86_64 0:4.8.5-4.el7    libgcc.x86_64 0:4.8.5-4.el7</span><br><span class="line">  libgfortran.x86_64 0:4.8.5-4.el7    libgomp.x86_64 0:4.8.5-4.el7            libquadmath.x86_64 0:4.8.5-4.el7     libquadmath-devel.x86_64 0:4.8.5-4.el7</span><br><span class="line">  libstdc++.x86_64 0:4.8.5-4.el7      libstdc++-devel.x86_64 0:4.8.5-4.el7</span><br><span class="line"></span><br><span class="line">完毕！</span><br><span class="line">[root@iZ28v78hcmrZ ~]#</span><br></pre></td></tr></table></figure></p>
+<h3 id="APR、APR-UTIL-安装"><a href="#APR、APR-UTIL-安装" class="headerlink" title="APR、APR-UTIL 安装"></a>APR、APR-UTIL 安装</h3><p>APR （全称：Apache Portable Runtime）可移植运行时库、APR-UTIL（全称：Apache Portable Runtime Utility Library）可移植运行时工具库。它们的作用是使得对平台细节的处理进行下移。对于应用程序而言，它们根本就不需要考虑具体的平台，不管是Unix、Linux还是Window，应用程序执行的接口基本都是统一一致的。<br>APR的目标则是希望安全合并所有的能够合并的代码而不需要牺牲性能，为大多数平台提供所有的APR特性支持，包括Win32、OS/2、BeOS、Darwin、Linux等等。</p>
+<p>关于apr和apr-util，apache可以使用系统已经安装的版本，也可以不实用系统提供的版本。具体方法是分别下载apr和apr-util，解压到apache源码包中的srclib/apr和srclib/apr-util路径中（路径中不包含版本号等信息），在编译源码包之前的./configure 过程中使用 –with-included-apr 选项</p>
+<h3 id="PRCE-Perl-Compatible-Regular-Expressions-Library-Perl兼容的正则表达式库"><a href="#PRCE-Perl-Compatible-Regular-Expressions-Library-Perl兼容的正则表达式库" class="headerlink" title="PRCE (Perl-Compatible Regular Expressions Library,Perl兼容的正则表达式库)"></a>PRCE (Perl-Compatible Regular Expressions Library,Perl兼容的正则表达式库)</h3><p>PCRE(Perl Compatible Regular Expressions)是一个用C语言编写的正则表达式函数库。<br>PCRE被广泛使用在许多开源软件之中，最著名的莫过于Apache HTTP服务器和PHP脚本语言、R脚本语言，此外，正如从其名字所能看到的，PCRE也是perl语言的缺省正则库。</p>
+<p>[PCRE 下载网址][pcre_download]<br>[pcre_download]:<a href="https://sourceforge.net/projects/pcre/files/" target="_blank" rel="noopener">https://sourceforge.net/projects/pcre/files/</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">#解压</span><br><span class="line">[root@iZ94m2e99jtZ ~]# tar -zxvf pcre-8.38.tar.gz</span><br><span class="line">[root@iZ94m2e99jtZ ~]# cd pcre-8.38</span><br><span class="line">[root@iZ94m2e99jtZ pcre-8.38]# ./configure</span><br><span class="line">···</span><br><span class="line">pcre-8.38 configuration summary:</span><br><span class="line"></span><br><span class="line">    Install prefix .................. : /usr/local</span><br><span class="line">    C preprocessor .................. : gcc -E</span><br><span class="line">    C compiler ...................... : gcc</span><br><span class="line">    C++ preprocessor ................ : g++ -E</span><br><span class="line">    C++ compiler .................... : g++</span><br><span class="line">    Linker .......................... : /usr/bin/ld -m elf_x86_64</span><br><span class="line">    C preprocessor flags ............ :</span><br><span class="line">    C compiler flags ................ : -g -O2 -fvisibility=hidden</span><br><span class="line">    C++ compiler flags .............. : -O2 -fvisibility=hidden -fvisibility-inlines-hidden</span><br><span class="line">    Linker flags .................... :</span><br><span class="line">    Extra libraries ................. :</span><br><span class="line"></span><br><span class="line">    Build 8 bit pcre library ........ : yes</span><br><span class="line">    Build 16 bit pcre library ....... : no</span><br><span class="line">    Build 32 bit pcre library ....... : no</span><br><span class="line">    Build C++ library ............... : yes</span><br><span class="line">    Enable JIT compiling support .... : no</span><br><span class="line">    Enable UTF-8/16/32 support ...... : no</span><br><span class="line">    Unicode properties .............. : no</span><br><span class="line">    Newline char/sequence ........... : lf</span><br><span class="line">    \R matches only ANYCRLF ......... : no</span><br><span class="line">    EBCDIC coding ................... : no</span><br><span class="line">    EBCDIC code for NL .............. : n/a</span><br><span class="line">    Rebuild char tables ............. : no</span><br><span class="line">    Use stack recursion ............. : yes</span><br><span class="line">    POSIX mem threshold ............. : 10</span><br><span class="line">    Internal link size .............. : 2</span><br><span class="line">    Nested parentheses limit ........ : 250</span><br><span class="line">    Match limit ..................... : 10000000</span><br><span class="line">    Match limit recursion ........... : MATCH_LIMIT</span><br><span class="line">    Build shared libs ............... : yes</span><br><span class="line">    Build static libs ............... : yes</span><br><span class="line">    Use JIT in pcregrep ............. : no</span><br><span class="line">    Buffer size for pcregrep ........ : 20480</span><br><span class="line">    Link pcregrep with libz ......... : no</span><br><span class="line">    Link pcregrep with libbz2 ....... : no</span><br><span class="line">    Link pcretest with libedit ...... : no</span><br><span class="line">    Link pcretest with libreadline .. : no</span><br><span class="line">    Valgrind support ................ : no</span><br><span class="line">    Code coverage ................... : no</span><br><span class="line"></span><br><span class="line">[root@iZ94m2e99jtZ pcre-8.38]# make &amp; make install</span><br></pre></td></tr></table></figure>
+<p><strong>Tips</strong><br>在编译pcre时可能会出现这样的：configure: error: You need a C++ compiler for C++ support.提示我们缺少一个C++ 的编译器，需要我们再安装一个C++的编译器。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ94m2e99jtZ pcre-8.38]# yum install gcc-c++</span><br></pre></td></tr></table></figure></p>
+<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>[apr、apr-uitl官网][apr_website]<br>[apr_website]:<a href="http://apr.apache.org/" target="_blank" rel="noopener">http://apr.apache.org/</a></p>
+<p>[apr 下载地址][apr_1.5.2_download]<br>[apr_1.5.2_download]:<a href="http://mirrors.hust.edu.cn/apache//apr/apr-1.5.2.tar.gz" target="_blank" rel="noopener">http://mirrors.hust.edu.cn/apache//apr/apr-1.5.2.tar.gz</a><br>[apr-uitl 下载地址][apr-uitl_1.5.4_download]<br>[apr-uitl_1.5.4_download]:<a href="http://mirrors.hust.edu.cn/apache//apr/apr-util-1.5.4.tar.gz" target="_blank" rel="noopener">http://mirrors.hust.edu.cn/apache//apr/apr-util-1.5.4.tar.gz</a></p>
+<p>[apache 源码包][apache_download]<br>[apache_download]:<a href="http://mirrors.tuna.tsinghua.edu.cn/apache//httpd/httpd-2.4.23.tar.gz" target="_blank" rel="noopener">http://mirrors.tuna.tsinghua.edu.cn/apache//httpd/httpd-2.4.23.tar.gz</a></p>
+<p>下载、解压、将apr和apr-util分别复制到httpd-2.4.23/srclib/apr和httpd-2.4.23/srclib/apr-util中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ94m2e99jtZ ~]# wget http://mirrors.hust.edu.cn/apache//apr/apr-1.5.2.tar.gz</span><br><span class="line">[root@iZ94m2e99jtZ ~]# wget  http://mirrors.hust.edu.cn/apache//apr/apr-util-1.5.4.tar.gz</span><br><span class="line">[root@iZ94m2e99jtZ ~]# wget http://mirrors.tuna.tsinghua.edu.cn/apache//httpd/httpd-2.4.23.tar.gz</span><br><span class="line"></span><br><span class="line">[root@iZ94m2e99jtZ ~]# tar -zxvf apr-1.5.2.tar.gz</span><br><span class="line">[root@iZ94m2e99jtZ ~]# tar -zxvf apr-util-1.5.4.tar.gz</span><br><span class="line">[root@iZ94m2e99jtZ ~]# tar -zxvf httpd-2.4.23.tar.gz</span><br><span class="line"></span><br><span class="line">[root@iZ94m2e99jtZ ~]# ll</span><br><span class="line">总用量 10088</span><br><span class="line">drwxr-xr-x 27 1000  1000    4096 4月  25 2015 apr-1.5.2</span><br><span class="line">-rw-r--r--  1 root root  1031613 4月  29 2015 apr-1.5.2.tar.gz</span><br><span class="line">drwxr-xr-x 19 1000  1000    4096 9月  17 2014 apr-util-1.5.4</span><br><span class="line">-rw-r--r--  1 root root   874044 9月  20 2014 apr-util-1.5.4.tar.gz</span><br><span class="line">drwxr-xr-x 11  501 games    4096 7月   1 01:15 httpd-2.4.23</span><br><span class="line">-rw-r--r--  1 root root  8406575 7月   5 03:50 httpd-2.4.23.tar.gz</span><br><span class="line">[root@iZ94m2e99jtZ ~]#</span><br><span class="line"></span><br><span class="line">[root@iZ94m2e99jtZ ~]# cp -r  apr-1.5.2 httpd-2.4.23/srclib/apr</span><br><span class="line">[root@iZ94m2e99jtZ ~]# cp -r  apr-util-1.5.4 httpd-2.4.23/srclib/apr-util</span><br></pre></td></tr></table></figure>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="Configuring-the-source-tree"><a href="#Configuring-the-source-tree" class="headerlink" title="Configuring the source tree"></a>Configuring the source tree</h3><p>如果使用所有默认选项，只需键入的./configure即可，但一般我们根据自己的需求来修改一些配置。</p>
+<p>其中最重要的选项应该是apache的安装位置的配置项 –prefix ；<br>此外，我们可以指定哪些功能被启用和禁用模块要包含在Apache中。apache配备了一个广泛的默认包含的模块。它们将被编译为可以装载或在运行时卸载共享对象（的DSO）。您也可以选择通过选项–enable-模块=静态编译静态模块。</p>
+<p>额外的模块使用–enable模块选项，其中模块与除去mod_个串并转换为破折号任何下划线模块的名称启用。<br>同样，我们可以禁用与–disable模块选件模块。使用这些选项的时候，因为配置无法警告你，如果你指定的模块不存在要小心;它会简单地忽略选项。 此外，有时需要提供的配置脚本与你的编译器，库和头文件的位置额外信息。这是通过两种环境变量或命令行选项来配置完成。有关详细信息，请参考配置页面。或使用–help选项调用配置。</p>
+<p>[Apache 官方配置说明][apache_configure_doc]<br>[apache_configure_doc]:<a href="http://httpd.apache.org/docs/2.4/programs/configure.html#installationdirectories" target="_blank" rel="noopener">http://httpd.apache.org/docs/2.4/programs/configure.html#installationdirectories</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br></pre></td><td class="code"><pre><span class="line">概要</span><br><span class="line"></span><br><span class="line">你应该叫configure从分布的根目录中的脚本。</span><br><span class="line"></span><br><span class="line">./configure [OPTION]... [VAR=VALUE]...</span><br><span class="line"></span><br><span class="line">要指定环境变量（例如CC， CFLAGS......），它们指定为 。请参见下面 的一些有用的变量的说明。VAR=VALUE</span><br><span class="line"></span><br><span class="line">最佳</span><br><span class="line">选项</span><br><span class="line"></span><br><span class="line">配置选项</span><br><span class="line">安装目录</span><br><span class="line">系统类型</span><br><span class="line">可选功能</span><br><span class="line">支持程序的选项</span><br><span class="line">配置选项</span><br><span class="line">下列选项影响的行为 configure本身。</span><br><span class="line"></span><br><span class="line">-C</span><br><span class="line">--config-cache</span><br><span class="line">这是一个别名 --cache-file=config.cache</span><br><span class="line">--cache-file=FILE</span><br><span class="line">测试结果将在文件中缓存文件。此选项默认为禁用 ​​。</span><br><span class="line">-h</span><br><span class="line">--help [short|recursive]</span><br><span class="line">输出的帮助和退出。随着说法short只是具体 ​​到这个包的选项将显示出来。参数 recursive显示所有包含包的简短帮助。</span><br><span class="line">-n</span><br><span class="line">--no-create</span><br><span class="line">该configure脚本运行正常，但不创建输出文件。这是有用的生成makefile文件编译前检查测试结果。</span><br><span class="line">-q</span><br><span class="line">--quiet</span><br><span class="line">不打印checking ...在配置过程的消息。</span><br><span class="line">--srcdir=DIR</span><br><span class="line">定义目录DIR是源文件目录。默认为所在目录configure的位置，或父目录。</span><br><span class="line">--silent</span><br><span class="line">与...一样 --quiet</span><br><span class="line">-V</span><br><span class="line">- 版</span><br><span class="line">显示版权信息并退出。</span><br><span class="line">安装目录</span><br><span class="line">这些选项定义安装目录。安装树取决于所选的布局。</span><br><span class="line"></span><br><span class="line">--prefix=PREFIX</span><br><span class="line">在安装结构无关的文件PREFIX。默认安装目录设置为 /usr/local/apache2。</span><br><span class="line">--exec-prefix=EPREFIX</span><br><span class="line">在安装体系相关的文件EPREFIX。默认安装目录设置为 PREFIX目录。</span><br><span class="line">默认情况下，make install将安装所有文件 /usr/local/apache2/bin，/usr/local/apache2/lib 等等。您可以指定以外的安装前缀 /usr/local/apache2使用--prefix，例如--prefix=$HOME。</span><br><span class="line"></span><br><span class="line">定义一个目录布局</span><br><span class="line">--enable-layout=LAYOUT</span><br><span class="line">配置源代码和编译脚本的假设基础上的布局安装树布局。这使您可以分别指定为Apache HTTP服务器安装在每个类型的文件的位置。该config.layout 文件包含几个示例配置，你还可以创建下面的例子中你自己的自定义配置。该文件中的不同布局分为&lt;Layout FOO&gt;...&lt;/Layout&gt;部分，并通过名称简称为中FOO，默认布局Apache。</span><br><span class="line">安装目录微调</span><br><span class="line">为了更好地控制安装目录中，使用下面的选项。请注意，目录默认被设置 autoconf，并通过相应布局设置被覆盖。</span><br><span class="line"></span><br><span class="line">--bindir=DIR</span><br><span class="line">在用户安装可执行文件DIR。用户可执行文件都支持这样的程序htpasswd， dbmmanage等等。这对于网站管理员有用。默认情况下DIR设置为 EPREFIX/bin。</span><br><span class="line">--datadir=DIR</span><br><span class="line">在安装只读体系结构无关的数据DIR。默认datadir设置为 PREFIX/share。此选项是提供 autoconf与当前未使用。</span><br><span class="line">--includedir=DIR</span><br><span class="line">在安装C头文件DIR。默认 includedir设置为 EPREFIX/include。</span><br><span class="line">--infodir=DIR</span><br><span class="line">在安装info文档DIR。默认infodir设置为 PREFIX/info。此选项当前未使用。</span><br><span class="line">--libdir=DIR</span><br><span class="line">在安装目标代码库DIR。默认 libdir设置为 EPREFIX/lib。</span><br><span class="line">--libexecdir=DIR</span><br><span class="line">在安装程序的可执行文件（例如，共享模块） DIR。默认libexecdir设置为 EPREFIX/modules。</span><br><span class="line">--localstatedir=DIR</span><br><span class="line">在安装修改的单机数据DIR。默认localstatedir设置为 PREFIX/var。此选项是提供 autoconf与当前未使用。</span><br><span class="line">--mandir=DIR</span><br><span class="line">在安装该男子文档DIR。默认 mandir设置为 EPREFIX/man。</span><br><span class="line">--oldincludedir=DIR</span><br><span class="line">在非GCC安装C头文件DIR。默认oldincludedir设置为 /usr/include。此选项是提供 autoconf与当前未使用。</span><br><span class="line">--sbindir=DIR</span><br><span class="line">在系统中安装管理员可执行DIR。这些都是服务器程序，如httpd， apachectl，suexec等，这些都需要运行在Apache HTTP服务器。默认 sbindir设置为 EPREFIX/sbin。</span><br><span class="line">--sharedstatedir=DIR</span><br><span class="line">在安装修改的架构无关的数据DIR。默认sharedstatedir设置为 PREFIX/com。此选项是提供 autoconf与当前未使用。</span><br><span class="line">--sysconfdir=DIR</span><br><span class="line">安装只读的单机数据，如服务器配置文件httpd.conf，mime.types等在 DIR。默认sysconfdir设置为 PREFIX/conf。</span><br><span class="line">系统类型</span><br><span class="line">这些选项用于交叉编译Apache HTTP服务器到另一个系统上运行。在正常的情况下，建立和运行在同一系统上的服务器时，不使用这些选项。</span><br><span class="line"></span><br><span class="line">--build=BUILD</span><br><span class="line">定义系统类型上的工具正在建立该系统。它默认为脚本的结果 config.guess。</span><br><span class="line">--host=HOST</span><br><span class="line">定义系统类型的服务器将运行，系统的 HOST默认为BUILD。</span><br><span class="line">--target=TARGET</span><br><span class="line">配置构建编译器系统类型 目标。它默认为HOST。此选项被提供autoconf，而不是必要的Apache HTTP服务器。</span><br><span class="line">可选功能</span><br><span class="line">这些选项用于微调您的HTTP服务器将具备的功能。</span><br><span class="line"></span><br><span class="line">一般语法</span><br><span class="line">一般来说，你可以使用下面的语法来启用或禁用功能：</span><br><span class="line"></span><br><span class="line">--disable-FEATURE</span><br><span class="line">不包括特征。这是相同的 。--enable-FEATURE=no</span><br><span class="line">--enable-FEATURE[=ARG]</span><br><span class="line">包括特征。为默认值ARG 为yes。</span><br><span class="line">--enable-MODULE=shared</span><br><span class="line">相应的模块将被建设成为DSO模块。默认情况下启用的模块是动态链接的。</span><br><span class="line">--enable-MODULE=static</span><br><span class="line">相应的模块将被静态链接。</span><br><span class="line">注意</span><br><span class="line"></span><br><span class="line">configure不会抱怨 ，即使富不存在，所以你需要仔细类型。 --enable-foo</span><br><span class="line">选择模块编译</span><br><span class="line">大多数模块由默认编译并已被明确或通过使用关键字禁用few （见--enable-modules，--enable-mods-shared 并且--enable-mods-static下面进一步解释）或--enable-modules=none作为一组被删除。</span><br><span class="line"></span><br><span class="line">其它模块默认不编译并已被明确或通过使用关键字启用all或 reallyall可用。</span><br><span class="line"></span><br><span class="line">要了解哪些模块是默认编译，运行 ./configure -h或./configure --help 下看Optional Features。假设你有兴趣mod_example1和 mod_example2，你看这个：</span><br><span class="line"></span><br><span class="line">可选功能：</span><br><span class="line">  ...</span><br><span class="line">  --disable-例1示例模块1</span><br><span class="line">  --enable-例题例如模块2</span><br><span class="line">  ...</span><br><span class="line">然后mod_example1是默认启用的，你就可以使用--disable-example1不编译。 mod_example2默认情况下禁用，你就可以使用--enable-example2 编译它。</span><br><span class="line"></span><br><span class="line">多道处理模块</span><br><span class="line">多道处理模块，或的MPM，实现了服务器的基本行为。单个MPM必须为了使服务器的功能被激活。出现在可用MPM列表 模块索引页。</span><br><span class="line"></span><br><span class="line">的MPM可以建成为数字存储示波器的动态加载或静态与服务器相连，并使用下列选项被启用：</span><br><span class="line"></span><br><span class="line">--with-mpm=MPM</span><br><span class="line">选择适合您的服务器的默认MPM。如果MPM的构建为DSO模块（见--enable-mpms-shared），该指令选择将默认的配置文件中加载的MPM。否则，这个指令选择唯一可用的MPM，这将静态链接到服务器。</span><br><span class="line"></span><br><span class="line">如果省略此选项，默认的MPM为您的操作系统将被使用。</span><br><span class="line"></span><br><span class="line">--enable-mpms-shared=MPM-LIST</span><br><span class="line">使动态共享模块的MPM的列表。这些模块之一必须动态使用加载 LoadModule指令。</span><br><span class="line"></span><br><span class="line">MPM-LIST是加了引号的MPM名称的空格分隔的列表。例如：</span><br><span class="line"></span><br><span class="line">--enable-mpms-shared=&apos;prefork worker&apos;</span><br><span class="line">此外，您还可以使用特殊关键字all，这将选择支持在当前平台上动态加载所有的MPM和他们建立的DSO模块。例如：</span><br><span class="line"></span><br><span class="line">--enable-mpms-shared=all</span><br><span class="line">第三方模块</span><br><span class="line">要添加其他第三方模块使用下列选项：</span><br><span class="line"></span><br><span class="line">--with-module=module-type:module-file[, module-type:module-file]</span><br><span class="line">添加一个或多个第三方的模块，以静态链接模块列表。该模块的源文件module-file 将在搜索 你的Apache HTTP服务器的源代码树的子目录。如果没有找到有它正在考虑模块文件是一个绝对文件路径，并尝试将源文件复制到 模块式子目录。如果子目录不存在，它将被创建并与标准的填充 。modules/module-typeconfigureMakefile.in</span><br><span class="line"></span><br><span class="line">此选项很有用添加由一个源文件小的外部组件。对于更复杂的模块，你应该阅读供应商的文档。</span><br><span class="line"></span><br><span class="line">注意</span><br><span class="line"></span><br><span class="line">如果你想建立一个DSO模块，而不是一个静态链接使用apxs。</span><br><span class="line">累积和其他选项</span><br><span class="line">--enable-maintainer-mode</span><br><span class="line">打开调试和编译时警告，并加载所有编译的模块。</span><br><span class="line">--enable-mods-shared=MODULE-LIST</span><br><span class="line">定义启用并建立动态共享模块模块的列表。这意味着，这些模块必须通过使用动态加载 LoadModule指令。</span><br><span class="line"></span><br><span class="line">MODULE-LIST是加了引号的modulenames空格分隔列表。该模块名称没有给出前面mod_。例如：</span><br><span class="line"></span><br><span class="line">--enable-mods-shared=&apos;headers rewrite dav&apos;</span><br><span class="line">此外，您还可以使用特殊的关键字reallyall， all，most和few。例如，</span><br><span class="line"></span><br><span class="line">--enable-mods-shared=most</span><br><span class="line">将编译大多数模块，并将其建设成为DSO模块，</span><br><span class="line"></span><br><span class="line">--enable-mods-shared=few</span><br><span class="line">将只编译一个非常基本的模块组。</span><br><span class="line"></span><br><span class="line">默认设置为most。</span><br><span class="line"></span><br><span class="line">在LoadModule对所选择的模块的指令将在主配置文件中自动生成。默认情况下，所有的指令都只是由一个配置要求或明确选择的模块被注释掉--enable-foo的说法。您可以更改设置启用或关闭加载的模块LoadModule的指令 httpd.conf。此外， LoadModule所有构建的模块的指令可通过配置选项被激活 --enable-load-all-modules。</span><br><span class="line"></span><br><span class="line">--enable-mods-static=MODULE-LIST</span><br><span class="line">此选项的行为类似--enable-mods-shared，但在给定的模块静态链接。这意味着，这些模块将始终存在，同时运行httpd。他们不必被加载LoadModule。</span><br><span class="line">--enable-modules=MODULE-LIST</span><br><span class="line">此选项的行为等来--enable-mods-shared，并且还将动态地链接的给定模块。特殊关键字none禁用所有模块的版本。</span><br><span class="line">--enable-v4-mapped</span><br><span class="line">允许IPv6的套接字来处理IPv4连接。</span><br><span class="line">--with-port=PORT</span><br><span class="line">这定义上的端口httpd会听。生成配置文件时，该端口号用于 httpd.conf。默认值是80。</span><br><span class="line">--with-program-name</span><br><span class="line">定义一个替代的可执行文件名 ​​称。默认值是 httpd。</span><br><span class="line">可选包</span><br><span class="line">这些选项用于定义可选包。</span><br><span class="line"></span><br><span class="line">一般语法</span><br><span class="line">一般来说，你可以使用下面的语法定义一个可选包：</span><br><span class="line"></span><br><span class="line">--with-PACKAGE[=ARG]</span><br><span class="line">使用包PACKAGE。为默认值 ARG为yes。</span><br><span class="line">--without-PACKAGE</span><br><span class="line">不要使用包PACKAGE。这是相同的 。此选项所提供 ，但对于Apache HTTP服务器不是非常有用。--with-PACKAGE=noautoconf</span><br><span class="line">特定软件包</span><br><span class="line">--with-apr=DIR|FILE</span><br><span class="line">在Apache可移植运行时（APR）是httpd的源代码分发的一部分，将自动与HTTP服务器共同建立。如果您想使用已安装的年利率，而不是你要告诉configure路径的 apr-config脚本。你可以设置绝对路径和名称或目录切换到安装四月apr-config必须在该目录或子目录中存在 bin。</span><br><span class="line">--with-apr-util=DIR|FILE</span><br><span class="line">Apache可移植运行实用程序（APU）是httpd的源代码分发的一部分，将自动与HTTP服务器共同建立。如果您想使用已安装的APU，而不是你要告诉configure路径的 apu-config脚本。你可以设置绝对路径和名称或目录切换到安装APU，apu-config必须在该目录或子目录中存在 bin。</span><br><span class="line">--with-ssl=DIR</span><br><span class="line">如果mod_ssl已启用configure 已安装的OpenSSL的搜索。您可以将目录路径设置为SSL / TLS工具包来代替。</span><br><span class="line">--with-z=DIR</span><br><span class="line">configure已安装的自动搜索 zlib，如果你的源配置需要一个库（例如，当mod_deflate使能）。您可以设置压缩库的目录路径来代替。</span><br><span class="line">Apache HTTP服务器的一些特性，如 mod_authn_dbm和mod_rewrite的DBM RewriteMap使用简单的键/值对数据库信息的快速查询。SDBM被包括在APU，所以这个数据库是始终可用。如果您想使用其他数据库类型，可以使用下面的选项，以使它们：</span><br><span class="line"></span><br><span class="line">--with-gdbm[=path]</span><br><span class="line">如果没有路径指定，configure将搜索在平时的搜索路径GNU DBM安装的包含文件和库。一个明确的 路径会导致configure在寻找 path/lib，并 path/include为相关的文件。最后，路径可以指定用冒号隔开具体包括和库路径。</span><br><span class="line">--with-ndbm[=path]</span><br><span class="line">像--with-gdbm，但搜索新DBM安装。</span><br><span class="line">--with-berkeley-db[=path]</span><br><span class="line">像--with-gdbm，但搜索一个Berkeley DB的安装。</span><br><span class="line">注意</span><br><span class="line"></span><br><span class="line">由APU提供，并通过其配置脚本传递的DBM选项。他们利用确定已安装的APU时是无用的--with-apr-util。</span><br><span class="line">您可以使用自己的HTTP服务器一起使用一个以上的DBM实现。该拨款DBM类型将每次运行时配置中配置。</span><br><span class="line">支持程序的选项</span><br><span class="line">--enable-static-support</span><br><span class="line">构建支持二进制文件的静态链接的版本。这意味着，一个独立的可执行文件将集成所有必要的库来构建。否则，支持二进制文件默认情况下，动态链接。</span><br><span class="line">--enable-suexec</span><br><span class="line">使用此选项可启用suexec，它允许您设置UID和GID的催生过程。除非你了解你的服务器上运行的SUID二进制的所有安全隐患，请勿使用此选项。更多选项来配置suexec介绍如下。</span><br><span class="line">这可以通过使用下列选项来创建一个单一的支持程序的静态链接二进制文件：</span><br><span class="line"></span><br><span class="line">--enable-static-ab</span><br><span class="line">建立一个静态链接的版本ab。</span><br><span class="line">--enable-static-checkgid</span><br><span class="line">建立一个静态链接的版本checkgid。</span><br><span class="line">--enable-static-htdbm</span><br><span class="line">建立一个静态链接的版本htdbm。</span><br><span class="line">--enable-static-htdigest</span><br><span class="line">建立一个静态链接的版本htdigest。</span><br><span class="line">--enable-static-htpasswd</span><br><span class="line">建立一个静态链接的版本htpasswd。</span><br><span class="line">--enable-static-logresolve</span><br><span class="line">建立一个静态链接的版本logresolve。</span><br><span class="line">--enable-static-rotatelogs</span><br><span class="line">建立一个静态链接的版本rotatelogs。</span><br><span class="line">suexec 配置选项</span><br><span class="line">下列选项用于微调的行为suexec。参见配置和安装suEXEC的 进一步的信息。</span><br><span class="line"></span><br><span class="line">--with-suexec-bin</span><br><span class="line">这定义的路径suexec二进制文件。默认值是--sbindir（见安装目录微调）。</span><br><span class="line">--with-suexec-caller</span><br><span class="line">这定义允许呼叫的用户suexec。它应该是相同下，用户 httpd正常运行。</span><br><span class="line">--with-suexec-docroot</span><br><span class="line">这个定义下的目录树suexec允许访问的可执行文件。默认值是 --datadir/htdocs。</span><br><span class="line">--with-suexec-gidmin</span><br><span class="line">这个定义的最低GID成为目标用户 suexec。默认值是100。</span><br><span class="line">--with-suexec-logfile</span><br><span class="line">这个定义的文件名suexec​​日志文件。默认情况下，日志文件被命名为suexec_log，位于 --logfiledir。</span><br><span class="line">--with-suexec-safepath</span><br><span class="line">定义环境变量的值PATH由启动的进 ​​程进行设置suexec。默认值是/usr/local/bin:/usr/bin:/bin。</span><br><span class="line">--with-suexec-userdir</span><br><span class="line">此定义包含所有可执行文件的用户目录下的子目录suexec的访问是允许的。当你想使用此设置时必须 suexec使用特定用户目录在一起（如所提供的mod_userdir）。默认值是 public_html。</span><br><span class="line">--with-suexec-uidmin</span><br><span class="line">它定义为最低的UID允许为目标用户 suexec。默认值是100。</span><br><span class="line">--with-suexec-umask</span><br><span class="line">设置umask由启动的进 ​​程 suexec。它默认为您的系统设置。</span><br><span class="line">最佳</span><br><span class="line">环境变量</span><br><span class="line"></span><br><span class="line">有一些有用的环境变量覆盖所作出的选择 configure，或帮助它找到库和程序与非标准名称或位置。</span><br><span class="line"></span><br><span class="line">CC</span><br><span class="line">定义要用于编译的C编译器的命令。</span><br><span class="line">CFLAGS</span><br><span class="line">要使用编译设置C编译器的标志。</span><br><span class="line">CPP</span><br><span class="line">定义C预处理命令使用。</span><br><span class="line">CPPFLAGS</span><br><span class="line">将C / C ++预处理器的标志，例如 ，如果你在一个非标准目录头了includedir。-Iincludedir</span><br><span class="line">LDFLAGS</span><br><span class="line">设置连接器选项，例如，如果你在一个非标准目录库LIBDIR。-Llibdir</span><br></pre></td></tr></table></figure>
+<p><strong><em>示例：</em></strong><br>这里是一个典型的例子编译Apache，安装树/ SW /包装/与特定的编译器和标志，加上两个额外的模块阿帕奇mod_ldap模块和mod_lua</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ CC=&quot;pgcc&quot; CFLAGS=&quot;-O2&quot; \</span><br><span class="line">./configure --prefix=/sw/pkg/apache \</span><br><span class="line">--enable-ldap=shared \</span><br><span class="line">--enable-lua=shared</span><br></pre></td></tr></table></figure>
+<p>我们本次采用基本的默认设置 来进行安装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ94m2e99jtZ ~]# cd httpd-2.4.23</span><br><span class="line">[root@iZ94m2e99jtZ httpd-2.4.23]# ./configure  --with-included-apr</span><br></pre></td></tr></table></figure></p>
+<h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ94m2e99jtZ httpd-2.4.23]# make</span><br></pre></td></tr></table></figure>
+<h3 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ94m2e99jtZ httpd-2.4.23]# make install</span><br><span class="line">···</span><br><span class="line">Installing configuration files</span><br><span class="line">mkdir /usr/local/apache2/conf</span><br><span class="line">mkdir /usr/local/apache2/conf/extra</span><br><span class="line">mkdir /usr/local/apache2/conf/original</span><br><span class="line">mkdir /usr/local/apache2/conf/original/extra</span><br><span class="line">Installing HTML documents</span><br><span class="line">mkdir /usr/local/apache2/htdocs</span><br><span class="line">Installing error documents</span><br><span class="line">mkdir /usr/local/apache2/error</span><br><span class="line">Installing icons</span><br><span class="line">mkdir /usr/local/apache2/icons</span><br><span class="line">mkdir /usr/local/apache2/logs</span><br><span class="line">Installing CGIs</span><br><span class="line">mkdir /usr/local/apache2/cgi-bin</span><br><span class="line">Installing header files</span><br><span class="line">Installing build system files</span><br><span class="line">Installing man pages and online manual</span><br><span class="line">mkdir /usr/local/apache2/man</span><br><span class="line">mkdir /usr/local/apache2/man/man1</span><br><span class="line">mkdir /usr/local/apache2/man/man8</span><br><span class="line">mkdir /usr/local/apache2/manual</span><br></pre></td></tr></table></figure>
+<h3 id="Customize（定制）"><a href="#Customize（定制）" class="headerlink" title="Customize（定制）"></a>Customize（定制）</h3><p>接下来，我们可以通过在 /usr/local/apache2/conf 目录，编辑配置文件来自定义我们的Apache HTTP服务器。</p>
+<p>[配置指令快速参考索引][apache_conf_directive_index]<br>[apache_conf_directive_index]:<a href="http://httpd.apache.org/docs/2.4/zh-cn/mod/directives.html" target="_blank" rel="noopener">http://httpd.apache.org/docs/2.4/zh-cn/mod/directives.html</a></p>
+<h3 id="Testinh-测试"><a href="#Testinh-测试" class="headerlink" title="Testinh(测试)"></a>Testinh(测试)</h3><p>启动Apache服务器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ94m2e99jtZ httpd-2.4.23]# /usr/local/apache2/bin/apachectl -k start</span><br><span class="line"></span><br><span class="line">[root@iZ94m2e99jtZ httpd-2.4.23]# ps aux | grep httpd</span><br><span class="line">root     15386  0.0  0.2  70556  2188 ?        Ss   11:53   0:00 /usr/local/apache2/bin/httpd -k start</span><br><span class="line">daemon   15387  0.0  0.4 359520  4260 ?        Sl   11:53   0:00 /usr/local/apache2/bin/httpd -k start</span><br><span class="line">daemon   15388  0.0  0.4 359520  4260 ?        Sl   11:53   0:00 /usr/local/apache2/bin/httpd -k start</span><br><span class="line">daemon   15389  0.0  0.4 359520  4256 ?        Sl   11:53   0:00 /usr/local/apache2/bin/httpd -k start</span><br><span class="line">root     15472  0.0  0.0 112664   972 pts/0    S+   11:53   0:00 grep --color=auto httpd</span><br></pre></td></tr></table></figure></p>
+<p>浏览器访问：<a href="http://IP地址" target="_blank" rel="noopener">http://IP地址</a></p>
+<p>当出现『It works!』字样说明我们已经安装成功</p>
+<p><strong><em>注意</em></strong> 如果通过浏览器访问不到，可能是请求服务器防火墙给拦截了，所以我们需要在防火墙里将我们用到的80端口给放行。<br>我以我当前Centos7 的系统为例，Centos7现在默认的防火墙是firewalld，Centos6以及6以前的版本则使用的是iptables，所以具体设置方法还请自己去搜索。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@iZ94m2e99jtZ ~]# firewall-cmd  --permanent --zone=public --add-port=80/tcp  #将80端口开放</span><br><span class="line">success</span><br><span class="line">[root@iZ94m2e99jtZ ~]# firewall-cmd  --reload #重新加载防火墙配置</span><br><span class="line">success</span><br></pre></td></tr></table></figure></p>
+<h2 id="日常管理"><a href="#日常管理" class="headerlink" title="日常管理"></a>日常管理</h2><p>一般常见的管理方式有两种</p>
+<ul>
+<li>直接通过httpd命令来管理</li>
+<li>通过apachectl来管理<br><strong><em>Tips</em></strong> apachetl其实一个是对httpd命令进行了封装sh脚本</li>
+</ul>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#通过apachectl来管理</span><br><span class="line">[root@iZ94m2e99jtZ ~]# /usr/local/apache2/bin/apachectl -k start  #启动</span><br><span class="line">[root@iZ94m2e99jtZ ~]# /usr/local/apache2/bin/apachectl -k restart  #重启</span><br><span class="line">[root@iZ94m2e99jtZ ~]# /usr/local/apache2/bin/apachectl -k stop  #停止</span><br><span class="line"></span><br><span class="line">#直接通过httpd命令来管理</span><br><span class="line">[root@iZ94m2e99jtZ ~]# /usr/local/apache2/bin/httpd -k start|restart|graceful|graceful-stop|stop</span><br></pre></td></tr></table></figure>
+<h3 id="具体参数"><a href="#具体参数" class="headerlink" title="具体参数"></a>具体参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Usage: /usr/local/apache2/bin/httpd [-D name] [-d directory] [-f file]</span><br><span class="line">                                    [-C &quot;directive&quot;] [-c &quot;directive&quot;]</span><br><span class="line">                                    [-k start|restart|graceful|graceful-stop|stop]</span><br><span class="line">                                    [-v] [-V] [-h] [-l] [-L] [-t] [-T] [-S] [-X]</span><br><span class="line">Options:</span><br><span class="line">  -D name            : define a name for use in &lt;IfDefine name&gt; directives</span><br><span class="line">  -d directory       : specify an alternate initial ServerRoot</span><br><span class="line">  -f file            : specify an alternate ServerConfigFile</span><br><span class="line">  -C &quot;directive&quot;     : process directive before reading config files</span><br><span class="line">  -c &quot;directive&quot;     : process directive after reading config files</span><br><span class="line">  -e level           : show startup errors of level (see LogLevel)</span><br><span class="line">  -E file            : log startup errors to file</span><br><span class="line">  -v                 : show version number</span><br><span class="line">  -V                 : show compile settings</span><br><span class="line">  -h                 : list available command line options (this page)</span><br><span class="line">  -l                 : list compiled in modules</span><br><span class="line">  -L                 : list available configuration directives</span><br><span class="line">  -t -D DUMP_VHOSTS  : show parsed vhost settings</span><br><span class="line">  -t -D DUMP_RUN_CFG : show parsed run settings</span><br><span class="line">  -S                 : a synonym for -t -D DUMP_VHOSTS -D DUMP_RUN_CFG</span><br><span class="line">  -t -D DUMP_MODULES : show all loaded modules</span><br><span class="line">  -M                 : a synonym for -t -D DUMP_MODULES</span><br><span class="line">  -t -D DUMP_INCLUDES: show all included configuration files</span><br><span class="line">  -t                 : run syntax check for config files</span><br><span class="line">  -T                 : start without DocumentRoot(s) check</span><br><span class="line">  -X                 : debug mode (only one worker, do not detach)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/08/09/Apache安装汇总/" title="Apache的安装">https://weizhimiao.github.io/2016/08/09/Apache安装汇总/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Apache/" rel="tag"># Apache</a>
+          
+            <a href="/tags/Web服务器/" rel="tag"># Web服务器</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/31/Web性能优化随笔/" rel="next" title="Web性能优化随笔">
+                <i class="fa fa-chevron-left"></i> Web性能优化随笔
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/12/hexo常用命令/" rel="prev" title="hexo常用命令">
+                hexo常用命令 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装前准备工作"><span class="nav-number">1.</span> <span class="nav-text">安装前准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#gcc安装"><span class="nav-number">1.1.</span> <span class="nav-text">gcc安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#APR、APR-UTIL-安装"><span class="nav-number">1.2.</span> <span class="nav-text">APR、APR-UTIL 安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PRCE-Perl-Compatible-Regular-Expressions-Library-Perl兼容的正则表达式库"><span class="nav-number">1.3.</span> <span class="nav-text">PRCE (Perl-Compatible Regular Expressions Library,Perl兼容的正则表达式库)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#下载"><span class="nav-number">1.4.</span> <span class="nav-text">下载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装"><span class="nav-number">2.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Configuring-the-source-tree"><span class="nav-number">2.1.</span> <span class="nav-text">Configuring the source tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build"><span class="nav-number">2.2.</span> <span class="nav-text">Build</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Install"><span class="nav-number">2.3.</span> <span class="nav-text">Install</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Customize（定制）"><span class="nav-number">2.4.</span> <span class="nav-text">Customize（定制）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Testinh-测试"><span class="nav-number">2.5.</span> <span class="nav-text">Testinh(测试)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日常管理"><span class="nav-number">3.</span> <span class="nav-text">日常管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#常用命令"><span class="nav-number">3.1.</span> <span class="nav-text">常用命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体参数"><span class="nav-number">3.2.</span> <span class="nav-text">具体参数</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

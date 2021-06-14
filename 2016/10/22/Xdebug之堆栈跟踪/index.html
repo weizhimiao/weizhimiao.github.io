@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。 Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。">
+<meta name="keywords" content="Xdebug">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Xdebug之变量显示功能">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。 Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-0@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-1@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-2@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-3@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-4@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-5@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-6@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-8@2x.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-9@2x.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Xdebug之变量显示功能">
+<meta name="twitter:description" content="当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。 Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-0@2x.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Xdebug之变量显示功能 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Xdebug之变量显示功能<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Xdebug之堆栈跟踪.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-22 20:30:00" itemprop="dateCreated datePublished" datetime="2016-10-22T20:30:00+08:00">2016-10-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/22/Xdebug之堆栈跟踪/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2016/10/22/Xdebug之堆栈跟踪/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">10 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>当Xdebug被激活时，只要PHP决定显示通知，警告，错误等，它将显示一个堆栈跟踪。堆栈跟踪显示的信息以及它们的呈现方式可以配置为满足您的需要。</p>
+<p>Xdebug在错误情况下显示的堆栈跟踪（如果display_errors在php.ini中设置为On）在它们显示的信息量上相当保守。 这是因为大量的信息可以减慢脚本的执行和在浏览器中呈现堆栈跟踪本身。 但是，可以使堆栈跟踪显示具有不同设置的更详细信息。</p>
+<a id="more"></a>
+<h2 id="堆栈跟踪中的变量"><a href="#堆栈跟踪中的变量" class="headerlink" title="堆栈跟踪中的变量"></a>堆栈跟踪中的变量</h2><p>默认情况下，Xdebug现在会在它生成的堆栈跟踪中显示变量信息。 在收集或显示时，可变信息可能需要相当多的资源。 然而，在许多情况下，显示变量信息是有用的，这就是为什么Xdebug具有设置xdebug.collect_params。 下面的脚本结合了该设置的不同值的输出结果，如下例所示。</p>
+<p>示例：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $a )</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> ($i = <span class="number">1</span>; $i &lt; $a[<span class="string">'foo'</span>]; $i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> ($i == <span class="number">500000</span>) xdebug_break();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">set_time_limit(<span class="number">1</span>);</span><br><span class="line">$c = <span class="keyword">new</span> stdClass;</span><br><span class="line">$c-&gt;bar = <span class="number">100</span>;</span><br><span class="line">$a = <span class="keyword">array</span>(</span><br><span class="line">    <span class="number">42</span> =&gt; <span class="keyword">false</span>, <span class="string">'foo'</span> =&gt; <span class="number">912124</span>,</span><br><span class="line">    $c, <span class="keyword">new</span> stdClass, fopen( <span class="string">'/etc/passwd'</span>, <span class="string">'r'</span> )</span><br><span class="line">);</span><br><span class="line">foo( $a );</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>结果:<br>xdebug.collect_params设置的不同值提供不同的输出，您可以在下面看到：</p>
+<ul>
+<li>default</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-0@2x.png" alt="default"></p>
+<ul>
+<li>1<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;1&apos;);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-1@2x.png" alt="default"></p>
+<ul>
+<li>2<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;2&apos;);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-2@2x.png" alt="default"></p>
+<ul>
+<li>3<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;3&apos;);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-3@2x.png" alt="default"></p>
+<ul>
+<li>4<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-4@2x.png" alt="default"></p>
+<h2 id="附加信息"><a href="#附加信息" class="headerlink" title="附加信息"></a>附加信息</h2><p>除了显示传递给每个函数的变量的值之外，Xdebug还可以通过使用xdebug.dump_globals和xdebug.dump.* 设置来选择性地显示关于所选超级元素的信息。 设置xdebug.dump_once和xdebug.dump_undefined会稍微修改可用超级元素显示的时间和信息。 使用xdebug.show_local_vars设置，您可以指示Xdebug为用户定义的函数显示最顶层栈级中可用的所有变量。 下面的示例显示了这一点（脚本从上面的示例中使用）。</p>
+<ul>
+<li>default</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-5@2x.png" alt="default"></p>
+<ul>
+<li>dump_superglobals=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</span><br><span class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</span><br><span class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</span><br><span class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-6@2x.png" alt="default"></p>
+<ul>
+<li>show_local_vars=1<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&apos;xdebug.collect_vars&apos;, &apos;on&apos;);</span><br><span class="line">ini_set(&apos;xdebug.collect_params&apos;, &apos;4&apos;);</span><br><span class="line">ini_set(&apos;xdebug.dump_globals&apos;, &apos;on&apos;);</span><br><span class="line">ini_set(&apos;xdebug.dump.SERVER&apos;, &apos;REQUEST_URI&apos;);</span><br><span class="line">ini_set(&apos;xdebug.show_local_vars&apos;, &apos;on&apos;);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-8@2x.png" alt="default"></p>
+<h2 id="相关设置"><a href="#相关设置" class="headerlink" title="相关设置"></a>相关设置</h2><h3 id="xdebug-cli-color"><a href="#xdebug-cli-color" class="headerlink" title="xdebug.cli_color"></a><strong>xdebug.cli_color</strong></h3><p>类型：整数，默认值：0，在Xdebug&gt; 2.2中引入</p>
+<p>如果此设置为1，则Xdebug将在CLI模式下和输出为tty时对var_dumps和堆栈跟踪输出进行颜色。在Windows上，需要安装ANSICON工具。</p>
+<p>如果设置为2，那么无论Xdebug是否连接到tty或是否安装了ANSICON，Xdebug都将始终对var_dumps和堆栈跟踪进行着色。在这种情况下，您可能会看到转义码。</p>
+<p>有关更多信息，请参阅此<a href="http://drck.me/clicolor-9cr" target="_blank" rel="noopener">文章</a>。</p>
+<h3 id="xdebug-collect-includes"><a href="#xdebug-collect-includes" class="headerlink" title="xdebug.collect_includes"></a><strong>xdebug.collect_includes</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>此设置默认为1，控制Xdebug是否应将include（），include_once（），require（）或require_once（）中使用的文件名写入跟踪文件。</p>
+<h3 id="xdebug-collect-params"><a href="#xdebug-collect-params" class="headerlink" title="xdebug.collect_params"></a><strong>xdebug.collect_params</strong></h3><p>类型：整数，默认值：0</p>
+<p>此设置默认为0，控制在函数跟踪或堆栈跟踪中记录函数调用时，Xdebug是否应收集传递给函数的参数。</p>
+<p>该设置默认为0，因为对于非常大的脚本，它可能使用大量的内存，因此使巨量脚本无法运行。您可以最安全地打开此设置，但是您可以预期在具有大量函数调用和/或巨大的数据结构作为参数的脚本中存在一些问题。</p>
+<p>Xdebug 2不会有增加的内存使用这个问题，因为它永远不会将此信息存储在内存中。相反，它将只被写入磁盘。这意味着您需要查看磁盘使用情况。</p>
+<p>此设置可以有四个不同的值。对于每个值，示出了不同量的信息。下面你将看到每个值提供什么信息。另请参见功能堆栈跟踪的几个截图的介绍。</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>显示参数信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>无。</td>
+</tr>
+<tr>
+<td>1</td>
+<td>元素的类型和数量（f.e. string（6），array（8））。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>元素的类型和数量，带有完整信息的工具提示1。在CLI版本的PHP它不会有工具提示，而不是在输出文件。</td>
+</tr>
+<tr>
+<td>3</td>
+<td>完全变量内容（具有由xdebug.var_display_max_children，xdebug.var_display_max_data和xdebug.var_display_max_depth设置的限制）。</td>
+</tr>
+<tr>
+<td>4</td>
+<td>完全变量内容和变量名称。</td>
+</tr>
+<tr>
+<td>5</td>
+<td>PHP序列化变量内容，没有名称。 （Xdebug 2.3中的新功能）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="xdebug-collect-vars"><a href="#xdebug-collect-vars" class="headerlink" title="xdebug.collect_vars"></a><strong>xdebug.collect_vars</strong></h3><p>类型：布尔值，默认值：0</p>
+<p>此设置告诉Xdebug收集有关在某个范围中使用哪些变量的信息。 这个分析可能很慢，因为Xdebug必须逆向工程PHP的操作码数组。 此设置不会记录不同变量具有的值，因为使用xdebug.collect_params。 仅当您希望使用xdebug_get_declared_vars（）时，才需要启用此设置。</p>
+<h3 id="xdebug-dump"><a href="#xdebug-dump" class="headerlink" title="xdebug.dump.*"></a><strong>xdebug.dump.*</strong></h3><p>类型：字符串，默认值：空</p>
+<p>*可以是COOKIE，FILES，GET，POST，REQUEST，SERVER，SESSION中的任何一个。 这七个设置控制当发生错误情况时来自超级溶剂的数据。</p>
+<p>每个php.ini设置可以包括一个逗号分隔的变量从这个超级全局转储，或*所有的。 请确保您在此设置中不添加空格。</p>
+<p>为了在发生错误时转储REMOTE_ADDR和REQUEST_METHOD，以及所有GET参数，请添加以下设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xdebug.dump.SERVER = REMOTE_ADDR,REQUEST_METHOD</span><br><span class="line">xdebug.dump.GET = *</span><br></pre></td></tr></table></figure></p>
+<h3 id="xdebug-dump-globals"><a href="#xdebug-dump-globals" class="headerlink" title="xdebug.dump_globals"></a><strong>xdebug.dump_globals</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>控制是否应显示由xdebug.dump.*设置定义的超级元素的值。</p>
+<h3 id="xdebug-dump-once"><a href="#xdebug-dump-once" class="headerlink" title="xdebug.dump_once"></a><strong>xdebug.dump_once</strong></h3><p>类型：布尔值，默认值：1</p>
+<p>控制是否应在所有错误情况（设置为0）或仅在第一个（设置为1）上转储超级元素的值。</p>
+<h3 id="xdebug-dump-undefined"><a href="#xdebug-dump-undefined" class="headerlink" title="xdebug.dump_undefined"></a><strong>xdebug.dump_undefined</strong></h3><p>类型：布尔值，默认值：0<br>如果要从超级元组转储未定义的值，您应该将此设置设置为1，否则将其设置为0。</p>
+<h3 id="xdebug-file-link-format"><a href="#xdebug-file-link-format" class="headerlink" title="xdebug.file_link_format"></a><strong>xdebug.file_link_format</strong></h3><p>类型：字符串，默认值：，在Xdebug&gt; 2.1中引入</p>
+<p>此设置确定在使用文件名的堆栈跟踪显示中进行的链接的格式。 这允许IDE设置一个链接协议，通过单击Xdebug在堆栈跟踪中显示的文件名，可以直接转到行和文件。 示例格式可能如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">myide://%f@%l</span><br></pre></td></tr></table></figure></p>
+<p>可能的格式说明符是：</p>
+<table>
+<thead>
+<tr>
+<th>说明符</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>％f</td>
+<td>文件名</td>
+</tr>
+<tr>
+<td>％l</td>
+<td>行号</td>
+</tr>
+</tbody>
+</table>
+<p>对于各种IDE / OSses，有一些关于如何使这项工作的指示：</p>
+<p>Linux上的Firefox</p>
+<ul>
+<li>打开about：config</li>
+<li>添加一个新的布尔设置“network.protocol-handler.expose.xdebug”并将其设置为“false”</li>
+<li>将以下内容添加到shell脚本〜/ bin / ff-xdebug.sh中：<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/sh</span></span><br><span class="line">f=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut -d @ -f 1 | sed <span class="string">'s/xdebug:\/\///'</span>`</span><br><span class="line">l=`<span class="built_in">echo</span> <span class="variable">$1</span> | cut -d @ -f 2`</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>添加（取决于你有komodo，vim vs netbeans）：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">komodo <span class="variable">$f</span> -l <span class="variable">$l</span></span><br><span class="line">gvim --remote-tab +<span class="variable">$l</span> <span class="variable">$f</span></span><br><span class="line">netbeans <span class="string">"<span class="variable">$f</span>:<span class="variable">$l</span>"</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>使用chmod + x〜/ bin / ff-xdebug.sh来使脚本可执行</li>
+<li>将xdebug.file_link_format设置为xdebug：//％f @％l</li>
+</ul>
+<p>Windows和netbeans</p>
+<ul>
+<li>创建文件netbeans.bat并将其保存在您的路径（C：\ Windows）：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@echo off</span><br><span class="line">setlocal enableextensions enabledelayedexpansion</span><br><span class="line">set NETBEANS=%1</span><br><span class="line">set FILE=%~2</span><br><span class="line">%NETBEANS% --nosplash --console suppress --open &quot;%FILE:~19%&quot;</span><br><span class="line">nircmd win activate process netbeans.exe</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>注意：如果没有nircmd，请删除最后一行。</p>
+<ul>
+<li>将以下代码保存在netbeans protocol.reg中：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Windows Registry Editor Version 5.00</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\netbeans]</span><br><span class="line">&quot;URL Protocol&quot;=&quot;&quot;</span><br><span class="line">@=&quot;URL:Netbeans Protocol&quot;</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\netbeans\DefaultIcon]</span><br><span class="line">@=&quot;\&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe,1\&quot;&quot;</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\netbeans\shell]</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open]</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\netbeans\shell\open\command]</span><br><span class="line">@=&quot;\&quot;C:\\Windows\\netbeans.bat\&quot; \&quot;C:\\Program Files\\NetBeans 7.1.1\\bin\\netbeans.exe\&quot; \&quot;%1\&quot;&quot;</span><br></pre></td></tr></table></figure>
+<p>注意：确保更改Netbeans（两次）的路径以及netbeans.bat批处理文件（如果将其保存在C：\Windows 以外的其他位置）。</p>
+<p>Double click on the netbeans_protocol.reg file to import it into the registry.<br>Set the xdebug.file_link_format setting to</p>
+<ul>
+<li><p>双击netbeans protocol.reg文件将其导入到注册表中。</p>
+</li>
+<li><p>将xdebug.file_link_format设置设置为<code>xdebug.file_link_format = &quot;netbeans://open/?f=%f:%l&quot;</code></p>
+</li>
+</ul>
+<h3 id="xdebug-manual-url"><a href="#xdebug-manual-url" class="headerlink" title="xdebug.manual_url"></a><strong>xdebug.manual_url</strong></h3><p>类型：字符串，默认值：http：//<a href="http://www.php.net，在Xdebug" target="_blank" rel="noopener">www.php.net，在Xdebug</a> &lt;2.2.1中引入</p>
+<p>这是从函数跟踪和错误消息到函数的手册页的链接的基本URL。建议将此设置设置为使用最近的镜像。</p>
+<h3 id="xdebug-show-exception-trace"><a href="#xdebug-show-exception-trace" class="headerlink" title="xdebug.show_exception_trace"></a><strong>xdebug.show_exception_trace</strong></h3><p>类型：整数，默认值：0</p>
+<p>当此设置设置为1时，每当引发异常时，即使此异常实际被捕获，Xdebug也将显示堆栈跟踪。</p>
+<h3 id="xdebug-show-local-vars"><a href="#xdebug-show-local-vars" class="headerlink" title="xdebug.show_local_vars"></a><strong>xdebug.show_local_vars</strong></h3><p>类型：整数，默认值：0</p>
+<p>当这个设置设置为某事！= 0 Xdebug的错误情况下生成的堆栈转储也将显示最顶层范围中的所有变量。请注意，这可能会生成大量的信息，因此默认情况下关闭。</p>
+<h3 id="xdebug-show-mem-delta"><a href="#xdebug-show-mem-delta" class="headerlink" title="xdebug.show_mem_delta"></a><strong>xdebug.show_mem_delta</strong></h3><p>类型：整数，默认值：0</p>
+<p>当这个设置设置为某些！= 0 Xdebug的人类可读的生成的跟踪文件将显示在函数调用之间的内存使用的差异。如果Xdebug配置为生成计算机可读的跟踪文件，则它们将始终显示此信息。</p>
+<h3 id="xdebug-var-display-max-children"><a href="#xdebug-var-display-max-children" class="headerlink" title="xdebug.var_display_max_children"></a><strong>xdebug.var_display_max_children</strong></h3><p>类型：整数，默认值：128</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的数组子元素和对象的属性的数量。</p>
+<p>要禁用任何限制，请使用-1作为值。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-data"><a href="#xdebug-var-display-max-data" class="headerlink" title="xdebug.var_display_max_data"></a><strong>xdebug.var_display_max_data</strong></h3><p>类型：整数，默认值：512</p>
+<p>控制使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时显示的最大字符串长度。</p>
+<p>要禁用任何限制，请使用-1作为值。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h3 id="xdebug-var-display-max-depth"><a href="#xdebug-var-display-max-depth" class="headerlink" title="xdebug.var_display_max_depth"></a><strong>xdebug.var_display_max_depth</strong></h3><p>类型：整数，默认值：3</p>
+<p>当使用xdebug_var_dump（），xdebug.show_local_vars或通过函数跟踪显示变量时，控制数组元素和对象属性的嵌套级别数。</p>
+<p>您可以选择的最大值为1023.您还可以使用-1作为值来选择此最大数。</p>
+<p>此设置对通过远程调试功能发送到客户端的子项数没有任何影响。</p>
+<h2 id="相关函数"><a href="#相关函数" class="headerlink" title="相关函数"></a>相关函数</h2><h3 id="array-xdebug-get-declared-vars（）"><a href="#array-xdebug-get-declared-vars（）" class="headerlink" title="array xdebug_get_declared_vars（）"></a><strong>array xdebug_get_declared_vars（）</strong></h3><p>返回声明的变量</p>
+<p>返回一个数组，其中每个元素是在当前范围中定义的变量名称。 需要启用xdebug.collect_vars设置。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</span><br><span class="line">        <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($a, $b)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</span><br><span class="line">            &#125;</span><br><span class="line">            var_dump(xdebug_get_declared_vars());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    strings::fix_strings(<span class="keyword">array</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>), <span class="keyword">array</span>(<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  0 =&gt; string &apos;a&apos; (length=1)</span><br><span class="line">  1 =&gt; string &apos;b&apos; (length=1)</span><br><span class="line">  2 =&gt; string &apos;item&apos; (length=4)</span><br></pre></td></tr></table></figure></p>
+<p>在5.1之前的PHP版本中，变量名“a”不在返回的数组中，因为它在调用函数xdebug_get_declared_vars（）的作用域中不使用。</p>
+<h3 id="array-xdebug-get-function-stack（）"><a href="#array-xdebug-get-function-stack（）" class="headerlink" title="array xdebug_get_function_stack（）"></a><strong>array xdebug_get_function_stack（）</strong></h3><p>返回有关堆栈的信息</p>
+<p>返回类似于此点的堆栈跟踪的数组。 示例脚本：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">strings</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_string</span><span class="params">($a)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            var_dump(xdebug_get_function_stack());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">fix_strings</span><span class="params">($b)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">foreach</span> ($b <span class="keyword">as</span> $item) &#123;</span><br><span class="line">                <span class="keyword">$this</span>-&gt;fix_string($item);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $s = <span class="keyword">new</span> strings();</span><br><span class="line">    $ret = $s-&gt;fix_strings(<span class="keyword">array</span>(<span class="string">'Derick'</span>));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">array</span><br><span class="line">  0 =&gt;</span><br><span class="line">    array</span><br><span class="line">      &apos;function&apos; =&gt; string &apos;&#123;main&#125;&apos; (length=6)</span><br><span class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</span><br><span class="line">      &apos;line&apos; =&gt; int 0</span><br><span class="line">      &apos;params&apos; =&gt;</span><br><span class="line">        array</span><br><span class="line">          empty</span><br><span class="line">  1 =&gt;</span><br><span class="line">    array</span><br><span class="line">      &apos;function&apos; =&gt; string &apos;fix_strings&apos; (length=11)</span><br><span class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</span><br><span class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</span><br><span class="line">      &apos;line&apos; =&gt; int 18</span><br><span class="line">      &apos;params&apos; =&gt;</span><br><span class="line">        array</span><br><span class="line">          &apos;b&apos; =&gt; string &apos;array (0 =&gt; &apos;Derick&apos;)&apos; (length=21)</span><br><span class="line">  2 =&gt;</span><br><span class="line">    array</span><br><span class="line">      &apos;function&apos; =&gt; string &apos;fix_string&apos; (length=10)</span><br><span class="line">      &apos;class&apos; =&gt; string &apos;strings&apos; (length=7)</span><br><span class="line">      &apos;file&apos; =&gt; string &apos;/var/www/xdebug_get_function_stack.php&apos; (length=63)</span><br><span class="line">      &apos;line&apos; =&gt; int 12</span><br><span class="line">      &apos;params&apos; =&gt;</span><br><span class="line">        array</span><br><span class="line">          &apos;a&apos; =&gt; string &apos;&apos;Derick&apos;&apos; (length=8)</span><br></pre></td></tr></table></figure></p>
+<h3 id="array-xdebug-get-monitored-functions（）"><a href="#array-xdebug-get-monitored-functions（）" class="headerlink" title="array xdebug_get_monitored_functions（）"></a><strong>array xdebug_get_monitored_functions（）</strong></h3><p>返回有关受监视函数的信息</p>
+<p>在2.4版本中引入</p>
+<p>返回一个结构，其中包含有关在脚本中执行受监视函数的位置的信息。 以下示例显示如何使用此和返回的信息：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/* Start the function monitor for strrev and array_push: */</span></span><br><span class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Run some code: */</span></span><br><span class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> strrev(<span class="string">"yes!"</span>), <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">var_dump(xdebug_get_monitored_functions());</span><br><span class="line">xdebug_stop_function_monitor();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>Returns:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">/tmp/monitor-example.php:10:</span><br><span class="line">array(2) &#123;</span><br><span class="line">  [0] =&gt;</span><br><span class="line">  array(3) &#123;</span><br><span class="line">    &apos;function&apos; =&gt;</span><br><span class="line">    string(6) &quot;strrev&quot;</span><br><span class="line">    &apos;filename&apos; =&gt;</span><br><span class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</span><br><span class="line">    &apos;lineno&apos; =&gt;</span><br><span class="line">    int(6)</span><br><span class="line">  &#125;</span><br><span class="line">  [1] =&gt;</span><br><span class="line">  array(3) &#123;</span><br><span class="line">    &apos;function&apos; =&gt;</span><br><span class="line">    string(6) &quot;strrev&quot;</span><br><span class="line">    &apos;filename&apos; =&gt;</span><br><span class="line">    string(24) &quot;/tmp/monitor-example.php&quot;</span><br><span class="line">    &apos;lineno&apos; =&gt;</span><br><span class="line">    int(8)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="integer-xdebug-get-stack-depth（）"><a href="#integer-xdebug-get-stack-depth（）" class="headerlink" title="integer xdebug_get_stack_depth（）"></a><strong>integer xdebug_get_stack_depth（）</strong></h3><p>返回当前堆栈深度级别</p>
+<p>返回堆栈深度级别。 脚本的主体是级别0，每个包含和/或函数调用将向堆栈深度级别添加一个。</p>
+<h3 id="none-xdebug-print-function-stack-string-message-int-options"><a href="#none-xdebug-print-function-stack-string-message-int-options" class="headerlink" title="none xdebug_print_function_stack( [ string message [, int options ] ] )"></a><strong>none xdebug_print_function_stack( [ string message [, int options ] ] )</strong></h3><p>显示当前函数栈</p>
+<p>以类似于Xdebug在错误情况下显示的方式显示当前函数堆栈。</p>
+<p>“message”参数允许您使用自己的头部替换消息。 （在Xdebug 2.1中引入）。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">( $far, $out )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    xdebug_print_function_stack( <span class="string">'Your own message'</span> );</span><br><span class="line">&#125;</span><br><span class="line">foo( <span class="number">42</span>, <span class="number">3141592654</span> );</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>Returns:</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20161022/QQ20161022-9@2x.png" alt="img"></p>
+<p>位掩码“options”允许您配置一些额外的选项。 目前支持以下选项：</p>
+<ul>
+<li>XDEBUG_STACK_NO_DESC<blockquote>
+<p>如果设置了此选项，则打印的堆栈跟踪将不具有标题。 如果要从自己的错误处理程序打印堆栈跟踪，否则打印位置是从中调用xdebug_print_function_stack（）时，这是有用的。 （在Xdebug 2.3中引入）。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）"><a href="#void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）" class="headerlink" title="void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）"></a><strong>void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）</strong></h3><p>开始功能监控</p>
+<p>在2.4版本中引入</p>
+<p>此函数开始监视列表中给出的函数作为此函数的参数。 函数监视允许您找到代码中提供的作为参数的函数在哪里调用。 这可以用于跟踪使用旧的或不鼓励的函数的位置。</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">xdebug_start_function_monitor( [ <span class="string">'strrev'</span>, <span class="string">'array_push'</span> ] );</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>您还可以向定义要监视的函数的数组添加类方法和静态方法。 例如，要捕获对DramModel :: canSee的静态调用和对Whisky-&gt; drink的动态调用，您将启动监视器：</p>
+<p>Example:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">xdebug_start_function_monitor( [ <span class="string">'DramModel::canSee'</span>, <span class="string">'Whisky-&gt;drink'</span>] );</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>定义的函数区分大小写，并且不会捕获对静态方法的动态调用。</p>
+<h3 id="void-xdebug-stop-function-monitor（）"><a href="#void-xdebug-stop-function-monitor（）" class="headerlink" title="void xdebug_stop_function_monitor（）"></a><strong>void xdebug_stop_function_monitor（）</strong></h3><p>停止监视功能</p>
+<p>在2.4版本中引入</p>
+<p>此功能停止功能监视器。 为了获得受监视函数的列表，您需要使用xdebug_get_monitored_functions（）函数。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/" title="Xdebug之变量显示功能">https://weizhimiao.github.io/2016/10/22/Xdebug之堆栈跟踪/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Xdebug/" rel="tag"># Xdebug</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/22/Xdebug之远程调试/" rel="next" title="Xdebug之远程调试">
+                <i class="fa fa-chevron-left"></i> Xdebug之远程调试
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/22/Xdebug之变量显示功能/" rel="prev" title="Xdebug之变量显示功能">
+                Xdebug之变量显示功能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#堆栈跟踪中的变量"><span class="nav-number">1.</span> <span class="nav-text">堆栈跟踪中的变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附加信息"><span class="nav-number">2.</span> <span class="nav-text">附加信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关设置"><span class="nav-number">3.</span> <span class="nav-text">相关设置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-cli-color"><span class="nav-number">3.1.</span> <span class="nav-text">xdebug.cli_color</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-collect-includes"><span class="nav-number">3.2.</span> <span class="nav-text">xdebug.collect_includes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-collect-params"><span class="nav-number">3.3.</span> <span class="nav-text">xdebug.collect_params</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-collect-vars"><span class="nav-number">3.4.</span> <span class="nav-text">xdebug.collect_vars</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-dump"><span class="nav-number">3.5.</span> <span class="nav-text">xdebug.dump.*</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-dump-globals"><span class="nav-number">3.6.</span> <span class="nav-text">xdebug.dump_globals</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-dump-once"><span class="nav-number">3.7.</span> <span class="nav-text">xdebug.dump_once</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-dump-undefined"><span class="nav-number">3.8.</span> <span class="nav-text">xdebug.dump_undefined</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-file-link-format"><span class="nav-number">3.9.</span> <span class="nav-text">xdebug.file_link_format</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-manual-url"><span class="nav-number">3.10.</span> <span class="nav-text">xdebug.manual_url</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-show-exception-trace"><span class="nav-number">3.11.</span> <span class="nav-text">xdebug.show_exception_trace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-show-local-vars"><span class="nav-number">3.12.</span> <span class="nav-text">xdebug.show_local_vars</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-show-mem-delta"><span class="nav-number">3.13.</span> <span class="nav-text">xdebug.show_mem_delta</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-var-display-max-children"><span class="nav-number">3.14.</span> <span class="nav-text">xdebug.var_display_max_children</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-var-display-max-data"><span class="nav-number">3.15.</span> <span class="nav-text">xdebug.var_display_max_data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xdebug-var-display-max-depth"><span class="nav-number">3.16.</span> <span class="nav-text">xdebug.var_display_max_depth</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关函数"><span class="nav-number">4.</span> <span class="nav-text">相关函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#array-xdebug-get-declared-vars（）"><span class="nav-number">4.1.</span> <span class="nav-text">array xdebug_get_declared_vars（）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#array-xdebug-get-function-stack（）"><span class="nav-number">4.2.</span> <span class="nav-text">array xdebug_get_function_stack（）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#array-xdebug-get-monitored-functions（）"><span class="nav-number">4.3.</span> <span class="nav-text">array xdebug_get_monitored_functions（）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#integer-xdebug-get-stack-depth（）"><span class="nav-number">4.4.</span> <span class="nav-text">integer xdebug_get_stack_depth（）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#none-xdebug-print-function-stack-string-message-int-options"><span class="nav-number">4.5.</span> <span class="nav-text">none xdebug_print_function_stack( [ string message [, int options ] ] )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-xdebug-start-function-monitor（array-list-of-functions-to-monitor）"><span class="nav-number">4.6.</span> <span class="nav-text">void xdebug_start_function_monitor（array $ list_of_functions_to_monitor）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#void-xdebug-stop-function-monitor（）"><span class="nav-number">4.7.</span> <span class="nav-text">void xdebug_stop_function_monitor（）</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

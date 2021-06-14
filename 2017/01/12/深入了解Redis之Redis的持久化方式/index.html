@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.4.2',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    fastclick: true,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'M4TET13RR0',
+      apiKey: '76a7982151d733e41f6bb834dc49c20f',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="我们知道Redis是一个内存数据库，它所有的数据库状态都存储在内存中，所以如果想要在服务器故障、重启之后数据还在，就需要一个将这些数据持久化的一个功能。  Redis提供了两种持久化的方式，  RDB 持久化方式  将数据库中的键值对及状态保存在持久化文件中   AOF 持久化方式  而AOF保存的是服务器所执行过的所有写命令">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入了解Redis之Redis的持久化方式">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis的持久化方式/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="我们知道Redis是一个内存数据库，它所有的数据库状态都存储在内存中，所以如果想要在服务器故障、重启之后数据还在，就需要一个将这些数据持久化的一个功能。  Redis提供了两种持久化的方式，  RDB 持久化方式  将数据库中的键值对及状态保存在持久化文件中   AOF 持久化方式  而AOF保存的是服务器所执行过的所有写命令">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/redisChiJiuHuaYuanLi.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiZaiRuWenJianShiDePanDuanLiuCheng.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/RDBWenJianJieGou.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/AOFChiJiuHua.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/AOFWenJianZaiRuGuoCheng.png">
+<meta property="og:updated_time" content="2021-06-14T18:44:44.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入了解Redis之Redis的持久化方式">
+<meta name="twitter:description" content="我们知道Redis是一个内存数据库，它所有的数据库状态都存储在内存中，所以如果想要在服务器故障、重启之后数据还在，就需要一个将这些数据持久化的一个功能。  Redis提供了两种持久化的方式，  RDB 持久化方式  将数据库中的键值对及状态保存在持久化文件中   AOF 持久化方式  而AOF保存的是服务器所执行过的所有写命令">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20170112/redisChiJiuHuaYuanLi.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis的持久化方式/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>深入了解Redis之Redis的持久化方式 | 行云流水</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">行云流水</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">却也碎碎念念</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类<span class="badge">11</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档<span class="badge">96</span></a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签<span class="badge">78</span></a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis的持久化方式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/11239812">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入了解Redis之Redis的持久化方式<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/深入了解Redis之Redis的持久化方式.md" class="post-edit-link" title="编辑" target="_blank">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-01-12 21:30:00" itemprop="dateCreated datePublished" datetime="2017-01-12T21:30:00+08:00">2017-01-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2021-06-15 02:44:44" itemprop="dateModified" datetime="2021-06-15T02:44:44+08:00">2021-06-15</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/01/12/深入了解Redis之Redis的持久化方式/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/01/12/深入了解Redis之Redis的持久化方式/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">2.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">2 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们知道Redis是一个内存数据库，它所有的数据库状态都存储在内存中，所以如果想要在服务器故障、重启之后数据还在，就需要一个将这些数据持久化的一个功能。</p>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/redisChiJiuHuaYuanLi.png" alt="redis持久化原理"></p>
+<p>Redis提供了两种持久化的方式，</p>
+<ul>
+<li><p>RDB 持久化方式</p>
+<blockquote>
+<p>将数据库中的键值对及状态保存在持久化文件中</p>
+</blockquote>
+</li>
+<li><p>AOF 持久化方式</p>
+<blockquote>
+<p>而AOF保存的是服务器所执行过的所有写命令</p>
+</blockquote>
+</li>
+</ul>
+<a id="more"></a>
+<p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/FuWuQiZaiRuWenJianShiDePanDuanLiuCheng.png" alt="服务器载入文件时的判断流程"></p>
+<p>值得提一下的是，因为AOF文件的更新频率通常比RDB文件的更新频率更高，所以如果服务器有开启AOF持久化功能时，服务器就会优先使用AOF文件来还原数据库，其次才是RDB文件。</p>
+<h2 id="RDB-持久化方式"><a href="#RDB-持久化方式" class="headerlink" title="RDB 持久化方式"></a>RDB 持久化方式</h2><h3 id="RDB文件结构简析"><a href="#RDB文件结构简析" class="headerlink" title="RDB文件结构简析"></a>RDB文件结构简析</h3><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/RDBWenJianJieGou.png" alt="RDB文件结构"></p>
+<h3 id="redis服务器保存和载入RDB文件的方法"><a href="#redis服务器保存和载入RDB文件的方法" class="headerlink" title="redis服务器保存和载入RDB文件的方法"></a>redis服务器保存和载入RDB文件的方法</h3><p>redis中创建RDB文件的两个命令</p>
+<ul>
+<li><p>SAVE<br>SAVE命令会由Redis服务器主进程来执行RDB文件的创建，所以在执行SAVE时，Redis服务器会有阻塞，知道RDB文件创建完毕为止，且在阻塞期间服务器不能处理任何命令请求。</p>
+</li>
+<li><p>BGSAVE<br>BGSAVE命令则会派生出一个子进程，然后由子进程负责创建RDB文件，而Redis服务器主进程（父进程）可以继续处理各种命令请求。</p>
+</li>
+</ul>
+<p>创建RDB文件的实际工作由rdb.c/rdbSave函数来完成，SAVE和BGSAVE命令都会以不同的形式调用这个函数。</p>
+<p>RDB文件载入时的服务器状态</p>
+<blockquote>
+<p>RDB文件的载入只有在服务器启动时才会被执行，所以Redis中没有专门载入RDB文件的命令，只要Redis启动时没有开启AOF功能，且检测到RDB文件的存在，就会自动载入RDB文件。且服务器在载入RDB文件期间，会一直处于阻塞状态，直到载入工作完成。</p>
+</blockquote>
+<h3 id="redis服务器自动保存功能的实现原理"><a href="#redis服务器自动保存功能的实现原理" class="headerlink" title="redis服务器自动保存功能的实现原理"></a>redis服务器自动保存功能的实现原理</h3><p>通过上面我们知道，Redis服务器有两个命令，SAVE和BGSAVE，来执行保存数据库状态的操作。<br>SAVE是阻塞的，BGSAVE是非阻塞的。Redis中借助BGSAVE命令，每隔一段时间自动执行一次BGSAVE命令来实现数据库状态的自动保存功能。</p>
+<p>具体实现是通过设置服务器配置的save选项，按照一定的周期去执行BGSAVE命令。如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">save 900 1</span><br><span class="line">save 300 10</span><br><span class="line">save 60 10000</span><br></pre></td></tr></table></figure></p>
+<p>那么只要满足上面这三个条件的任何一条，BGSAVE就会被执行。</p>
+<ul>
+<li>服务器在900s之内，对数据库进行了至少1次修改</li>
+<li>服务器在300s之内，对数据库进行了至少10次修改</li>
+<li>数据库在60s之内，对数据库进行了10000次修改</li>
+</ul>
+<h2 id="AOF-持久化方式"><a href="#AOF-持久化方式" class="headerlink" title="AOF 持久化方式"></a>AOF 持久化方式</h2><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/AOFChiJiuHua.png" alt="AOF持久化方式"></p>
+<h3 id="AOF持久化的实现"><a href="#AOF持久化的实现" class="headerlink" title="AOF持久化的实现"></a>AOF持久化的实现</h3><p>当AOF持久化功能处于打开的状态时，服务器在执行完一个写命令，先将被执行的写命令追加到服务器状态的 aof_buf 的缓冲区。Redis服务器会在每次事件循环结束之前，都会调用“flushAppendOnlyFile”函数来判断是否需要将 aof_buf 缓冲区中内容保存到AOF文件里面。</p>
+<p>flushAppendOnlyFile 函数判断是否保存的依据和配置（appendfsync）</p>
+<ul>
+<li>always,将aof_buf 将缓冲区中所有内容写入并同步到AOF文件</li>
+<li>everysec,将缓冲区中所有内容写入AOF文件，但至少间隔一秒同步一次(默认值)</li>
+<li>no,将缓冲区中所有内容写入AOF文件，但不对AOF文件进行同步，何时同步则由系统决定</li>
+</ul>
+<h3 id="AOF文件的载入与数据还原"><a href="#AOF文件的载入与数据还原" class="headerlink" title="AOF文件的载入与数据还原"></a>AOF文件的载入与数据还原</h3><p><img src="http://n.sinaimg.cn/games/3ece443e/20170112/AOFWenJianZaiRuGuoCheng.png" alt="AOF文件载入过程"></p>
+<h3 id="AOF重写的原理和实现"><a href="#AOF重写的原理和实现" class="headerlink" title="AOF重写的原理和实现"></a>AOF重写的原理和实现</h3><p>随着服务器运行时间的增加，AOF文件中的内容会越来越多，相应的文件体积就会越来越大，但其实文件中很大一部分信息是冗余信息。</p>
+<p>例如，我们对一个键进行了n次的写操作，AOF文件中相对应就会产生n次的写操作命令。但其实AOF文件中的对于该键的前n-1次的写操作命令都可认为是冗余操作命令，只需保留最后一条的写操作命令即可。</p>
+<p>所以，Redis提供了AOF文件重写（rewrite）功能，来清除这些冗余命令，以控制AOF文件的大小。具体实现思路为，Redis服务器先创建一个新的AOF文件来替代现有的AOF文件，新旧两个AOF文件所保存的数据库状态是相同的，但新的AOF文件不会包含任何浪费空间的冗余命令。</p>
+<h4 id="Redis服务器AOF重写的实现"><a href="#Redis服务器AOF重写的实现" class="headerlink" title="Redis服务器AOF重写的实现"></a>Redis服务器AOF重写的实现</h4><ul>
+<li><p>虽然该功能名称叫 AOF文件重写 ，但是具体的实现却并没有对现有AOF文件进行任何读取、分析、或者写入操作，而是通过读取当前服务器的数据库状态来实现的。</p>
+</li>
+<li><p>通过读取当前数据库中键值的状态，尽量生成最少的能与之对应redis命令，然后将该redis命令写入新的AOF文件中，直至将当前数据库状态全部生成完毕。</p>
+</li>
+<li><p>另外，在执行AOF重写的期间，Redis会维护一个AOF重写缓冲区，该缓冲区会在子进程创建AOF文件期间，记录服务器执行的所有写命令。当子进程完成创建新AOF文件之后，服务器会将重写缓冲区中的所有内容追加到新AOF文件的末尾，使得新旧两个AOF文件所保存的数据库状态完全一致。</p>
+</li>
+<li><p>最后，服务器用新的AOF替换旧的AOF文件，以此来完成AOF文件的重写操作。</p>
+</li>
+</ul>
+<h4 id="AOF后台重写"><a href="#AOF后台重写" class="headerlink" title="AOF后台重写"></a>AOF后台重写</h4><p>由于生成新的AOF文件时会进行大量的写入操作，所以在进行AOF重写的时候，会造成长时间的阻塞，所以redis将AOF重写程序放在子进程里执行，这样就可避免主进程长时间的阻塞。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>zhimiao</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis的持久化方式/" title="深入了解Redis之Redis的持久化方式">https://weizhimiao.github.io/2017/01/12/深入了解Redis之Redis的持久化方式/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/12/深入了解Redis之Redis数据库的实现/" rel="next" title="深入了解Redis之Redis数据库的实现">
+                <i class="fa fa-chevron-left"></i> 深入了解Redis之Redis数据库的实现
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/01/13/深入了解Redis之事件原理和实现/" rel="prev" title="深入了解Redis之事件原理和实现">
+                深入了解Redis之事件原理和实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars0.githubusercontent.com/u/11239812"
+                alt="zhimiao" />
+            
+              <p class="site-author-name" itemprop="name">zhimiao</p>
+              <p class="site-description motion-element" itemprop="description">为己备忘，为他参考。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">96</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">78</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="http://weibo.com/weizhimiao/home" target="_blank" title="微博"><i class="fa fa-fw fa-weibo"></i>微博</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/weizhimiao" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RDB-持久化方式"><span class="nav-number">1.</span> <span class="nav-text">RDB 持久化方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB文件结构简析"><span class="nav-number">1.1.</span> <span class="nav-text">RDB文件结构简析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis服务器保存和载入RDB文件的方法"><span class="nav-number">1.2.</span> <span class="nav-text">redis服务器保存和载入RDB文件的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis服务器自动保存功能的实现原理"><span class="nav-number">1.3.</span> <span class="nav-text">redis服务器自动保存功能的实现原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AOF-持久化方式"><span class="nav-number">2.</span> <span class="nav-text">AOF 持久化方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF持久化的实现"><span class="nav-number">2.1.</span> <span class="nav-text">AOF持久化的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF文件的载入与数据还原"><span class="nav-number">2.2.</span> <span class="nav-text">AOF文件的载入与数据还原</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF重写的原理和实现"><span class="nav-number">2.3.</span> <span class="nav-text">AOF重写的原理和实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Redis服务器AOF重写的实现"><span class="nav-number">2.3.1.</span> <span class="nav-text">Redis服务器AOF重写的实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF后台重写"><span class="nav-number">2.3.2.</span> <span class="nav-text">AOF后台重写</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">559k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">8:28</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+      <div>
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type = "text/javascript" src = "//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async = "async" ></script>
+</div>
+
+      </div>
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: false,
+        appId: 'VL4PVIHFgBTavO1d38DtBqOF-gzGzoHsz',
+        appKey: '25PBfJEywRHzhdNyIqVj0VDc',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        meta:guest,
+        pageSize:'10' || 10,
+        visitor: false
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.4.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=6.4.2"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=6.4.2"></script>
+
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('复制成功')
+          else $(this).text('复制失败')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>
