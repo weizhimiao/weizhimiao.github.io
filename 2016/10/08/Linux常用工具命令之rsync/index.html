@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="rsync命令是一个远程数据同步工具，可通过LAN&#x2F;WAN快速同步多台主机间的文件。rsync使用所谓的“rsync算法”来使本地和远程两个主机之间的文件达到同步，这个算法只传送两个文件的不同部分，而不是每次都整份传送，因此速度相当快。rsync是一个功能非常强大的工具，其命令也有很多功能特色选项，我们下面就对它的选项一一进行分析说明。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux常用工具命令之rsync">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/08/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="rsync命令是一个远程数据同步工具，可通过LAN&#x2F;WAN快速同步多台主机间的文件。rsync使用所谓的“rsync算法”来使本地和远程两个主机之间的文件达到同步，这个算法只传送两个文件的不同部分，而不是每次都整份传送，因此速度相当快。rsync是一个功能非常强大的工具，其命令也有很多功能特色选项，我们下面就对它的选项一一进行分析说明。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-10-08T14:30:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.613Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="rsync">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/10/08/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/10/08/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync/","path":"2016/10/08/Linux常用工具命令之rsync/","title":"Linux常用工具命令之rsync"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux常用工具命令之rsync | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E9%A1%B9"><span class="nav-number">2.</span> <span class="nav-text">选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SSH%E6%96%B9%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">SSH方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8rsync%E8%BF%9B%E8%A1%8C%E5%90%8C%E6%AD%A5"><span class="nav-number">3.2.</span> <span class="nav-text">使用rsync进行同步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E5%8F%B0%E6%9C%8D%E5%8A%A1%E6%96%B9%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">后台服务方式</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/08/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux常用工具命令之rsync<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-10-08 22:30:00" itemprop="dateCreated datePublished" datetime="2016-10-08T22:30:00+08:00">2016-10-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/10/08/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/10/08/Linux常用工具命令之rsync/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>rsync命令是一个远程数据同步工具，可通过LAN/WAN快速同步多台主机间的文件。<br>rsync使用所谓的“rsync算法”来使本地和远程两个主机之间的文件达到同步，这个算法只传送两个文件的不同部分，而不是每次都整份传送，因此速度相当快。<br>rsync是一个功能非常强大的工具，其命令也有很多功能特色选项，我们下面就对它的选项一一进行分析说明。</p>
+<span id="more"></span>
+
+<h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><pre><code>rsync [OPTION]... SRC DEST
+rsync [OPTION]... SRC [USER@]host:DEST
+rsync [OPTION]... [USER@]HOST:SRC DEST
+rsync [OPTION]... [USER@]HOST::SRC DEST
+rsync [OPTION]... SRC [USER@]HOST::DEST
+rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
+</code></pre>
+<p>对应于以上六种命令格式,rsync有六种不同的工作模式:</p>
+<ol>
+<li><p>拷贝本地文件。当SRC和DES路径信息都不包含有单个冒号”:”分隔符时就启动这种工作模式。如: <code>rsync­ -a /data /backup</code></p>
+</li>
+<li><p>使用一个远程shell程序(如rsh、ssh)来实现将本地机器的内容拷贝到远程机器。当DST路径地址包含单个冒 号”:”分隔符时启动该模式。如: <code>rsync­ -avz *.c foo:src</code></p>
+</li>
+<li><p>使用一个远程shell程序(如rsh、ssh)来实现将远程机器的内容拷贝到本地机器。当SRC地址路径包含单个冒 号”:”分隔符时启动该模式。如: <code>rsync -­avz foo:src/bar /data</code></p>
+</li>
+<li><p>从远程rsync服务器中拷贝文件到本地机。当SRC路径信息包含”::”分隔符时启动该模式。如: <code>rsync- ­av root@192.168.78.192::www /databack</code></p>
+</li>
+<li><p>从本地机器拷贝文件到远程rsync服务器中。当DST路径信息包含”::”分隔符时启动该模式。如: <code>rsync­- av /databack root@192.168.78.192::www</code></p>
+</li>
+<li><p>列远程机的文件列表。这类似于rsync传输,不过只要在命令中省略掉本地机信息即可。如: <code>rsync­ -v rsync://192.168.78.192/www</code></p>
+</li>
+</ol>
+<h2 id="选项"><a href="#选项" class="headerlink" title="选项"></a>选项</h2><pre><code>­-v, --­­verbose 详细模式输出。
+­-q, ­­--quiet 精简输出模式。
+­-c, ­­--checksum 打开校验开关,强制对文件传输进行校验。
+­-a, ­­--archive 归档模式,表示以递归方式传输文件,并保持所有文件属性,等于­rlptgoD。 ­
+-r, ­­--recursive 对子目录以递归模式处理。
+-­R, ­­--relative 使用相对路径信息。
+­-b, ­­--backup 创建备份,也就是对于目的已经存在有同样的文件名时,将老的文件重新命名为~filename。可以使用­­ suffix选项来指定不同的备份文件前缀。
+--­­backup­-dir 将备份文件(如~filename)存放在在目录下。
+-­suffix=SUFFIX 定义备份文件前缀。
+­-u, ­­--update 仅仅进行更新,也就是跳过所有已经存在于DST,并且文件时间晚于要备份的文件,不覆盖更新的文件。 ­
+-l, ­­--links 保留软链结。
+-­L, ­­--copy-links 想对待常规文件一样处理软链结。
+­--­copy-­unsafe-­links 仅仅拷贝指向SRC路径目录树以外的链结。
+­­--safe-­links 忽略指向SRC路径目录树以外的链结。
+­-H, ­­--hard-­links 保留硬链结。
+­-p, ­­--perms 保持文件权限。
+­-o, ­­--owner 保持文件属主信息。
+­-g, ­­--group 保持文件属组信息。
+­-D, ­­--devices 保持设备文件信息。
+­-t, ­­--times 保持文件时间信息。
+­-S, ­­--sparse 对稀疏文件进行特殊处理以节省DST的空间。
+­-n, ­­--dry­-run现实哪些文件将被传输。
+­-w, ­­--whole-file 拷贝文件,不进行增量检测。
+­-x, ­­-one-file-system 不要跨越文件系统边界。
+­-B, ­­--block­-size=SIZE 检验算法使用的块尺寸,默认是700字节。
+­-e, ­­--rsh=command 指定使用rsh、ssh方式进行数据同步。
+­--­rsync-path=PATH 指定远程服务器上的rsync命令所在路径信息。
+­-C, ­­--cvs-­exclude 使用和CVS一样的方法自动忽略文件,用来排除那些不希望传输的文件。
+­­--existing 仅仅更新那些已经存在于DST的文件,而不备份那些新创建的文件。
+­­--delete 删除那些DST中SRC没有的文件。
+­­--delete-­excluded 同样删除接收端那些被该选项指定排除的文件。
+­­--delete-after 传输结束以后再删除。
+­­--ignore-­errors 及时出现IO错误也进行删除。
+­­--max-delete=NUM 最多删除NUM个文件。
+­­--partial 保留那些因故没有完全传输的文件,以是加快随后的再次传输。
+­­--force 强制删除目录,即使不为空。
+­­--numeric-ids 不将数字的用户和组id匹配为用户名和组名。
+­­--timeout=time ip超时时间,单位为秒。
+­-I, --­­ignore-times 不跳过那些有同样的时间和长度的文件。
+­­--size-­only 当决定是否要备份文件时,仅仅察看文件大小而不考虑文件时间。
+­­--modify-­window=NUM 决定文件是否时间相同时使用的时间戳窗口,默认为0。
+­-T --­­temp-dir=DIR 在DIR中创建临时文件。
+­­--compare-­dest=DIR 同样比较DIR中的文件来决定是否需要备份。
+­-P等同于 ­--­partial。
+­­-progress 显示备份过程。
+­-z, ­--­compress 对备份的文件在传输时进行压缩处理。
+­­--exclude=PATTERN 指定排除不需要传输的文件模式。
+­­--include=PATTERN 指定不排除而需要传输的文件模式。
+­­--exclude-­from=FILE 排除FILE中指定模式的文件。
+­­--include-­from=FILE 不排除FILE指定模式匹配的文件。
+­­--version 打印版本信息。
+­­--address 绑定到特定的地址。
+­­--config=FILE 指定其他的配置文件,不使用默认的rsyncd.conf文件。
+­­--port=PORT 指定其他的rsync服务端口。
+­­--blocking-io 对远程shell使用阻塞IO。
+­--stats 给出某些文件的传输状态。
+
+­­--progress 在传输时现实传输过程。
+­­--log-­format=formAT 指定日志文件格式。
+­­--password­-file=FILE 从FILE中得到密码。
+­­--bwlimit=KBPS 限制I/O带宽,KBytes per second。
+-­h, --­­help 显示帮助信息。
+</code></pre>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><h3 id="SSH方式"><a href="#SSH方式" class="headerlink" title="SSH方式"></a>SSH方式</h3><p>首先在服务端启动ssh服务:</p>
+<pre><code>service sshd start
+启动 sshd: [确定]
+</code></pre>
+<h3 id="使用rsync进行同步"><a href="#使用rsync进行同步" class="headerlink" title="使用rsync进行同步"></a>使用rsync进行同步</h3><p>接下来就可以在客户端使用rsync命令来备份服务端上的数据了,SSH方式是通过系统用户来进行备份的,如下:</p>
+<pre><code>rsync ­vzrtopg ­­progress ­e ssh ­­delete work@172.16.78.192:/www/* /databack/experiment/rsync
+work@172.16.78.192&#39;s password:
+receiving file list ...
+5 files to consider
+test/
+a
+0 100% 0.00kB/s 527:35:41 (1, 20.0% of 5) b
+67 100% 65.43kB/s 0:00:00 (2, 40.0% of 5) c
+0 100% 0.00kB/s 527:35:41 (3, 60.0% of 5) dd
+100663296 100% 42.22MB/s 0:00:02 (4, 80.0% of 5) sent 96 bytes received 98190 bytes 11563.06 bytes/sec total size is 100663363 speedup is 1024.19
+</code></pre>
+<p>上面的信息描述了整个的备份过程,以及总共备份数据的大小。</p>
+<h3 id="后台服务方式"><a href="#后台服务方式" class="headerlink" title="后台服务方式"></a>后台服务方式</h3><p>启动rsync服务,编辑 /etc/xinetd.d/rsync文件,将其中的 disable=yes改为 disable=no,并重启 xinetd服务,如下:</p>
+<pre><code>vi /etc/xinetd.d/rsync
+#default: off
+# description: The rsync server is a good addition to an ftp server, as it \ # allows crc checksumming etc.
+service rsync &#123;
+disable = no
+socket_type = stream
+wait = no
+user = root
+server = /usr/bin/rsync
+server_args = ­­daemon
+log_on_failure += USERID
+&#125;
+</code></pre>
+<pre><code>/etc/init.d/xinetd restart
+停止 xinetd: [确定]
+启动 xinetd: [确定]
+</code></pre>
+<p>创建配置文件,默认安装好rsync程序后,并不会自动创建rsync的主配置文件,需要手工来创建,其主配置文件<br>为“/etc/rsyncd.conf”,创建该文件并插入如下内容:</p>
+<pre><code>vi /etc/rsyncd.conf
+uid=root
+gid=root
+max connections=4
+log file=/var/log/rsyncd.log pid file=/var/run/rsyncd.pid lock file=/var/run/rsyncd.lock secrets file=/etc/rsyncd.passwd hosts deny=172.16.78.0/22
+[www]
+comment= backup web path=/www
+read only = no exclude=test
+auth users=work
+</code></pre>
+<p>创建密码文件,采用这种方式不能使用系统用户对客户端进行认证,所以需要创建一个密码文件,其格式 为“username:password”,用户名可以和密码可以随便定义,最好不要和系统帐户一致,同时要把创建的密码文 件权限设置为600,这在前面的模块参数做了详细介绍。</p>
+<pre><code>echo &quot;work:abc123&quot; &gt; /etc/rsyncd.passwd
+chmod 600 /etc/rsyncd.passwd
+</code></pre>
+<p>备份,完成以上工作,现在就可以对数据进行备份了,如下:</p>
+<pre><code>rsync ­avz ­­progress ­­delete work@172.16.78.192::www /databack/experiment/rsync
+Password:
+receiving file list ...
+6 files to consider
+./ files...
+a
+0 100% 0.00kB/s 528:20:41 (1, 50.0% of 6)
+b
+67 100% 65.43kB/s 0:00:00 (2, 66.7% of 6)
+c
+0 100% 0.00kB/s 528:20:41 (3, 83.3% of 6)
+dd
+100663296 100% 37.49MB/s 0:00:02 (4, 100.0% of 6) sent 172 bytes received 98276 bytes 17899.64 bytes/sec total size is 150995011 speedup is 1533.75
+</code></pre>
+<p>恢复,当服务器的数据出现问题时,那么这时就需要通过客户端的数据对服务端进行恢复,但前提是服务端允许客 户端有写入权限,否则也不能在客户端直接对服务端进行恢复,使用rsync对数据进行恢复的方法如下:</p>
+<pre><code>rsync ­avz ­­progress /databack/experiment/rsync/ work@172.16.78.192::www
+Password:
+building file list ...
+6 files to consider
+./
+a
+b
+67 100% 0.00kB/s 0:00:00 (2, 66.7% of 6)
+c
+sent 258 bytes received 76 bytes 95.43 bytes/sec total size is 150995011 speedup is 452080.87
+</code></pre>
+<p>来自: <a target="_blank" rel="noopener" href="http://man.linuxde.net/rsync">http://man.linuxde.net/rsync</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/rsync/" rel="tag"># rsync</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/10/12/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR)/" rel="prev" title="PHP扩展与应用库(PEAR)">
+                  <i class="fa fa-chevron-left"></i> PHP扩展与应用库(PEAR)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/10/07/PHP%E8%BE%93%E5%87%BA%E7%BC%93%E5%86%B2%E5%8C%BA/" rel="next" title="PHP输出缓冲区">
+                  PHP输出缓冲区 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/10/08/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

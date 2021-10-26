@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="虽然memcached是一个高性能的缓存服务器，但是单台服务器对于目前大型的web应用来说还是满足不了需求的。那么就需要布置多台的memcached服务器进行分布式部署。那么一个数据应该存储到哪一台服务器就需要一个分布算法来确定。 常见的分布方案有两种，   普通Hash分布 一致性Hash分布">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Memcached分布式部署算法整理">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/01/Memcached%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="虽然memcached是一个高性能的缓存服务器，但是单台服务器对于目前大型的web应用来说还是满足不了需求的。那么就需要布置多台的memcached服务器进行分布式部署。那么一个数据应该存储到哪一台服务器就需要一个分布算法来确定。 常见的分布方案有两种，   普通Hash分布 一致性Hash分布">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161001/hash_1.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161001/hash_2.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161001/hash_server.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161001/hash_3.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161001/hash_4.png">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161001/hash_5.png">
+<meta property="article:published_time" content="2016-10-01T12:00:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.617Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="分布式部署算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161001/hash_1.png">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/10/01/Memcached%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/10/01/Memcached%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86/","path":"2016/10/01/Memcached分布式部署算法整理/","title":"Memcached分布式部署算法整理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Memcached分布式部署算法整理 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%99%AE%E9%80%9AHash%E5%88%86%E5%B8%83"><span class="nav-number">1.</span> <span class="nav-text">普通Hash分布</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">原理：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0-PHP-%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">实现(PHP)：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7Hash%E5%88%86%E5%B8%83"><span class="nav-number">2.</span> <span class="nav-text">一致性Hash分布</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%86%E4%B8%80%E4%B8%AA32%E4%BD%8D%E6%95%B4%E6%95%B0%EF%BC%880-2-32-1%EF%BC%89%E6%83%B3%E8%B1%A1%E6%88%90%E4%B8%80%E4%B8%AA%E9%97%AD%E7%8E%AF%E3%80%82"><span class="nav-number">2.1.</span> <span class="nav-text">将一个32位整数（0~2^32-1）想象成一个闭环。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87Hash%E5%87%BD%E6%95%B0%E5%B0%86key%E5%A4%84%E7%90%86%E6%88%90%E6%95%B4%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">通过Hash函数将key处理成整数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%86memcached%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%8C%E9%80%9A%E8%BF%87hash%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%89%80%E4%BD%BF%E7%94%A8%E7%9A%84IP%E5%9C%B0%E5%9D%80%EF%BC%8C%E4%B9%9F%E5%AF%B9%E5%BA%94%E5%88%B0%E9%97%AD%E7%8E%AF%E4%B8%8A%E3%80%82"><span class="nav-number">2.3.</span> <span class="nav-text">将memcached服务器，通过hash服务器所使用的IP地址，也对应到闭环上。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%8A%E6%95%B0%E6%8D%AE%E6%98%A0%E5%B0%84%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A"><span class="nav-number">2.4.</span> <span class="nav-text">把数据映射到服务器上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E9%99%A4%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">2.5.</span> <span class="nav-text">移除服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">2.6.</span> <span class="nav-text">添加服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%EF%BC%88PHP%EF%BC%89"><span class="nav-number">2.7.</span> <span class="nav-text">实现（PHP）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%EF%BC%88PHP%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">实际应用（PHP）</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/01/Memcached%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Memcached分布式部署算法整理<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Memcached%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-10-01 20:00:00" itemprop="dateCreated datePublished" datetime="2016-10-01T20:00:00+08:00">2016-10-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/10/01/Memcached%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/10/01/Memcached分布式部署算法整理/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>虽然memcached是一个高性能的缓存服务器，但是单台服务器对于目前大型的web应用来说还是满足不了需求的。那么就需要布置多台的memcached服务器进行分布式部署。那么一个数据应该存储到哪一台服务器就需要一个分布算法来确定。</p>
+<p>常见的分布方案有两种，</p>
+<blockquote>
+<ul>
+<li>普通Hash分布</li>
+<li>一致性Hash分布</li>
+</ul>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="普通Hash分布"><a href="#普通Hash分布" class="headerlink" title="普通Hash分布"></a>普通Hash分布</h2><blockquote>
+<p>俗称哈希取模法，优点是实现简单，但缺点是缺乏灵活性（比如增加一台服务器，那么之前存储的数据的键值和具体的物理机之间的关系就被完全打乱了，即之前存储的数据就完全失效了）。</p>
+</blockquote>
+<h3 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h3><p>H(key) = hash(key)mod K;</p>
+<blockquote>
+<p>假设有K台物理机，对于key为键值的记录，H(key)值即为存储数据的物理机编号。通过这种方式，就将全部数据分配到K台物理机上，而查找某条记录时，使用同样的Hash函数就可以找到对应的物理机。</p>
+</blockquote>
+<h3 id="实现-PHP-："><a href="#实现-PHP-：" class="headerlink" title="实现(PHP)："></a>实现(PHP)：</h3><pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+  <span class="token variable">$servers</span> <span class="token operator">=</span> <span class="token keyword">array</span><span class="token punctuation">(</span>
+    <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token string">"host"</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">"192.168.1.1"</span><span class="token punctuation">,</span><span class="token string">"port"</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">"11211"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token string">"host"</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">"192.168.1.2"</span><span class="token punctuation">,</span><span class="token string">"port"</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">"11211"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token variable">$key</span> <span class="token operator">=</span> <span class="token string">"userDatakey"</span><span class="token punctuation">;</span>
+  <span class="token variable">$value</span> <span class="token operator">=</span> <span class="token string">"userDataValue"</span><span class="token punctuation">;</span>
+  <span class="token variable">$mc_ser</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token variable">$servers</span><span class="token punctuation">[</span><span class="token function">mhash</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token operator">%</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token variable">$mc</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Memcache</span><span class="token punctuation">(</span><span class="token variable">$servers</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token variable">$mc</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">set</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">,</span> <span class="token variable">$value</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token variable">$mc</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">get</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment" spellcheck="true">/**
+   * [mhash 首先通过md5把key处理成一个32位的字符串，取其前8个字符。在经过hash算法处理成一个整数并返回。]
+   * @param  &amp;#123;[type]&amp;#125; $key [description]
+   * @return &amp;#123;[type]&amp;#125;      [description]
+   */</span>
+  <span class="token keyword">function</span> <span class="token function">mhash</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token variable">$md5</span> <span class="token operator">=</span> <span class="token function">substr</span><span class="token punctuation">(</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token variable">$seed</span> <span class="token operator">=</span> <span class="token number">31</span><span class="token punctuation">;</span>
+    <span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token variable">$i</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span><span class="token variable">$i</span><span class="token operator">&lt;</span><span class="token number">8</span><span class="token punctuation">;</span><span class="token variable">$i</span><span class="token operator">++</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+      <span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token variable">$hash</span><span class="token operator">*</span><span class="token variable">$seed</span> <span class="token operator">+</span> <span class="token function">ord</span><span class="token punctuation">(</span><span class="token variable">$md5</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;$i&amp;#125;);</span>
+    <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+    <span class="token keyword">return</span> <span class="token variable">$hash</span> <span class="token operator">&amp;</span> <span class="token number">0x7FFFFFFF</span><span class="token punctuation">;</span>
+  <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>通过Hash函数把key转化成整数后，利用这个整数与服务器数量取模，得到其中一台的服务器配置。然后利用这个配置完成memcached服务器的连接操作。这样就完成了对数据的分布式存储。</p>
+<h2 id="一致性Hash分布"><a href="#一致性Hash分布" class="headerlink" title="一致性Hash分布"></a>一致性Hash分布</h2><blockquote>
+<p>一致性hash分布是算法，是P2P网络和分布式存储中常用到一项技术。是一种当服务器有增删时，对数据影响最小的一种部署方案。</p>
+</blockquote>
+<p>一致性Hash算法实现：</p>
+<h3 id="将一个32位整数（0-2-32-1）想象成一个闭环。"><a href="#将一个32位整数（0-2-32-1）想象成一个闭环。" class="headerlink" title="将一个32位整数（0~2^32-1）想象成一个闭环。"></a>将一个32位整数（0~2^32-1）想象成一个闭环。</h3><p>如图，<br><img data-src="http://n.sinaimg.cn/games/3ece443e/20161001/hash_1.png" alt="将32位整数想象成一个闭环"></p>
+<h3 id="通过Hash函数将key处理成整数"><a href="#通过Hash函数将key处理成整数" class="headerlink" title="通过Hash函数将key处理成整数"></a>通过Hash函数将key处理成整数</h3><pre><code>$key1 = mhash(&quot;key1&quot;);
+$key2 = mhash(&quot;key2&quot;);
+$key3 = mhash(&quot;key3&quot;);
+$key4 = mhash(&quot;key4&quot;);
+</code></pre>
+<p>将key通过mhash函数处理成整数，让后就可以将之对应到闭环上。如图，<br><img data-src="http://n.sinaimg.cn/games/3ece443e/20161001/hash_2.png" alt="4个key通过mhash处理成整数对应到闭环上"></p>
+<h3 id="将memcached服务器，通过hash服务器所使用的IP地址，也对应到闭环上。"><a href="#将memcached服务器，通过hash服务器所使用的IP地址，也对应到闭环上。" class="headerlink" title="将memcached服务器，通过hash服务器所使用的IP地址，也对应到闭环上。"></a>将memcached服务器，通过hash服务器所使用的IP地址，也对应到闭环上。</h3><p>例如，有三台服务器，IP分别是192.168.1.1、192.168.1.2、192.168.1.3</p>
+<pre><code>$server1 = mhash(&quot;192.168.1.1&quot;);
+$server2 = mhash(&quot;192.168.1.2&quot;);
+$server3 = mhash(&quot;192.168.1.3&quot;);
+</code></pre>
+<p>如图，<br><img data-src="http://n.sinaimg.cn/games/3ece443e/20161001/hash_server.png" alt="将服务器也映射到环上"></p>
+<h3 id="把数据映射到服务器上"><a href="#把数据映射到服务器上" class="headerlink" title="把数据映射到服务器上"></a>把数据映射到服务器上</h3><p><strong>映射方法：</strong><br>沿着圆环的顺时针方向的key出发，直到遇上一个服务器，将key对应的数据存储到这个服务器上。</p>
+<p>如图，<br><img data-src="http://n.sinaimg.cn/games/3ece443e/20161001/hash_3.png" alt="把数据映射到服务器上"></p>
+<h3 id="移除服务器"><a href="#移除服务器" class="headerlink" title="移除服务器"></a>移除服务器</h3><p>假设服务器 server2 崩溃了，那么受影响的仅是哪些hash映射值在server1到server2的值。</p>
+<p>如图，受影响的只有key2，它将会重新映射到server3服务器上。<br><img data-src="http://n.sinaimg.cn/games/3ece443e/20161001/hash_4.png" alt="移除服务器"></p>
+<h3 id="添加服务器"><a href="#添加服务器" class="headerlink" title="添加服务器"></a>添加服务器</h3><p>如果现在需要新添加一台服务器，其IP地址为（192.168.1.4）</p>
+<pre><code>$server4 = mhash(&quot;192.168.1.4&quot;);
+</code></pre>
+<p>其在闭环上的映射位置位于如图的位置，那么受影响是hash映射值在其当前的位置和server2的位置之间的key。</p>
+<p>如图，受影响的仅为key3，其将会重新映射到server4上。<br><img data-src="http://n.sinaimg.cn/games/3ece443e/20161001/hash_5.png" alt="添加服务器"></p>
+<h3 id="实现（PHP）"><a href="#实现（PHP）" class="headerlink" title="实现（PHP）"></a>实现（PHP）</h3><pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token keyword">class</span> <span class="token class-name">FlexiHash</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+  <span class="token keyword">private</span> <span class="token variable">$serverList</span> <span class="token operator">=</span> <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">private</span> <span class="token variable">$isSorted</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+  <span class="token comment" spellcheck="true">/**
+   * [addServer 通过hash函数计算除服务器的Hash值，通过此hash值定位服务器列表的某个位置，然后将服务器排序标识置为false]
+   * @param &amp;#123;[type]&amp;#125; $server [description]
+   */</span>
+  <span class="token keyword">function</span> <span class="token function">addServer</span><span class="token punctuation">(</span><span class="token variable">$server</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">mhash</span><span class="token punctuation">(</span><span class="token variable">$server</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span><span class="token punctuation">[</span><span class="token variable">$hash</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+      <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span><span class="token punctuation">[</span><span class="token variable">$hash</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token variable">$server</span><span class="token punctuation">;</span>
+    <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+    <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">isSorted</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+  <span class="token comment" spellcheck="true">/**
+   * [removeServer 跟addServer实现差不多，将server删除，并将排序标识置为false]
+   * @param  &amp;#123;[type]&amp;#125; $server [description]
+   * @return &amp;#123;[type]&amp;#125;         [description]
+   */</span>
+  <span class="token keyword">function</span> <span class="token function">removeServer</span><span class="token punctuation">(</span><span class="token variable">$server</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">mhash</span><span class="token punctuation">(</span><span class="token variable">$server</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span><span class="token punctuation">[</span><span class="token variable">$hash</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+      <span class="token function">unset</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span><span class="token punctuation">[</span><span class="token variable">$hash</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+    <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">isSorted</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+  <span class="token comment" spellcheck="true">/**
+   * [lookup 先计算除key的hash值，然后判断serverList是排序过，如果没有，就先对服务器列表进行倒序排序操作。倒序排序的作用是把服务器列表转换成一个逆时针的圆环。然后遍历服务器列表，找到一个合适的服务器返回]
+   * @param  &amp;#123;[type]&amp;#125; $key [description]
+   * @return &amp;#123;[type]&amp;#125;      [description]
+   */</span>
+  <span class="token keyword">function</span> <span class="token function">lookup</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">mhash</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">isSorted</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+      <span class="token function">ksort</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span><span class="token punctuation">,</span> <span class="token constant">SORT_NUMERIC</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">isSorted</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+    <span class="token keyword">foreach</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span> <span class="token keyword">as</span> <span class="token variable">$pos</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token variable">$server</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+      <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token variable">$hash</span> <span class="token operator">>=</span> <span class="token variable">$pos</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+        <span class="token keyword">return</span> <span class="token variable">$server</span><span class="token punctuation">;</span>
+      <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+    <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+    <span class="token keyword">return</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span><span class="token punctuation">[</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">serverList</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+  <span class="token comment" spellcheck="true">/**
+   * [mhash 首先通过md5把key处理成一个32位的字符串，取其前8个字符。在经过hash算法处理成一个整数并返回。]
+   * @param  &amp;#123;[type]&amp;#125; $key [description]
+   * @return &amp;#123;[type]&amp;#125;      [description]
+   */</span>
+  <span class="token keyword">function</span> <span class="token function">mhash</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token variable">$md5</span> <span class="token operator">=</span> <span class="token function">substr</span><span class="token punctuation">(</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token variable">$seed</span> <span class="token operator">=</span> <span class="token number">31</span><span class="token punctuation">;</span>
+    <span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token variable">$i</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span><span class="token variable">$i</span><span class="token operator">&lt;</span><span class="token number">8</span><span class="token punctuation">;</span><span class="token variable">$i</span><span class="token operator">++</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+      <span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token variable">$hash</span><span class="token operator">*</span><span class="token variable">$seed</span> <span class="token operator">+</span> <span class="token function">ord</span><span class="token punctuation">(</span><span class="token variable">$md5</span><span class="token operator">&amp;</span><span class="token shell-comment comment">#123;$i&amp;#125;);</span>
+    <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+    <span class="token keyword">return</span> <span class="token variable">$hash</span> <span class="token operator">&amp;</span> <span class="token number">0x7FFFFFFF</span><span class="token punctuation">;</span>
+  <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+<span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>测试</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+  <span class="token variable">$hserver</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FlexiHash</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">addServer</span><span class="token punctuation">(</span><span class="token string">"192.168.1.1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">addServer</span><span class="token punctuation">(</span><span class="token string">"192.168.1.2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">addServer</span><span class="token punctuation">(</span><span class="token string">"192.168.1.3"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">addServer</span><span class="token punctuation">(</span><span class="token string">"192.168.1.4"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">addServer</span><span class="token punctuation">(</span><span class="token string">"192.168.1.5"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">echo</span> <span class="token string">"save key1 in server:"</span><span class="token punctuation">.</span><span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">lookup</span><span class="token punctuation">(</span><span class="token string">"key1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> <span class="token string">"save key2 in server:"</span><span class="token punctuation">.</span><span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">lookup</span><span class="token punctuation">(</span><span class="token string">"key2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> "<span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">=</span><span class="token punctuation">;</span>
+
+  <span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">removeServer</span><span class="token punctuation">(</span><span class="token string">"192.168.1.4"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> <span class="token string">"save key1 in server:"</span><span class="token punctuation">.</span><span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">lookup</span><span class="token punctuation">(</span><span class="token string">"key1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> <span class="token string">"save key2 in server:"</span><span class="token punctuation">.</span><span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">lookup</span><span class="token punctuation">(</span><span class="token string">"key2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> "<span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">=</span><span class="token punctuation">;</span>
+
+  <span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">addServer</span><span class="token punctuation">(</span><span class="token string">"192.168.1.6"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> <span class="token string">"save key1 in server:"</span><span class="token punctuation">.</span><span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">lookup</span><span class="token punctuation">(</span><span class="token string">"key1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> <span class="token string">"save key2 in server:"</span><span class="token punctuation">.</span><span class="token variable">$hserver</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">lookup</span><span class="token punctuation">(</span><span class="token string">"key2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">echo</span> "<span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">===</span><span class="token operator">=</span><span class="token punctuation">;</span>  
+<span class="token delimiter">?></span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>通过测试结果可以看出，在增加或者减少memcached服务器的时候，一致性hash算法只会改变很少的一部分数据的存储服务器，从而能够实现最大限度的减少数据丢失的情况。</p>
+<h2 id="实际应用（PHP）"><a href="#实际应用（PHP）" class="headerlink" title="实际应用（PHP）"></a>实际应用（PHP）</h2><p>在实际应用当中，PHP提供了两种的关于Memcached的扩展，memcache和memcached。两种扩展中都可以设置采用哪种分布方式，我们只需要选择我们要采用的策略并修改配置即可，而不需要我们自己来实现具体的分布算法。</p>
+<p><strong>memcache扩展配置</strong></p>
+<p>控制key到服务器的映射（分布式）策略。 php.ini 配置</p>
+<pre class="line-numbers language-ini"><code class="language-ini"><span class="token selector">[Memcache]</span>
+<span class="token constant">Memcache.allow_failover</span> <span class="token attr-value"><span class="token punctuation">=</span> 1</span>
+<span class="token constant">memcache.max_failover_attempts</span> <span class="token attr-value"><span class="token punctuation">=</span> 2</span>
+<span class="token constant">Memcache.hash_strategy</span> <span class="token attr-value"><span class="token punctuation">=</span>consistent</span>
+<span class="token constant">Memcache.hash_function</span> <span class="token attr-value"><span class="token punctuation">=</span>crc32</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>Memcache.allow_failover</p>
+<blockquote>
+<p>是否在发生错误时（对用户）透明的转移到其他服务器。</p>
+</blockquote>
+<p>memcache.max_failover_attempts</p>
+<blockquote>
+<p>定义在写入和获取数据时最多尝试的服务器次数（即：故障转移最大尝试数），仅和 memcache.allow_failover结合使用。</p>
+</blockquote>
+<p>Memcache.hash_strategy</p>
+<blockquote>
+<p>控制key到服务器的映射（分布式）策略。</p>
+</blockquote>
+<ul>
+<li>consistent，采用一致性hash分布策略实现映射</li>
+<li>standard，采用普通hash分布策略实现映射</li>
+</ul>
+<p>memcache.hash_function</p>
+<blockquote>
+<p>控制在key-server映射时使用哪个hash函数crc32 标明使用标准CRC32进行hash，fnv则说明使用FNV-1a。</p>
+</blockquote>
+<p><strong>memcached扩展配置</strong></p>
+<pre><code>&lt;?php
+  $mem = new memcached();
+  $mem-&gt;setOption(Memcached::OPT_DISTRIBUTION,Memcached::DISTRIBUTION_CONSISTENT);
+  $mem-&gt;setOption(Memcached::OPT_LIBKETAMA_COMPATIBLE,true);
+</code></pre>
+<p>Memcached::OPT_DISTRIBUTION</p>
+<blockquote>
+<p>指定元素key分布到各个服务器的方法。当前支持的方法有余数分步法合一致性hash算法两种。一致性hash算法提供 了更好的分配策略并且在添加服务器到集群时可以最小化缓存丢失。<br>类型: integer, 默认: Memcached::DISTRIBUTION_MODULA.</p>
+</blockquote>
+<p>Memcached::DISTRIBUTION_MODULA</p>
+<blockquote>
+<p>余数分布算法。</p>
+</blockquote>
+<p>Memcached::DISTRIBUTION_CONSISTENT</p>
+<blockquote>
+<p>一致性分布算法(基于libketama).</p>
+</blockquote>
+<p>Memcached::OPT_LIBKETAMA_COMPATIBLE</p>
+<blockquote>
+<p>开启或关闭兼容的libketama类行为。当开启此选项后，元素key的hash算法将会被设置为md5并且分布算法将会 采用带有权重的一致性hash分布。这一点非常有用因为其他基于libketama的客户端（比如python，urby）在同样 的服务端配置下可以透明的访问key。</p>
+<p><strong>Note:</strong><br>如果你要使用一致性hash算法强烈建议开启此选项，并且这个选项可能在未来的发布版中被设置为默认开启。<br>类型: boolean, 默认: FALSE.</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95/" rel="tag"># 分布式部署算法</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/10/03/Nginx%E9%85%8D%E7%BD%AE%E6%95%B4%E7%90%86/" rel="prev" title="Nginx配置整理">
+                  <i class="fa fa-chevron-left"></i> Nginx配置整理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/09/30/PHP%E5%BC%82%E5%B8%B8%E5%92%8C%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/" rel="next" title="PHP异常和错误处理">
+                  PHP异常和错误处理 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/10/01/Memcached%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

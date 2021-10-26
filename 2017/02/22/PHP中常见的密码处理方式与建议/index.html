@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="密码安全的重要性我们就不用再去强调，随着在线攻击的增多，如果我们对密码没有进行合适的处理或做防御措施，我们的应用就会肯定会收到来自各方的威胁和攻击。  所以作为开发者，我们需要对用户的密码做好预防措施。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP中常见的密码处理方式与建议">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="密码安全的重要性我们就不用再去强调，随着在线攻击的增多，如果我们对密码没有进行合适的处理或做防御措施，我们的应用就会肯定会收到来自各方的威胁和攻击。  所以作为开发者，我们需要对用户的密码做好预防措施。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20170223/QQTuPian20170223093340.png">
+<meta property="article:published_time" content="2017-02-22T12:30:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.617Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="密码">
+<meta property="article:tag" content="哈希">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20170223/QQTuPian20170223093340.png">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/","path":"2017/02/22/PHP中常见的密码处理方式与建议/","title":"PHP中常见的密码处理方式与建议"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PHP中常见的密码处理方式与建议 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E5%AF%86%E7%A0%81%E6%88%91%E4%BB%AC%E5%BA%94%E8%AF%A5%E9%81%B5%E5%AE%88%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8E%9F%E5%88%99"><span class="nav-number">1.</span> <span class="nav-text">关于密码我们应该遵守的一些原则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%9D%E5%AF%B9%E4%B8%8D%E8%83%BD%E7%9F%A5%E9%81%93%E7%94%A8%E6%88%B7%E7%9A%84%E5%AF%86%E7%A0%81"><span class="nav-number">1.1.</span> <span class="nav-text">绝对不能知道用户的密码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%9D%E5%AF%B9%E4%B8%8D%E5%8E%BB%E7%BA%A6%E6%9D%9F%E7%94%A8%E6%88%B7%E7%9A%84%E5%AF%86%E7%A0%81"><span class="nav-number">1.2.</span> <span class="nav-text">绝对不去约束用户的密码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%9D%E5%AF%B9%E4%B8%8D%E9%80%9A%E8%BF%87%E7%94%B5%E5%AD%90%E9%82%AE%E4%BB%B6%E5%8F%91%E9%80%81%E7%94%A8%E6%88%B7%E7%9A%84%E5%AF%86%E7%A0%81"><span class="nav-number">1.3.</span> <span class="nav-text">绝对不通过电子邮件发送用户的密码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-bcrypt-%E8%AE%A1%E7%AE%97%E7%94%A8%E6%88%B7%E5%AF%86%E7%A0%81%E7%9A%84%E5%93%88%E5%B8%8C%E5%80%BC"><span class="nav-number">2.</span> <span class="nav-text">使用 bcrypt 计算用户密码的哈希值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%93%88%E5%B8%8CAPI"><span class="nav-number">3.</span> <span class="nav-text">密码哈希API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP%E5%8E%9F%E7%94%9F%E5%AF%86%E7%A0%81%E5%93%88%E5%B8%8CAPI"><span class="nav-number">3.1.</span> <span class="nav-text">PHP原生密码哈希API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#password-get-info"><span class="nav-number">3.1.1.</span> <span class="nav-text">password_get_info</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#password-hash"><span class="nav-number">3.1.2.</span> <span class="nav-text">password_hash</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#password-needs-rehash"><span class="nav-number">3.1.3.</span> <span class="nav-text">password_needs_rehash</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#password-verify"><span class="nav-number">3.1.4.</span> <span class="nav-text">password_verify</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP5-50-%E4%B9%8B%E5%89%8D%E7%9A%84%E5%AF%86%E7%A0%81%E5%93%88%E5%B8%8C-API"><span class="nav-number">3.2.</span> <span class="nav-text">PHP5.50 之前的密码哈希 API</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PHP中常见的密码处理方式与建议<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-02-22 20:30:00" itemprop="dateCreated datePublished" datetime="2017-02-22T20:30:00+08:00">2017-02-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/02/22/PHP中常见的密码处理方式与建议/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>密码安全的重要性我们就不用再去强调，随着在线攻击的增多，如果我们对密码没有进行合适的处理或做防御措施，我们的应用就会肯定会收到来自各方的威胁和攻击。</p>
+<p><img data-src="http://n.sinaimg.cn/games/3ece443e/20170223/QQTuPian20170223093340.png" alt="password"></p>
+<p>所以作为开发者，我们需要对用户的密码做好预防措施。</p>
+<span id="more"></span>
+
+<h2 id="关于密码我们应该遵守的一些原则"><a href="#关于密码我们应该遵守的一些原则" class="headerlink" title="关于密码我们应该遵守的一些原则"></a>关于密码我们应该遵守的一些原则</h2><h3 id="绝对不能知道用户的密码"><a href="#绝对不能知道用户的密码" class="headerlink" title="绝对不能知道用户的密码"></a>绝对不能知道用户的密码</h3><ul>
+<li>我们绝对不能知道用户的密码，也不能有获取用户密码的方式。</li>
+<li><strong>知道的越少（包括我们开发者自己）越安全。</strong></li>
+</ul>
+<h3 id="绝对不去约束用户的密码"><a href="#绝对不去约束用户的密码" class="headerlink" title="绝对不去约束用户的密码"></a>绝对不去约束用户的密码</h3><ul>
+<li><p>最好不要去约束密码的长度、格式等。</p>
+</li>
+<li><p>如果要求密码符合一个特定的模式，其实对于那些不怀好意的人也提供了攻击的途径。</p>
+</li>
+<li><p>如果必须要约束的话，建议只限制最小长度。并把常用的密码或基于字典创建的密码加入黑名单，也是一个好主意。</p>
+</li>
+</ul>
+<h3 id="绝对不通过电子邮件发送用户的密码"><a href="#绝对不通过电子邮件发送用户的密码" class="headerlink" title="绝对不通过电子邮件发送用户的密码"></a>绝对不通过电子邮件发送用户的密码</h3><p>对于一个web应用来说，重置或修改密码时，我们应该在邮件里发送用于设定或修改密码的 <code>URL</code> 。而且这个<code>URL</code>中应该会包含一个唯一的令牌，这个令牌只能在设定或修改密码时使用一次。在设定或修改密码之后，我们就应该把这个令牌置为失效。</p>
+<h2 id="使用-bcrypt-计算用户密码的哈希值"><a href="#使用-bcrypt-计算用户密码的哈希值" class="headerlink" title="使用 bcrypt 计算用户密码的哈希值"></a>使用 <code>bcrypt</code> 计算用户密码的哈希值</h2><blockquote>
+<p>目前，通过大量的审查，最安全的哈希算法是 <code>bcrypt</code> 。</p>
+</blockquote>
+<p>首先，我们明确两个概念，哈希、加密。哈希和加密有什么区别？</p>
+<ul>
+<li><p>加密</p>
+<blockquote>
+<p>加密是双向算法，加密的数据之后通过解密还可以得到。</p>
+</blockquote>
+</li>
+<li><p>哈希</p>
+<blockquote>
+<p>哈希是单向算法，哈希后的数据不能再还原成原始值。<br>哈希算法的用途，</p>
+<ul>
+<li>验证数据的完整性（要求算法速度快）</li>
+<li>用户提高密码等需要单向验证的数据的安全性（要求安全性高，甚至故意要求时间慢）</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<p>一般我们在数据库中保存的应该是计算出来的密码的哈希值。这样即使我们的数据库泄露了，他们也只能看到这些无意义的密码的哈希值。</p>
+<p>哈希的算法有很多种，</p>
+<ul>
+<li><p><code>MD5</code></p>
+<blockquote>
+<p><code>MD5</code>即<code>Message-Digest Algorithm 5</code>（信息-摘要算法5），用于确保信息传输完整一致。是计算机广泛使用的杂凑算法之一（又译摘要算法、哈希算法），主流编程语言普遍已有<code>MD5</code>实现。将数据（如汉字）运算为另一固定长度值，是杂凑算法的基础原理，<code>MD5</code>的前身有<code>MD2</code>、<code>MD3</code>和<code>MD4</code>。</p>
+</blockquote>
+</li>
+<li><p><code>SHA1</code></p>
+<blockquote>
+<p>安全哈希算法（<code>Secure Hash Algorithm</code>）主要适用于数字签名标准 （<code>Digital Signature Standard DSS</code>）里面定义的数字签名算法（<code>Digital Signature Algorithm DSA</code>）。对于长度小于<code>2^64</code>位的消息，<code>SHA1</code>会产生一个<code>160</code>位的消息摘要。当接收到消息的时候，这个消息摘要可以用来验证数据的完整性。在传输的过程中，数据很可能会发生变化，那么这时候就会产生不同的消息摘要。 <code>SHA1</code>有如下特性：不可以从消息摘要中复原信息；两个不同的消息不会产生同样的消息摘要,(但会有<code>1x10 ^ 48</code>分之一的机率出现相同的消息摘要,一般使用时忽略)。</p>
+</blockquote>
+</li>
+<li><p><code>bcrypt</code></p>
+<blockquote>
+<p><code>bcrypt</code>是专门为密码存储而设计的算法，基于<code>Blowfish</code>加密算法变形而来，由<code>Niels Provos</code>和<code>David Mazières</code>发表于<code>1999</code>年的<code>USENIX</code>。　<code>bcrypt</code>最大的好处是有一个参数（<code>work factor</code>)，可用于调整计算强度，而且<code>work factor</code>是包括在输出的摘要中的。随着攻击者计算能力的提高，使用者可以逐步增大<code>work factor</code>，而且不会影响已有用户的登陆。　<code>bcrypt</code>经过了很多安全专家的仔细分析，使用在以安全著称的<code>OpenBSD</code>中，一般认为它比<code>PBKDF2</code>更能承受随着计算能力加强而带来的风险。<strong>bcrypt也有广泛的函数库支持，因此我们建议使用这种方式存储密码</strong>。</p>
+</blockquote>
+</li>
+<li><p><code>scrypt</code></p>
+<blockquote>
+<p>scrypt不仅计算所需时间长，而且占用的内存也多，使得并行计算多个摘要异常困难，因此利用<code>rainbow table</code>进行暴力攻击更加困难。<strong>scrypt没有在生产环境中大规模应用，并且缺乏仔细的审察和广泛的函数库支持</strong> 。但是，<code>scrypt</code>在算法层面只要没有破绽，它的安全性应该高于<code>PBKDF2</code>和<code>bcrypt</code>。</p>
+</blockquote>
+</li>
+</ul>
+<p>目前，通过大量的审查，最安全的哈希算法是 <code>bcrypt</code> 。与 <code>MD5</code> 和 <code>SHA1</code> 不同， <code>bcrypt</code> 算法会自动加盐，来防止潜在的彩虹表攻击。 <code>bcrypt</code> 算法会花费大量的时间反复处理数据，来生成安全的哈希值。在这个过程中，处理数据的次数叫工作因子（<code>work factor</code>）。工作因子的值越高，破解密码哈希值的时间会成指数倍增长。</p>
+<p><code>bcrypt</code> 算法永不过时，如果计算机的运算速度变快了，我们只需要提高工作因子即可。</p>
+<p>顺带说一下，任何情况下尽可能的不要使用 <code>md5</code> 算法，至少也要使用 SHA 系列的哈希算法。因为<code>md5</code>算法以目前计算机的计算能力来说显得比较简单，而 <code>md5</code> 的性能优势现在也已经完全可以忽略不计了。</p>
+<h2 id="密码哈希API"><a href="#密码哈希API" class="headerlink" title="密码哈希API"></a>密码哈希API</h2><p>上面我们说到 <code>bcrypt</code> 算法最安全，最适合对我们的密码进行哈希。 <code>PHP</code> 在 <code>PHP5.5.0+</code> 的版本中提供了原生的<code>密码哈希API</code>供我们使用，这个<code>密码哈希API</code>默认使用的就是 <code>bcrypt</code> 哈希算法，从而大大简化了我们计算密码哈希值和验证密码的操作。</p>
+<h3 id="PHP原生密码哈希API"><a href="#PHP原生密码哈希API" class="headerlink" title="PHP原生密码哈希API"></a>PHP原生密码哈希API</h3><p>密码哈希函数：</p>
+<ul>
+<li><p><code>password_get_info</code></p>
+<blockquote>
+<p>返回指定的哈希值的相关信息</p>
+</blockquote>
+</li>
+<li><p><code>password_hash</code></p>
+<blockquote>
+<p>创建密码的哈希（hash）</p>
+</blockquote>
+</li>
+<li><p><code>password_needs_rehash</code></p>
+<blockquote>
+<p>检查给定的哈希是否与给定的选项匹配</p>
+</blockquote>
+</li>
+<li><p><code>password_verify</code></p>
+<blockquote>
+<p>验证密码是否和哈希匹配</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="password-get-info"><a href="#password-get-info" class="headerlink" title="password_get_info"></a>password_get_info</h4><p>说明</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token keyword">array</span> <span class="token function">password_get_info</span> <span class="token punctuation">(</span> string <span class="token variable">$hash</span> <span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>参数</p>
+<ul>
+<li><code>hash</code>, 一个由 password_hash() 创建的散列值。</li>
+</ul>
+<p>示例，</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token function">password_get_info</span><span class="token punctuation">(</span><span class="token variable">$hash</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment" spellcheck="true">// Example</span>
+<span class="token keyword">array</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+  <span class="token punctuation">[</span><span class="token string">"algo"</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token operator">></span>
+  <span class="token function">int</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+  <span class="token punctuation">[</span><span class="token string">"algoName"</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token operator">></span>
+  <span class="token function">string</span><span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">)</span> <span class="token string">"bcrypt"</span>
+  <span class="token punctuation">[</span><span class="token string">"options"</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token operator">></span>
+  <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token punctuation">[</span><span class="token string">"cost"</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token operator">></span>
+    <span class="token function">int</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>
+  <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+<span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+<span class="token delimiter">?></span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="password-hash"><a href="#password-hash" class="headerlink" title="password_hash"></a>password_hash</h4><p><strong>说明</strong></p>
+<pre class="line-numbers language-php"><code class="language-php">string <span class="token function">password_hash</span> <span class="token punctuation">(</span> string <span class="token variable">$password</span> <span class="token punctuation">,</span> integer <span class="token variable">$algo</span> <span class="token punctuation">[</span><span class="token punctuation">,</span> <span class="token keyword">array</span> <span class="token variable">$options</span> <span class="token punctuation">]</span> <span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>password_hash() 使用足够强度的单向散列算法创建密码的哈希（hash）。 password_hash() 兼容 crypt()。 所以， crypt() 创建的密码哈希也可用于 password_hash()。</p>
+<p>当前支持的算法：</p>
+<ul>
+<li><p><code>PASSWORD_DEFAULT</code></p>
+<blockquote>
+<p>使用 <code>bcrypt</code> 算法 (PHP 5.5.0 默认)。 注意，该常量会随着 <code>PHP</code> 加入更新更高强度的算法而改变。 所以，使用此常量生成结果的长度将在未来有变化。 因此，数据库里储存结果的列可超过60个字符（最好是255个字符）。</p>
+</blockquote>
+</li>
+<li><p><code>PASSWORD_BCRYPT</code></p>
+<blockquote>
+<p>使用 <code>CRYPT_BLOWFISH</code> 算法创建哈希。 这会产生兼容使用 “<code>$2y$</code>“ 的 crypt()。 结果将会是 60 个字符的字符串， 或者在失败时返回 <code>FALSE。</code></p>
+</blockquote>
+</li>
+</ul>
+<p>支持的选项：</p>
+<ul>
+<li><p><code>salt</code> - 手动提供哈希密码的盐值（<code>salt</code>）。这将避免自动生成盐值（<code>salt</code>）。</p>
+<blockquote>
+<p>省略此值后，password_hash() 会为每个密码哈希自动生成随机的盐值。这种操作是有意的模式。</p>
+<p><strong>Warning 盐值（salt）选项从 PHP 7.0.0 开始被废弃（deprecated）了。 现在最好选择简单的使用默认产生的盐值。</strong></p>
+</blockquote>
+</li>
+<li><p><code>cost</code> - 代表算法使用的 <code>cost</code>。crypt() 页面上有 <code>cost</code> 值的例子。</p>
+<blockquote>
+<p>省略时，默认值是 10。 这个 <code>cost</code> 是个不错的底线，但也许可以根据自己硬件的情况，加大这个值。</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>参数</strong></p>
+<ul>
+<li><p><code>password</code>, 用户的密码。</p>
+<blockquote>
+<p> 使用 <code>PASSWORD_BCRYPT</code> 做算法，将使 <code>password</code> 参数最长为72个字符，超过会被截断。</p>
+</blockquote>
+</li>
+<li><p><code>algo</code>, 一个用来在散列密码时指示算法的密码算法常量。</p>
+</li>
+<li><p><code>options</code>, 一个包含有选项的关联数组。目前支持两个选项：</p>
+<ul>
+<li><code>salt</code>，在散列密码时加的盐（干扰字符串），</li>
+<li><code>cost</code>，用来指明算法递归的层数。这两个值的例子可在 crypt() 页面找到。<blockquote>
+<p>省略后，将使用随机盐值与默认 <code>cost</code>。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>示例</strong><br>示例1，使用默认算法哈希密码</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token comment" spellcheck="true">/**
+ * 我们想要使用默认算法哈希密码
+ * 当前是 BCRYPT，并会产生 60 个字符的结果。
+ *
+ * 请注意，随时间推移，默认算法可能会有变化，
+ * 所以需要储存的空间能够超过 60 字（255字不错）
+ */</span>
+<span class="token keyword">echo</span> <span class="token function">password_hash</span><span class="token punctuation">(</span><span class="token string">"rasmuslerdorf"</span><span class="token punctuation">,</span> <span class="token constant">PASSWORD_DEFAULT</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token string">"\n"</span><span class="token punctuation">;</span>
+<span class="token delimiter">?></span>
+<span class="token comment" spellcheck="true">// 输出类似于：</span>
+<span class="token comment" spellcheck="true">// $2y$10$.vGA1O9wmRjrwAVXD98HNOgsNpDczlqm3Jq7KnEd1rVAGv3Fykk1a</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>示例2，手动设置 <code>cost</code></p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token comment" spellcheck="true">/**
+ * 在这个案例里，我们为 BCRYPT 增加 cost 到 12。
+ * 注意，我们已经切换到了，将始终产生 60 个字符。
+ */</span>
+<span class="token variable">$options</span> <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">'cost'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token number">12</span><span class="token punctuation">,</span>
+<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">echo</span> <span class="token function">password_hash</span><span class="token punctuation">(</span><span class="token string">"rasmuslerdorf"</span><span class="token punctuation">,</span> <span class="token constant">PASSWORD_BCRYPT</span><span class="token punctuation">,</span> <span class="token variable">$options</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token string">"\n"</span><span class="token punctuation">;</span>
+<span class="token delimiter">?></span>
+<span class="token comment" spellcheck="true">// 输出类似于：</span>
+<span class="token comment" spellcheck="true">// $2y$12$QjSH496pcT5CEbzjD/vtVeH03tfHKFy36d4J0Ltp3lRtee9HDxY3K</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>示例3，如何选择一个适合当前服务器的 cost</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token comment" spellcheck="true">/**
+ * 这个例子对服务器做了基准测试（benchmark），检测服务器能承受多高的 cost
+ * 在不明显拖慢服务器的情况下可以设置最高的值
+ * 8-10 是个不错的底线，在服务器够快的情况下，越高越好。
+ * 以下代码目标为  ≤ 50 毫秒（milliseconds），
+ * 适合系统处理交互登录。
+ */</span>
+<span class="token variable">$timeTarget</span> <span class="token operator">=</span> <span class="token number">0.05</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 50 毫秒（milliseconds）</span>
+
+<span class="token variable">$cost</span> <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">;</span>
+<span class="token keyword">do</span> <span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token variable">$cost</span><span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token variable">$start</span> <span class="token operator">=</span> <span class="token function">microtime</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">password_hash</span><span class="token punctuation">(</span><span class="token string">"test"</span><span class="token punctuation">,</span> <span class="token constant">PASSWORD_BCRYPT</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">"cost"</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token variable">$cost</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token variable">$end</span> <span class="token operator">=</span> <span class="token function">microtime</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span><span class="token shell-comment comment">#125; while (($end - $start) &lt; $timeTarget);</span>
+
+<span class="token keyword">echo</span> <span class="token string">"Appropriate Cost Found: "</span> <span class="token punctuation">.</span> <span class="token variable">$cost</span> <span class="token punctuation">.</span> <span class="token string">"\n"</span><span class="token punctuation">;</span>
+<span class="token delimiter">?></span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>输出类似于：</p>
+<pre><code>Appropriate Cost Found: 10
+</code></pre>
+<h4 id="password-needs-rehash"><a href="#password-needs-rehash" class="headerlink" title="password_needs_rehash"></a>password_needs_rehash</h4><p>说明</p>
+<pre class="line-numbers language-php"><code class="language-php">boolean <span class="token function">password_needs_rehash</span> <span class="token punctuation">(</span> string <span class="token variable">$hash</span> <span class="token punctuation">,</span> integer <span class="token variable">$algo</span> <span class="token punctuation">[</span><span class="token punctuation">,</span> <span class="token keyword">array</span> <span class="token variable">$options</span> <span class="token punctuation">]</span> <span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>参数</p>
+<ul>
+<li><code>hash</code>, 一个由 password_hash() 创建的散列值。</li>
+<li><code>algo</code>, 一个用来在散列密码时指示算法的密码算法常量。</li>
+<li><code>options</code>, 一个包含有选项的关联数组。目前支持两个选项：<ul>
+<li><code>salt</code>，在散列密码时加的盐（干扰字符串），</li>
+<li><code>cost</code>，用来指明算法递归的层数。这两个值的例子可在 crypt() 页面找到。</li>
+</ul>
+</li>
+</ul>
+<p>示例，</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token variable">$password</span> <span class="token operator">=</span> <span class="token string">'rasmuslerdorf'</span><span class="token punctuation">;</span>
+<span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token string">'$2y$10$YCFsG6elYca568hBi2pZ0.3LDL5wjgxct1N8w/oLR/jfHsiQwCqTS'</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// cost 参数可随硬件的提升也不断提升</span>
+<span class="token variable">$options</span> <span class="token operator">=</span> <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token string">'cost'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token number">11</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// 使用纯文本密码 验证存储的散列</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">password_verify</span><span class="token punctuation">(</span><span class="token variable">$password</span><span class="token punctuation">,</span> <span class="token variable">$hash</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token comment" spellcheck="true">// 检查是否有更新的散列算法可用或 cost 是否已经改变</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">password_needs_rehash</span><span class="token punctuation">(</span><span class="token variable">$hash</span><span class="token punctuation">,</span> <span class="token constant">PASSWORD_DEFAULT</span><span class="token punctuation">,</span> <span class="token variable">$options</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+        <span class="token comment" spellcheck="true">// 如果是，请创建一个新的哈希值，并替换旧的哈希值</span>
+        <span class="token variable">$newHash</span> <span class="token operator">=</span> <span class="token function">password_hash</span><span class="token punctuation">(</span><span class="token variable">$password</span><span class="token punctuation">,</span> <span class="token constant">PASSWORD_DEFAULT</span><span class="token punctuation">,</span> <span class="token variable">$options</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+
+    <span class="token comment" spellcheck="true">// 用户登录验证完成</span>
+    <span class="token comment" spellcheck="true">// ...</span>
+<span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+<span class="token delimiter">?></span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="password-verify"><a href="#password-verify" class="headerlink" title="password_verify"></a>password_verify</h4><p>说明</p>
+<pre class="line-numbers language-php"><code class="language-php">boolean <span class="token function">password_verify</span> <span class="token punctuation">(</span> string <span class="token variable">$password</span> <span class="token punctuation">,</span> string <span class="token variable">$hash</span> <span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<blockquote>
+<p>注意 password_hash() 返回的哈希包含了算法、 cost 和盐值。 因此，所有需要的信息都包含内。使得验证函数不需要储存额外盐值等信息即可验证哈希。</p>
+</blockquote>
+<p>参数</p>
+<ul>
+<li><code>password</code>, 用户的密码。</li>
+<li><code>hash</code>, 一个由 password_hash() 创建的散列值。</li>
+</ul>
+<p>示例，</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token comment" spellcheck="true">// 想知道以下字符从哪里来，可参见 password_hash() 的例子</span>
+<span class="token variable">$hash</span> <span class="token operator">=</span> <span class="token string">'$2y$07$BCryptRequires22Chrcte/VlQH0piJtjXl.0t1XkA8pw9dMXTpOq'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">password_verify</span><span class="token punctuation">(</span><span class="token string">'rasmuslerdorf'</span><span class="token punctuation">,</span> <span class="token variable">$hash</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span><span class="token shell-comment comment">#123;</span>
+    <span class="token keyword">echo</span> <span class="token string">'Password is valid!'</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span><span class="token shell-comment comment">#125; else &amp;#123;</span>
+    <span class="token keyword">echo</span> <span class="token string">'Invalid password.'</span><span class="token punctuation">;</span>
+<span class="token operator">&amp;</span><span class="token shell-comment comment">#125;</span>
+<span class="token delimiter">?></span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>以上例程会输出：</p>
+<pre><code>Password is valid!
+</code></pre>
+<h3 id="PHP5-50-之前的密码哈希-API"><a href="#PHP5-50-之前的密码哈希-API" class="headerlink" title="PHP5.50 之前的密码哈希 API"></a>PHP5.50 之前的密码哈希 API</h3><p>安东尼·费拉拉（PHP原生密码哈希 API的开发者）为PHP5.5.0 以下的版本也提供了 <code>ircmaxell/password-compat</code>组件（<a target="_blank" rel="noopener" href="https://packagist.org/packages/ircmaxell/password-compat%EF%BC%89%E3%80%82">https://packagist.org/packages/ircmaxell/password-compat）。</a></p>
+<p>这个组件也实现了PHP密码哈希API中的所有函数，</p>
+<ul>
+<li><p><code>password_get_info</code></p>
+</li>
+<li><p><code>password_hash</code></p>
+</li>
+<li><p><code>password_needs_rehash</code></p>
+</li>
+<li><p><code>password_verify</code></p>
+</li>
+</ul>
+<p>我们可以直接使用 <code>Composer</code> 把这个组件添加到我们的应用中就行了。例如，</p>
+<pre class="line-numbers language-bash"><code class="language-bash">composer require ircmaxell/password-compat
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AF%86%E7%A0%81/" rel="tag"># 密码</a>
+              <a href="/tags/%E5%93%88%E5%B8%8C/" rel="tag"># 哈希</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/03/29/%E6%B5%85%E8%B0%88Web%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%BD%E8%B8%AA/" rel="prev" title="浅谈Web客户端追踪[转]">
+                  <i class="fa fa-chevron-left"></i> 浅谈Web客户端追踪[转]
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/02/12/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E4%B8%AD%E7%9A%84%E8%8C%83%E5%BC%8F%E7%90%86%E8%AE%BA/" rel="next" title="数据库设计中的范式理论小结">
+                  数据库设计中的范式理论小结 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2017/02/22/PHP%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E4%B8%8E%E5%BB%BA%E8%AE%AE/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

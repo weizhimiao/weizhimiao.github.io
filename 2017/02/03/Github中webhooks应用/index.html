@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Webhooks 是 Github 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，Github 会将信息以POST方式发送到我们指定的URL。通过Webhooks 我们可以记录更新，触发CI构建、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。 Github 上对于每个账号或者项目上的每个事件最多可以创建20个 Webhooks 。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Github中Webhooks的应用">
+<meta property="og:url" content="https://weizhimiao.github.io/2017/02/03/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Webhooks 是 Github 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，Github 会将信息以POST方式发送到我们指定的URL。通过Webhooks 我们可以记录更新，触发CI构建、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。 Github 上对于每个账号或者项目上的每个事件最多可以创建20个 Webhooks 。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-02-03T12:30:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.613Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="git">
+<meta property="article:tag" content="版本控制">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2017/02/03/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2017/02/03/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8/","path":"2017/02/03/Github中webhooks应用/","title":"Github中Webhooks的应用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Github中Webhooks的应用 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E6%95%88%E8%BD%BD%E8%8D%B7"><span class="nav-number">2.</span> <span class="nav-text">有效载荷</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%B7%E6%B1%82Header"><span class="nav-number">2.1.</span> <span class="nav-text">请求Header</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ping%E4%BA%8B%E4%BB%B6"><span class="nav-number">3.</span> <span class="nav-text">Ping事件</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2017/02/03/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Github中Webhooks的应用<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-02-03 20:30:00" itemprop="dateCreated datePublished" datetime="2017-02-03T20:30:00+08:00">2017-02-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">软件工程</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2017/02/03/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/02/03/Github中webhooks应用/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>13k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><code>Webhooks</code> 是 <code>Github</code> 为我们提供的一种订阅某些时间的功能。当这些事件被触发时，<code>Github</code> 会将信息以<code>POST</code>方式发送到我们指定的<code>URL</code>。通过<code>Webhooks</code> 我们可以记录更新，触发<code>CI构建</code>、更新备份镜像，甚至服务器的自动部署等等我们能够想到的各个地方。</p>
+<p><code>Github</code> 上对于每个账号或者项目上的每个事件最多可以创建20个 <code>Webhooks</code> 。</p>
+<span id="more"></span>
+
+<h2 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h2><p>配置 <code>Webhook</code> 时，我们可以自定义具体的事件。只有定义定义的这些事件才会触发对指定的<code>URL</code>的请求。默认，<code>webhooks</code> 只订阅 <code>push</code> 事件，不过我们也可通过 <code>API</code> 或者 <code>UI</code> 来更改订阅事件的列表。</p>
+<p>每个事件对应于可能发生在我们组织或 <code>Repository</code> 中的一组特定操作。 例如，如果订阅 <code>issues</code> 事件，则每次打开，关闭，标记 <code>issues</code> 时，我们都会收到详细的有效内容。</p>
+<p>可用事件有：</p>
+<table>
+<thead>
+<tr>
+<th>事件名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>*</code></td>
+<td>任何时间触发任何事件（通配符事件）。</td>
+</tr>
+<tr>
+<td><code>commit_comment</code></td>
+<td>每次提交被注释时。</td>
+</tr>
+<tr>
+<td><code>create</code></td>
+<td>每次分支或标记被创建时。</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>每次分支或标记被删除时。</td>
+</tr>
+<tr>
+<td><code>deployment</code></td>
+<td>每次 <code>Repository</code> 被部署。</td>
+</tr>
+<tr>
+<td><code>deployment_status</code></td>
+<td>任何时候，Repository的部署有来自API的状态更新时。</td>
+</tr>
+<tr>
+<td><code>fork</code></td>
+<td>每次<code>Repository</code>被<code>fork</code>时。</td>
+</tr>
+<tr>
+<td><code>gollum</code></td>
+<td>每次<code>Wiki Page</code> 被更新时。</td>
+</tr>
+<tr>
+<td><code>issue_comment</code></td>
+<td>每次 <code>Issue</code> 中的评论被添加、编辑、或删除时。</td>
+</tr>
+<tr>
+<td><code>issues</code></td>
+<td>每次 <code>issue</code> 被分配、未分配，标记，未标记，打开，编辑，重大事件，拆除，关闭或重新打开时。</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>每次标签被创建、编辑、或删除时。</td>
+</tr>
+<tr>
+<td><code>member</code></td>
+<td>每次添加或删除一个协作者用户，或者更改他们的权限时。</td>
+</tr>
+<tr>
+<td><code>membership</code></td>
+<td>任何时候添加或删除团队中用户。（仅组织钩子）</td>
+</tr>
+<tr>
+<td><code>milestone</code></td>
+<td>每次创建、关闭、打开、编辑或删除 <code>milestone</code> （里程碑）时。</td>
+</tr>
+<tr>
+<td><code>organization</code></td>
+<td>任何时候添加，删除或邀请用户加入组织。 仅组织钩子。</td>
+</tr>
+<tr>
+<td><code>page_build</code></td>
+<td>每次页面网站建立时。</td>
+</tr>
+<tr>
+<td><code>project_card</code></td>
+<td>项目卡片创建，更新或删除。</td>
+</tr>
+<tr>
+<td><code>project_column</code></td>
+<td>项目 <code>column</code> 创建，更新，移动或删除时。</td>
+</tr>
+<tr>
+<td><code>project</code></td>
+<td>项目创建、编辑、或删除时。</td>
+</tr>
+<tr>
+<td><code>public</code></td>
+<td><code>Repository</code> 从private更改为public时。</td>
+</tr>
+<tr>
+<td><code>pull_request_review_comment</code></td>
+<td>每次pull请求被创建，编辑或删除差异注释时。</td>
+</tr>
+<tr>
+<td><code>pull_request_review</code></td>
+<td>每次提交Pull请求审核时。</td>
+</tr>
+<tr>
+<td><code>pull_request</code></td>
+<td>每次 pull 请求被打开，关闭，重新打开，编辑，分配，未分配，请求审核，审核请求已移除，已标记，未标记或已同步时。</td>
+</tr>
+<tr>
+<td><code>push</code></td>
+<td>每次 push 时（默认事件）</td>
+</tr>
+</tbody></table>
+<p><code>repository</code>|每次 <code>Repository</code> 被创建、删除、公开或 私有化时。<br><code>release</code>|每次 <code>release</code> 被发布到 <code>Repository</code> 中时<br><code>status</code> |每次从API中更新版本库状态时。<br><code>team</code>   |任何时候创建，删除，修改 <code>Repository</code> 的团队。 仅组织钩子<br><code>team_add</code>|每次添加或修改 <code>Repository</code> 中的 team 成员时。<br><code>watch</code>  |每次用户对<code>Repository</code>加星标时。</p>
+<h2 id="有效载荷"><a href="#有效载荷" class="headerlink" title="有效载荷"></a>有效载荷</h2><p>每个事件类型具有特定的有效载荷格式以及相关的事件信息。 即，不同的事件被触发发送到我们配置的 <code>URL</code> 的 <code>POST</code> 数据格式和内容也会不同。</p>
+<p>例如，一个 <code>commit_comment</code> 事件如果被触发，将会向 URL 发送类似下面的内容。</p>
+<pre><code>&#123;
+  &quot;action&quot;: &quot;created&quot;,
+  &quot;comment&quot;: &#123;
+    &quot;url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/comments/11056394&quot;,
+    &quot;html_url&quot;: &quot;https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394&quot;,
+    &quot;id&quot;: 11056394,
+    &quot;user&quot;: &#123;
+      &quot;login&quot;: &quot;baxterthehacker&quot;,
+      &quot;id&quot;: 6752317,
+      &quot;avatar_url&quot;: &quot;https://avatars.githubusercontent.com/u/6752317?v=3&quot;,
+      &quot;gravatar_id&quot;: &quot;&quot;,
+      &quot;url&quot;: &quot;https://api.github.com/users/baxterthehacker&quot;,
+      &quot;html_url&quot;: &quot;https://github.com/baxterthehacker&quot;,
+      &quot;followers_url&quot;: &quot;https://api.github.com/users/baxterthehacker/followers&quot;,
+      &quot;following_url&quot;: &quot;https://api.github.com/users/baxterthehacker/following&#123;/other_user&#125;&quot;,
+      &quot;gists_url&quot;: &quot;https://api.github.com/users/baxterthehacker/gists&#123;/gist_id&#125;&quot;,
+      &quot;starred_url&quot;: &quot;https://api.github.com/users/baxterthehacker/starred&#123;/owner&#125;&#123;/repo&#125;&quot;,
+      &quot;subscriptions_url&quot;: &quot;https://api.github.com/users/baxterthehacker/subscriptions&quot;,
+      &quot;organizations_url&quot;: &quot;https://api.github.com/users/baxterthehacker/orgs&quot;,
+      &quot;repos_url&quot;: &quot;https://api.github.com/users/baxterthehacker/repos&quot;,
+      &quot;events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/events&#123;/privacy&#125;&quot;,
+      &quot;received_events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/received_events&quot;,
+      &quot;type&quot;: &quot;User&quot;,
+      &quot;site_admin&quot;: false
+    &#125;,
+    &quot;position&quot;: null,
+    &quot;line&quot;: null,
+    &quot;path&quot;: null,
+    &quot;commit_id&quot;: &quot;9049f1265b7d61be4a8904a9a27120d2064dab3b&quot;,
+    &quot;created_at&quot;: &quot;2015-05-05T23:40:29Z&quot;,
+    &quot;updated_at&quot;: &quot;2015-05-05T23:40:29Z&quot;,
+    &quot;body&quot;: &quot;This is a really good change! :+1:&quot;
+  &#125;,
+  &quot;repository&quot;: &#123;
+    &quot;id&quot;: 35129377,
+    &quot;name&quot;: &quot;public-repo&quot;,
+    &quot;full_name&quot;: &quot;baxterthehacker/public-repo&quot;,
+    &quot;owner&quot;: &#123;
+      &quot;login&quot;: &quot;baxterthehacker&quot;,
+      &quot;id&quot;: 6752317,
+      &quot;avatar_url&quot;: &quot;https://avatars.githubusercontent.com/u/6752317?v=3&quot;,
+      &quot;gravatar_id&quot;: &quot;&quot;,
+      &quot;url&quot;: &quot;https://api.github.com/users/baxterthehacker&quot;,
+      &quot;html_url&quot;: &quot;https://github.com/baxterthehacker&quot;,
+      &quot;followers_url&quot;: &quot;https://api.github.com/users/baxterthehacker/followers&quot;,
+      &quot;following_url&quot;: &quot;https://api.github.com/users/baxterthehacker/following&#123;/other_user&#125;&quot;,
+      &quot;gists_url&quot;: &quot;https://api.github.com/users/baxterthehacker/gists&#123;/gist_id&#125;&quot;,
+      &quot;starred_url&quot;: &quot;https://api.github.com/users/baxterthehacker/starred&#123;/owner&#125;&#123;/repo&#125;&quot;,
+      &quot;subscriptions_url&quot;: &quot;https://api.github.com/users/baxterthehacker/subscriptions&quot;,
+      &quot;organizations_url&quot;: &quot;https://api.github.com/users/baxterthehacker/orgs&quot;,
+      &quot;repos_url&quot;: &quot;https://api.github.com/users/baxterthehacker/repos&quot;,
+      &quot;events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/events&#123;/privacy&#125;&quot;,
+      &quot;received_events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/received_events&quot;,
+      &quot;type&quot;: &quot;User&quot;,
+      &quot;site_admin&quot;: false
+    &#125;,
+    &quot;private&quot;: false,
+    &quot;html_url&quot;: &quot;https://github.com/baxterthehacker/public-repo&quot;,
+    &quot;description&quot;: &quot;&quot;,
+    &quot;fork&quot;: false,
+    &quot;url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo&quot;,
+    &quot;forks_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/forks&quot;,
+    &quot;keys_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/keys&#123;/key_id&#125;&quot;,
+    &quot;collaborators_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/collaborators&#123;/collaborator&#125;&quot;,
+    &quot;teams_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/teams&quot;,
+    &quot;hooks_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/hooks&quot;,
+    &quot;issue_events_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/issues/events&#123;/number&#125;&quot;,
+    &quot;events_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/events&quot;,
+    &quot;assignees_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/assignees&#123;/user&#125;&quot;,
+    &quot;branches_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/branches&#123;/branch&#125;&quot;,
+    &quot;tags_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/tags&quot;,
+    &quot;blobs_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/blobs&#123;/sha&#125;&quot;,
+    &quot;git_tags_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/tags&#123;/sha&#125;&quot;,
+    &quot;git_refs_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/refs&#123;/sha&#125;&quot;,
+    &quot;trees_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/trees&#123;/sha&#125;&quot;,
+    &quot;statuses_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/statuses/&#123;sha&#125;&quot;,
+    &quot;languages_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/languages&quot;,
+    &quot;stargazers_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/stargazers&quot;,
+    &quot;contributors_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/contributors&quot;,
+    &quot;subscribers_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/subscribers&quot;,
+    &quot;subscription_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/subscription&quot;,
+    &quot;commits_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/commits&#123;/sha&#125;&quot;,
+    &quot;git_commits_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/git/commits&#123;/sha&#125;&quot;,
+    &quot;comments_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/comments&#123;/number&#125;&quot;,
+    &quot;issue_comment_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/issues/comments&#123;/number&#125;&quot;,
+    &quot;contents_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/contents/&#123;+path&#125;&quot;,
+    &quot;compare_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/compare/&#123;base&#125;...&#123;head&#125;&quot;,
+    &quot;merges_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/merges&quot;,
+    &quot;archive_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/&#123;archive_format&#125;&#123;/ref&#125;&quot;,
+    &quot;downloads_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/downloads&quot;,
+    &quot;issues_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/issues&#123;/number&#125;&quot;,
+    &quot;pulls_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/pulls&#123;/number&#125;&quot;,
+    &quot;milestones_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/milestones&#123;/number&#125;&quot;,
+    &quot;notifications_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/notifications&#123;?since,all,participating&#125;&quot;,
+    &quot;labels_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/labels&#123;/name&#125;&quot;,
+    &quot;releases_url&quot;: &quot;https://api.github.com/repos/baxterthehacker/public-repo/releases&#123;/id&#125;&quot;,
+    &quot;created_at&quot;: &quot;2015-05-05T23:40:12Z&quot;,
+    &quot;updated_at&quot;: &quot;2015-05-05T23:40:12Z&quot;,
+    &quot;pushed_at&quot;: &quot;2015-05-05T23:40:27Z&quot;,
+    &quot;git_url&quot;: &quot;git://github.com/baxterthehacker/public-repo.git&quot;,
+    &quot;ssh_url&quot;: &quot;git@github.com:baxterthehacker/public-repo.git&quot;,
+    &quot;clone_url&quot;: &quot;https://github.com/baxterthehacker/public-repo.git&quot;,
+    &quot;svn_url&quot;: &quot;https://github.com/baxterthehacker/public-repo&quot;,
+    &quot;homepage&quot;: null,
+    &quot;size&quot;: 0,
+    &quot;stargazers_count&quot;: 0,
+    &quot;watchers_count&quot;: 0,
+    &quot;language&quot;: null,
+    &quot;has_issues&quot;: true,
+    &quot;has_downloads&quot;: true,
+    &quot;has_wiki&quot;: true,
+    &quot;has_pages&quot;: true,
+    &quot;forks_count&quot;: 0,
+    &quot;mirror_url&quot;: null,
+    &quot;open_issues_count&quot;: 2,
+    &quot;forks&quot;: 0,
+    &quot;open_issues&quot;: 2,
+    &quot;watchers&quot;: 0,
+    &quot;default_branch&quot;: &quot;master&quot;
+  &#125;,
+  &quot;sender&quot;: &#123;
+    &quot;login&quot;: &quot;baxterthehacker&quot;,
+    &quot;id&quot;: 6752317,
+    &quot;avatar_url&quot;: &quot;https://avatars.githubusercontent.com/u/6752317?v=3&quot;,
+    &quot;gravatar_id&quot;: &quot;&quot;,
+    &quot;url&quot;: &quot;https://api.github.com/users/baxterthehacker&quot;,
+    &quot;html_url&quot;: &quot;https://github.com/baxterthehacker&quot;,
+    &quot;followers_url&quot;: &quot;https://api.github.com/users/baxterthehacker/followers&quot;,
+    &quot;following_url&quot;: &quot;https://api.github.com/users/baxterthehacker/following&#123;/other_user&#125;&quot;,
+    &quot;gists_url&quot;: &quot;https://api.github.com/users/baxterthehacker/gists&#123;/gist_id&#125;&quot;,
+    &quot;starred_url&quot;: &quot;https://api.github.com/users/baxterthehacker/starred&#123;/owner&#125;&#123;/repo&#125;&quot;,
+    &quot;subscriptions_url&quot;: &quot;https://api.github.com/users/baxterthehacker/subscriptions&quot;,
+    &quot;organizations_url&quot;: &quot;https://api.github.com/users/baxterthehacker/orgs&quot;,
+    &quot;repos_url&quot;: &quot;https://api.github.com/users/baxterthehacker/repos&quot;,
+    &quot;events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/events&#123;/privacy&#125;&quot;,
+    &quot;received_events_url&quot;: &quot;https://api.github.com/users/baxterthehacker/received_events&quot;,
+    &quot;type&quot;: &quot;User&quot;,
+    &quot;site_admin&quot;: false
+  &#125;
+&#125;
+</code></pre>
+<p>其它事件的内容和格式，参考(<a target="_blank" rel="noopener" href="https://developer.github.com/v3/activity/events/types/">https://developer.github.com/v3/activity/events/types/</a>)</p>
+<p><strong>注意：</strong> 有效负载上限为<code>5 MB</code>。 如果我们的事件产生一个更大的有效载荷，<code>webhook</code> 将不会被触发。 例如，如果同时推送了多个分支或标签，则可能会发生在创建事件上。 所以建议监控我们的有效负载大小以确保 <code>webhooks</code> 能够被触发。</p>
+<h3 id="请求Header"><a href="#请求Header" class="headerlink" title="请求Header"></a>请求Header</h3><p>对 <code>Webhook</code> 配置的 <code>URL</code> 端点发出的 <code>HTTP</code> 请求将包含几个特殊<code>Header</code>头：</p>
+<table>
+<thead>
+<tr>
+<th><code>Header</code></th>
+<th><code>Description</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>X-GitHub-Event</code></td>
+<td>触发本次请求的事件的名称。</td>
+</tr>
+<tr>
+<td><code>X-Hub-Signature</code></td>
+<td>HMAC对有效负载的十六进制摘要，使用钩子的密钥作为密钥（如果已配置）。</td>
+</tr>
+<tr>
+<td><code>X-GitHub-Delivery</code></td>
+<td>本次请求的唯一ID。</td>
+</tr>
+</tbody></table>
+<p>此外，请求的<code>User-Agent</code>将具有前缀<code>GitHub-Hookshot/</code>。</p>
+<p>请求示例</p>
+<pre><code>POST /payload HTTP/1.1
+
+Host: localhost:4567
+X-Github-Delivery: 72d3162e-cc78-11e3-81ab-4c9367dc0958
+User-Agent: GitHub-Hookshot/044aadd
+Content-Type: application/json
+Content-Length: 6615
+X-GitHub-Event: issues
+
+&#123;
+  &quot;action&quot;: &quot;opened&quot;,
+  &quot;issue&quot;: &#123;
+    &quot;url&quot;: &quot;https://api.github.com/repos/octocat/Hello-World/issues/1347&quot;,
+    &quot;number&quot;: 1347,
+    ...
+  &#125;,
+  &quot;repository&quot; : &#123;
+    &quot;id&quot;: 1296269,
+    &quot;full_name&quot;: &quot;octocat/Hello-World&quot;,
+    &quot;owner&quot;: &#123;
+      &quot;login&quot;: &quot;octocat&quot;,
+      &quot;id&quot;: 1,
+      ...
+    &#125;,
+    ...
+  &#125;,
+  &quot;sender&quot;: &#123;
+    &quot;login&quot;: &quot;octocat&quot;,
+    &quot;id&quot;: 1,
+    ...
+  &#125;
+&#125;
+</code></pre>
+<h2 id="Ping事件"><a href="#Ping事件" class="headerlink" title="Ping事件"></a><code>Ping</code>事件</h2><p>当我们创建新的 <code>webhooks</code> 时，<code>Github</code> 会向我们配置的 <code>URL</code> 发送一个简单的 <code>ping</code> 事件，以检测我们配置的 <code>URL</code> 是否正确可用。 该事件未存储，因此无法通过<code>Events API</code>检索。 可以通过调用<code>ping</code>端点再次触发<code>ping</code>。</p>
+<p><code>Ping</code>事件有效负载</p>
+<table>
+<thead>
+<tr>
+<th>键</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>zen</code></td>
+<td><code>GitHub</code>产生的随机字符串</td>
+</tr>
+<tr>
+<td><code>hook_id</code></td>
+<td>触发<code>ping</code>的<code>webhook</code>的<code>ID</code></td>
+</tr>
+<tr>
+<td><code>hook</code></td>
+<td><code>webhook</code>配置</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/git/" rel="tag"># git</a>
+              <a href="/tags/%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/" rel="tag"># 版本控制</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/02/11/keepalived%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/" rel="prev" title="keepalived安装与配置">
+                  <i class="fa fa-chevron-left"></i> keepalived安装与配置
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/01/22/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8B%E5%AE%A2%E6%88%B7%E7%AB%AFC-%E6%9C%8D%E5%8A%A1%E5%99%A8S%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" rel="next" title="深入了解Redis之客户端C-服务器S设计与实现">
+                  深入了解Redis之客户端C-服务器S设计与实现 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2017/02/03/Github%E4%B8%ADwebhooks%E5%BA%94%E7%94%A8/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

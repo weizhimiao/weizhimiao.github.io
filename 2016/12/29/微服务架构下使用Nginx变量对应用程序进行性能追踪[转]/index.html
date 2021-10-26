@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="使用变量来对应用程序性能进行管理 变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约150个变量可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 应用程序跟踪 和 应用程序性能管理（APM） ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Pl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务架构下使用Nginx变量对应用程序进行性能追踪[转]">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/12/29/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA[%E8%BD%AC]/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="使用变量来对应用程序性能进行管理 变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约150个变量可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 应用程序跟踪 和 应用程序性能管理（APM） ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Pl">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161229/nginx-proxies-app-with-frontend-and-microservices.png">
+<meta property="article:published_time" content="2016-12-29T13:30:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.621Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="APM">
+<meta property="article:tag" content="应用性能跟踪">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161229/nginx-proxies-app-with-frontend-and-microservices.png">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/12/29/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA[%E8%BD%AC]/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/12/29/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA[%E8%BD%AC]/","path":"2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/","title":"微服务架构下使用Nginx变量对应用程序进行性能追踪[转]"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>微服务架构下使用Nginx变量对应用程序进行性能追踪[转] | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%BA%A4%E4%BB%98%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">应用程序交付环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%9F%E8%B8%AA%E7%AB%AF%E5%88%B0%E7%AB%AF-End%E2%80%91to%E2%80%91End-%E8%AF%B7%E6%B1%82"><span class="nav-number">2.</span> <span class="nav-text">跟踪端到端(End‑to‑End)请求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%AB%AF%E5%88%B0%E7%AB%AF%E7%9A%84-request-id"><span class="nav-number">3.</span> <span class="nav-text">记录端到端的$request_id</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AENGINX-Plus"><span class="nav-number">3.1.</span> <span class="nav-text">配置NGINX Plus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%90%8E%E7%AB%AF%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F"><span class="nav-number">3.2.</span> <span class="nav-text">配置后端应用程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E7%B2%BE%E5%BA%A6%E6%97%B6%E5%BA%8F"><span class="nav-number">4.</span> <span class="nav-text">高精度时序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">5.</span> <span class="nav-text">结论</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/12/29/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA[%E8%BD%AC]/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          微服务架构下使用Nginx变量对应用程序进行性能追踪[转]<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA[%E8%BD%AC].md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-29 21:30:00" itemprop="dateCreated datePublished" datetime="2016-12-29T21:30:00+08:00">2016-12-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/12/29/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA%5B%E8%BD%AC%5D/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/12/29/微服务架构下使用Nginx变量对应用程序进行性能追踪[转]/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><em><strong>使用变量来对应用程序性能进行管理</strong></em></p>
+<p>变量是NGINX配置的一个重要且有时被忽视的方面。 Nginx 有大约<a target="_blank" rel="noopener" href="http://nginx.org/en/docs/varindex.html">150个变量</a>可用，Nginx 变量可用来方便每个部分的配置。 在本博客中，我们讨论如何使用NGINX变量来进行 <strong>应用程序跟踪</strong> 和 <strong>应用程序性能管理（APM）</strong> ，重点是发现应用程序中的性能瓶颈。 这篇文章适用于开源的 NGINX 软件和 NGINX Plus。 为了简洁，我们将参考NGINX Plus，除非两个产品之间有差异。</p>
+<span id="more"></span>
+
+<h2 id="应用程序交付环境"><a href="#应用程序交付环境" class="headerlink" title="应用程序交付环境"></a>应用程序交付环境</h2><p>在我们的示例应用程序交付环境中，NGINX Plus作为我们应用程序的反向代理。 应用程序本身包括一个Web前端，后面是多个微服务。</p>
+<p><img data-src="http://n.sinaimg.cn/games/3ece443e/20161229/nginx-proxies-app-with-frontend-and-microservices.png" alt="示例应用程序交付环境"></p>
+<h2 id="跟踪端到端-End‑to‑End-请求"><a href="#跟踪端到端-End‑to‑End-请求" class="headerlink" title="跟踪端到端(End‑to‑End)请求"></a>跟踪端到端(End‑to‑End)请求</h2><p><code>NGINX Plus R10</code>（和<code>NGINX 1.11.0</code>）引入 <code>$request_id</code> 变量，它是随机生成的32个十六进制字符串，在每个HTTP请求到达时自动分配给它们（例如<code>444535f9378a3dfa1b8604bc9e05a303</code>）。 这个看似简单的机制解锁了一个强大的工具，可用于跟踪和故障排除。 通过配置<code>NGINX Plus</code>和所有后端服务传递<code>$request_id</code>值，您可以跟踪每个请求端到端。 这个示例配置是为我们的前端<code>NGINX Plus</code>服务器。</p>
+<pre><code>upstream app_server &#123;
+    server 10.0.0.1:80;
+&#125;
+
+server &#123;
+    listen 80;
+    add_header X-Request-ID $request_id; # Return to client
+    location / &#123;
+        proxy_pass http://app_server;
+        proxy_set_header X-Request-ID $request_id; # Pass to app server
+    &#125;
+&#125;
+</code></pre>
+<p>要配置NGINX Plus进行请求跟踪，我们首先定义 <code>upstream</code> 块中应用程序服务器的网络位置。 为了简单起见，我们在这里只显示一个应用程序服务器，但通常使用几个应用程序服务器来实现高可用性和负载平衡。</p>
+<p><code>server</code>块定义了<code>NGINX Plus</code>如何处理传入的HTTP请求。 <code>listen</code>指令告诉<code>NGINX Plus</code>侦听端口80，但生产环境配置通常使用<code>SSL/TLS</code>来保护传输中的数据。</p>
+<p><code>add_header</code>指令将<code>$request_id</code>值作为响应中的自定义<code>header</code>头发送回客户端。 这对于测试以及生成自己的日志（如移动应用程序）的客户端应用程序非常有用，以便客户端可以精确匹配服务器的错误日志。</p>
+<p>最后，<code>location</code> 块应用于整个应用程序空间（<code>/</code>），<code>proxy_pass</code>指令简单地代理所有请求到应用程序服务器。 <code>proxy_set_header</code>指令通过添加传递给应用程序的HTTP头来修改代理请求。 在这种情况下，我们创建一个名为<code>X-Request-ID</code>的头，并为其分配<code>$request_id</code>变量的值。 因此，我们的应用程序接收由<code>NGINX Plus</code>生成的request ID。</p>
+<h2 id="记录端到端的-request-id"><a href="#记录端到端的-request-id" class="headerlink" title="记录端到端的$request_id"></a>记录端到端的<code>$request_id</code></h2><p>我们的应用程序跟踪的目标是确定请求处理生命周期中的性能瓶颈，作为应用程序性能管理的一部分。 我们可以通过在处理过程中记录重要的事件来做到这一点，方便我们以后分析它们的异常或不合理的延迟。</p>
+<h3 id="配置NGINX-Plus"><a href="#配置NGINX-Plus" class="headerlink" title="配置NGINX Plus"></a>配置NGINX Plus</h3><p>我们从配置前端<code>NGINX Plus</code>服务器开始，将<code>$request_id</code>包含在用于<code>access_trace.log</code>文件的自定义日志记录格式<code>trace</code>中。</p>
+<pre><code>log_format trace &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
+                 &#39;$status $body_bytes_sent &quot;$http_referer&quot; &quot;$http_user_agent&quot; &#39;
+                 &#39;&quot;$http_x_forwarded_for&quot; $request_id&#39;;
+
+upstream app_server &#123;
+    server 10.0.0.1;
+&#125;
+
+server &#123;
+    listen 80;
+    add_header X-Request-ID $request_id; # Return to client
+    location / &#123;
+        proxy_pass http://app_server;
+        proxy_set_header X-Request-ID $request_id;        # Pass to app server
+        access_log /var/log/nginx/access_trace.log trace; # Log $request_id
+    &#125;
+&#125;
+</code></pre>
+<h3 id="配置后端应用程序"><a href="#配置后端应用程序" class="headerlink" title="配置后端应用程序"></a>配置后端应用程序</h3><p>将<code> Request ID</code> 传递到我们的应用程序有时也会用到。 在这个例子中，我们有一个由<code>uWSGI</code>管理的<code>Python应用程序</code>。 让我们修改应用程序入口点，以获取<code>Request ID </code>作为日志变量。</p>
+<pre class="line-numbers language-python"><code class="language-python"><span class="token keyword">from</span> uwsgi <span class="token keyword">import</span> set_logvar
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>environ<span class="token punctuation">,</span> start_response<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    set_logvar<span class="token punctuation">(</span><span class="token string">'requestid'</span><span class="token punctuation">,</span> environ<span class="token punctuation">[</span><span class="token string">'X_REQUEST_ID'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>然后我们可以修改<code>uWSGI</code>配置，将<code>Request ID</code>包含在标准日志文件中。</p>
+<pre><code>log-format = %(addr) - %(user) [%(ltime)] &quot;%(method) %(uri) %(proto)&quot; %(status)
+%(size) &quot;%(referer)&quot; &quot;%(uagent)&quot; %(requestid)
+</code></pre>
+<p>通过这种配置，我们现在可以生成日志文件，这些文件可以跨多个系统，我们可以通过<code>requestid</code>来查看我们单次<code>request</code>的调用链。</p>
+<p>来自<code>NGINX</code>的日志示例：</p>
+<pre><code>172.17.0.1 - - [02/Aug/2016:14:26:50 +0000] &quot;GET / HTTP/1.1&quot; 200 90 &quot;-&quot; &quot;-&quot; &quot;-&quot; 5f222ae5938482c32a822dbf15e19f0f
+</code></pre>
+<p>来自应用程序的日志示例：</p>
+<pre><code>192.168.91.1 - - [02/Aug/2016:14:26:50 +0000] &quot;GET / HTTP/1.0&quot; 200 123 &quot;-&quot; &quot;-&quot; 5f222ae5938482c32a822dbf15e19f0f
+</code></pre>
+<p>通过将 <code>Request ID</code> 字段与事务匹配，<code>Splunk</code> 和 <code>Kibana</code> 之类的工具允许我们识别性能瓶颈。 例如，我们可以搜索花费两秒钟以上时间完成的请求。 然而，在常规时间戳中的默认时间精度为一秒不足以用于大多数真实环境的分析。</p>
+<h2 id="高精度时序"><a href="#高精度时序" class="headerlink" title="高精度时序"></a>高精度时序</h2><p>为了准确地测量端到端请求，我们需要具有毫秒级精度的时间戳。 通过在日志条目中包括<code>$msec</code>变量，我们在每个条目的时间戳上获得毫秒的精度。 向应用程序日志添加毫秒时间戳允许我们查找花费 本该不超过200毫秒完成，但却花了2秒的请求。</p>
+<p>但是即使这样，我们也没有得到全部的图片，因为<code>NGINX Plus</code>只在处理每个请求结束时写入<code>$msec</code>时间戳。 幸运的是，有几个其他<code>NGINX Plus</code>定时变量，毫秒精度，让我们更深入地了解处理本身：</p>
+<ul>
+<li><p><code>$request_time</code> – 完全请求时间，从NGINX Plus从客户端读取第一个字节，并在NGINX Plus发送响应主体的最后一个字节时结束</p>
+</li>
+<li><p><code>$upstream_connect_time</code> – 花费在与<code>upstream</code>服务器建立连接的时间</p>
+</li>
+<li><p><code>$upstream_header_time</code> – 建立到<code>upstream</code>服务器的连接和接收响应头的第一个字节之间的时间</p>
+</li>
+<li><p><code>$upstream_response_time</code> – 建立到<code>upstream</code>服务器的连接和接收响应主体的最后一个字节之间的时间</p>
+</li>
+</ul>
+<p>有关这些时序变量的详细信息，请参阅[使用NGINX日志记录应用程序性能监视](Using NGINX Logging for Application Performance Monitoring)。</p>
+<p>我们可以扩展我们的<code>log_format</code>指令，将所有这些高精度定时变量包含在我们的跟踪日志格式中。</p>
+<pre><code>log_format trace &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; $status &#39;
+                 &#39;$body_bytes_sent &quot;$http_referer&quot; &quot;$http_user_agent&quot; &#39;
+                 &#39;&quot;$http_x_forwarded_for&quot; $request_id $msec $request_time &#39;
+                 &#39;$upstream_connect_time $upstream_header_time $upstream_response_time&#39;;
+</code></pre>
+<p>使用我们首选的日志分析工具，我们可以提取变量值并执行以下计算，以了解<code>NGINX Plus</code>在连接到应用程序服务器之前处理请求的时间：</p>
+<pre><code>NGINX Plus processing time = $request_time - $upstream_connect_time - $upstream_response_time
+</code></pre>
+<p>我们还可以搜索<code>$upstream_response_time</code>的最高值，查看它们是否与特定URI或上游服务器相关联。 然后可以进一步检查具有相同请求ID的应用程序日志条目。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>利用新的<code>$request_id</code>变量和一些毫秒精度的时间变量可以提供对应用程序性能瓶颈的深入了解，提高应用程序性能管理，而无需使用什么重量级代理和插件。</p>
+<p><a target="_blank" rel="noopener" href="https://www.nginx.com/blog/application-tracing-nginx-plus/">【原文】:https://www.nginx.com/blog/application-tracing-nginx-plus/</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/APM/" rel="tag"># APM</a>
+              <a href="/tags/%E5%BA%94%E7%94%A8%E6%80%A7%E8%83%BD%E8%B7%9F%E8%B8%AA/" rel="tag"># 应用性能跟踪</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/01/12/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3Redis%E4%B9%8BRedis%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" rel="prev" title="深入了解Redis之Redis数据库的实现">
+                  <i class="fa fa-chevron-left"></i> 深入了解Redis之Redis数据库的实现
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/11/29/%E8%B4%AA%E5%A9%AA%E5%92%8C%E6%87%92%E6%83%B0%E5%8C%B9%E9%85%8D%E6%A8%A1%E5%BC%8F%E4%BD%BF%E7%94%A8%E5%B0%8F%E7%BB%93/" rel="next" title="贪婪和懒惰匹配模式使用小结">
+                  贪婪和懒惰匹配模式使用小结 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/12/29/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E4%B8%8B%E4%BD%BF%E7%94%A8Nginx%E5%8F%98%E9%87%8F%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E8%BF%BD%E8%B8%AA[%E8%BD%AC]/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

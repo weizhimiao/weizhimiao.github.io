@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Redis共有5种数据类型  string(字符串) hash(哈希表) list(双向队列) set(集合) zset(有序集合)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis数据类型与操作">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/09/27/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Redis共有5种数据类型  string(字符串) hash(哈希表) list(双向队列) set(集合) zset(有序集合)">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-09-27T12:30:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.617Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/09/27/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/09/27/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C/","path":"2016/09/27/Redis数据类型与操作/","title":"Redis数据类型与操作"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Redis数据类型与操作 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#String%EF%BC%88%E5%AD%90%E4%B8%B2%E7%B1%BB%E5%9E%8B%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">String（子串类型）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hashs%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">hashs类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#list%E7%B1%BB%E5%9E%8B%EF%BC%88%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8%E7%BB%93%E6%9E%84%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">list类型（双向链表结构）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sets%E7%B1%BB%E5%9E%8B%E5%92%8C%E6%93%8D%E4%BD%9C"><span class="nav-number">4.</span> <span class="nav-text">sets类型和操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sorted-sets%E7%B1%BB%E5%9E%8B%E5%92%8C%E6%93%8D%E4%BD%9C"><span class="nav-number">5.</span> <span class="nav-text">sorted sets类型和操作</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/09/27/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Redis数据类型与操作<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-09-27 20:30:00" itemprop="dateCreated datePublished" datetime="2016-09-27T20:30:00+08:00">2016-09-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/09/27/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/09/27/Redis数据类型与操作/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>15k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Redis共有5种数据类型</p>
+<ul>
+<li>string(字符串)</li>
+<li>hash(哈希表)</li>
+<li>list(双向队列)</li>
+<li>set(集合)</li>
+<li>zset(有序集合)</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="String（子串类型）"><a href="#String（子串类型）" class="headerlink" title="String（子串类型）"></a>String（子串类型）</h2><p>String是最简单的类型，一个Key对应一个Value，string类型是二进制安全的。Redis的string可以包含任何数据，比如jpg图片或者序列化的对象。</p>
+<ol>
+<li>set 键  “值”<blockquote>
+<p>设置一个键和值，键存在则覆盖，返回ok</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; set name liming
+OK
+</code></pre>
+<ol start="2">
+<li>get 键<blockquote>
+<p>获取一个键的值，返回值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; get name
+&quot;liming&quot;
+</code></pre>
+<ol start="3">
+<li>setnx 键 值<blockquote>
+<p>只有当该键不存在时设置一个键的值，若键已存在则返回0表示失败（防止覆盖），</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; setnx age 18
+(integer) 1
+127.0.0.1:6379&gt; setnx age 18
+(integer) 0
+</code></pre>
+<ol start="4">
+<li> setex 键 [有效时间] 值<blockquote>
+<p>设置一个指定有效期的键和值（单位秒）。不写有效时间则表示永久有效，等价于set</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; setex movie 30 canglaoshi
+OK
+127.0.0.1:6379&gt; ttl movie                //获取键的有效时间
+(integer) 26
+127.0.0.1:6379&gt; ttl movie
+(integer) 20
+127.0.0.1:6379&gt; get movie
+&quot;canglaoshi&quot;
+127.0.0.1:6379&gt; ttl movie
+(integer) -2
+127.0.0.1:6379&gt; get movie
+(nil)
+</code></pre>
+<ol start="4">
+<li>ttl 键<blockquote>
+<p>以秒为单位，返回给定 key 的剩余生存时间</p>
+<ul>
+<li>当 key 不存在时，返回 -2 。<ul>
+<li>   当 key 存在但没有设置剩余生存时间时，返回 -1 。</li>
+<li>   否则，以秒为单位，返回 key 的剩余生存时间。</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<ol start="5">
+<li>setrange 键 位置 子字串<blockquote>
+<p>替换子字符串 (替换长度由子子串长度决定)</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; set key1 &quot;hello world&quot;
+OK
+127.0.0.1:6379&gt; get key1
+&quot;hello world&quot;
+127.0.0.1:6379&gt; setrange key1 6 liming
+(integer) 12
+127.0.0.1:6379&gt; get key1
+&quot;hello liming&quot;
+    #将key1键对应值的第6个位置开始替换（字符串位置从0开始计算）
+</code></pre>
+<ol start="6">
+<li>mset 键1 值1 键2 值2 键3 值3 ….<blockquote>
+<p>批量设置键和值,成功则返回ok</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; mset name1 lm name2 sc name3 zjj
+OK
+</code></pre>
+<ol start="7">
+<li>mget 键1 键2 键3….<blockquote>
+<p>批量获取值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; mget name1 name2 name3
+1) &quot;lm&quot;
+2) &quot;sc&quot;
+3) &quot;zjj&quot;
+</code></pre>
+<ol start="8">
+<li>msetnx 键1 值1 键2 值2 键3 值3 ….<blockquote>
+<p>批量设置不存在的键和值,成功则返回ok</p>
+</blockquote>
+</li>
+</ol>
+<ol start="9">
+<li>getset 键 新值<blockquote>
+<p>获取原值，并设置新值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; set name &quot;shen chao&quot;
+OK
+127.0.0.1:6379&gt; get name
+&quot;shen chao&quot;
+127.0.0.1:6379&gt; getset name &quot;liming&quot;
+&quot;shen chao&quot;
+127.0.0.1:6379&gt; get name
+&quot;liming&quot;
+</code></pre>
+<ol start="10">
+<li>getrange 键 0 4  <blockquote>
+<p>获取指定范围的值（获取指定0到4位置上的值，字符串位置从0开始计算）</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; getrange key1 0 4
+&quot;hello&quot;
+</code></pre>
+<ol start="11">
+<li>incr 键  <blockquote>
+<p>指定键的值做加1操作，返回加后的结果（只能加数字）。</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; set age 18
+OK
+127.0.0.1:6379&gt; incr age
+(integer) 19
+127.0.0.1:6379&gt; get age
+&quot;19&quot;
+</code></pre>
+<ol start="12">
+<li>incrby 键 m    <blockquote>
+<p>其中m可以是正整数或负整数.加指定值，键不存在时候会设置键</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; incrby age 10
+(integer) 29
+127.0.0.1:6379&gt; get age
+&quot;29&quot;
+127.0.0.1:6379&gt; incrby age -5
+(integer) 24
+</code></pre>
+<ol start="13">
+<li>decr 键<blockquote>
+<p>指定键的值做减1操作，返回减后的结果。</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; decr age
+(integer) 23
+127.0.0.1:6379&gt; get age
+&quot;23&quot;
+</code></pre>
+<ol start="14">
+<li>decrby 键 n<blockquote>
+<p>其中n可以是正整数或负整数.设置某个键减上指定值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; decrby age 5
+(integer) 18
+127.0.0.1:6379&gt; decrby age -10
+(integer) 28
+127.0.0.1:6379&gt; get age
+&quot;28&quot;
+</code></pre>
+<ol start="15">
+<li>append  键 追加字串<blockquote>
+<p>给指定key的字符串追加value，返回新字符串值的长度</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; append name1 &quot; have a hot body!&quot;
+(integer) 19
+127.0.0.1:6379&gt; get name1
+&quot;lm have a hot body!&quot;
+</code></pre>
+<ol start="16">
+<li>strlen 键名<blockquote>
+<p>strlen求一个键长度</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; strlen name1
+(integer) 19
+</code></pre>
+<ol start="17">
+<li>del命令：<blockquote>
+<p>删除一个键</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; del name3
+(integer) 1
+127.0.0.1:6379&gt; get name3
+(nil)
+</code></pre>
+<h2 id="hashs类型"><a href="#hashs类型" class="headerlink" title="hashs类型"></a>hashs类型</h2><blockquote>
+<p>注意：redis中没有表概念，所有的数据都存入键中。</p>
+<ul>
+<li>string键类型：所有的值（可以是任何数据类型）都保存在一个键当中，放在一个内存块中<ul>
+<li>hashs键类型：所有的值也都保存在一个键当中，只是放在不同的内存块中，每个块称作字段</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ol>
+<li>hset key field value<blockquote>
+<p>设置一个键，在键中保存字段和值<br>格式： hset 哈希集（键） 字段 值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hset user1 name4 ysm
+(integer) 1
+127.0.0.1:6379&gt; keys *                    //查看库中所有的键
+1) &quot;aa&quot;
+2) &quot;name&quot;
+3) &quot;name1&quot;
+4) &quot;user1&quot;
+5) &quot;name2&quot;
+6) &quot;age&quot;
+7) &quot;key1&quot;
+</code></pre>
+<ol start="2">
+<li>hsetnx  键  字段  值<blockquote>
+<p>   设置一个键中，不存在的字段和值。如果字段存在则报错（成功返回1，失败返回0）</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hsetnx user1 name1 lm
+(integer) 1
+127.0.0.1:6379&gt; hsetnx user1 name1 sc
+(integer) 0                    //报错
+127.0.0.1:6379&gt; hget user1 name1
+&quot;lm&quot;                        //内容没有更新
+</code></pre>
+<ol start="3">
+<li>hmset  键  字段1  值1  字段2  值2 …<blockquote>
+<p>   在一个键中，批量设置字段</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hmset user2 name liming age 36 interest AV-Girl
+OK
+</code></pre>
+<ol start="4">
+<li>hget 键 字段<blockquote>
+<p>   获取键中的一个指定字段的值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hget user1 name1
+&quot;lm&quot;
+127.0.0.1:6379&gt; hget user2 interest
+&quot;AV-Girl&quot;
+</code></pre>
+<ol start="5">
+<li>hmget 键 字段1 [字段2…]<blockquote>
+<p>   获取键中一个或多个字段的值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hmget user2 name age interest
+1) &quot;liming&quot;
+2) &quot;36&quot;
+3) &quot;AV-Girl&quot;
+</code></pre>
+<ol start="6">
+<li>hexists ：<blockquote>
+<p>判断指定的字段是否存在于键中</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; HEXISTS user2 age
+(integer) 1                            //存在
+127.0.0.1:6379&gt; HEXISTS user1 age
+(integer) 0                            //不存在
+</code></pre>
+<ol start="7">
+<li>hlen ：获取键中的字段数量</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hlen user2
+(integer) 3                            //user2键中有3个字段
+</code></pre>
+<ol start="8">
+<li>hkeys ：获取键中的所有字段名</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hkeys user2
+1) &quot;name&quot;
+2) &quot;age&quot;
+3) &quot;interest&quot;
+</code></pre>
+<ol start="9">
+<li>hvals：获取键中所有字段的值</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hvals user2
+1) &quot;liming&quot;
+2) &quot;36&quot;
+3) &quot;AV-Girl&quot;
+</code></pre>
+<ol start="10">
+<li>hgetall ：获取键中的所有字段和值</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hgetall user2
+1) &quot;name&quot;
+2) &quot;liming&quot;
+3) &quot;age&quot;
+4) &quot;36&quot;
+5) &quot;interest&quot;
+6) &quot;AV-Girl&quot;
+</code></pre>
+<ol start="11">
+<li>hincrby：将键中指定字段的值，增加指定的数字</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hincrby user2 age 5
+(integer) 41
+
+127.0.0.1:6379&gt; HINCRBY user2 name 5
+(error) ERR hash value is not an integer    //值不是数字的字段，不能加数字
+</code></pre>
+<ol start="12">
+<li>hdel 键 字段1 字段2<blockquote>
+<p>   删除键中的一个或多个字段</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; hdel user2 age interest
+(integer) 2
+127.0.0.1:6379&gt; hkeys user2
+1) &quot;name&quot;
+    //删除一个键，还是要使用del命令
+</code></pre>
+<h2 id="list类型（双向链表结构）"><a href="#list类型（双向链表结构）" class="headerlink" title="list类型（双向链表结构）"></a>list类型（双向链表结构）</h2><p>List是一个链表结构，主要功能是push、pop、获取一个范围的所有值等等，操作中key理解为链表的名字。Redis的list类型其实就是一个每个子元素都是string类型的双向链表。列表允许有重复值</p>
+<ol>
+<li>lpush 键 值1 [值2…]<blockquote>
+<p>从队列左边向队列写入一个或多个值（认为队列的左面为队列头，右边为队列尾）</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; lpush list1 1
+(integer) 1
+127.0.0.1:6379&gt; lpush list1 2
+(integer) 2
+127.0.0.1:6379&gt; lpush list1 3
+(integer) 3
+127.0.0.1:6379&gt; lpush list1 4
+(integer) 4
+
+127.0.0.1:6379&gt; lpush list2 one two three four
+(integer) 4
+</code></pre>
+<ol start="2">
+<li>lrange 键 起始下标 终止下标<blockquote>
+<p>   从队列中获取指定的返回值（从队列左边向右获取）<br>下标：</p>
+<ul>
+<li>0代表队列中第一个元素，1代表第二个元素，依次类推</li>
+<li>-1代表队列中最后一个元素，-2代表倒数第二个元素</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; LRANGE list1 0 -1
+1) &quot;4&quot;        //4是从左面写入队列的最后一个值，所以在队列的开头
+2) &quot;3&quot;
+3) &quot;2&quot;
+4) &quot;1&quot;        //1是从左面写入队列的第一个值，所以直接放到了队列尾。
+
+127.0.0.1:6379&gt; LRANGE list2 0 -1
+1) &quot;four&quot;
+2) &quot;three&quot;
+3) &quot;two&quot;
+4) &quot;one&quot;
+
+127.0.0.1:6379&gt; LRANGE list1 0 1
+1) &quot;4&quot;
+2) &quot;3&quot;
+
+127.0.0.1:6379&gt; LRANGE list2 -4 3
+1) &quot;four&quot;        //-4代表从队列右边数第四个元素
+2) &quot;three&quot;
+3) &quot;two&quot;
+4) &quot;one&quot;        //3代表从队列左边数第四个元素
+</code></pre>
+<ol start="3">
+<li>rpush 键 值1 [值2…]<blockquote>
+<p>   从队列右边向队列写入一个或多个值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; RPUSH list3 1 2 3 4
+(integer) 4
+127.0.0.1:6379&gt; LRANGE list3 0 -1
+1) &quot;1&quot;        //从队列右边向队列写入值，第一个值就会写到队列的开头
+2) &quot;2&quot;
+3) &quot;3&quot;
+4) &quot;4&quot;
+</code></pre>
+<ol start="4">
+<li>linsert  键  before|after  原值  新值<blockquote>
+<p>   在队列中指定元素之前或之后插入新值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; LINSERT list3 before 3 hello
+(integer) 5
+127.0.0.1:6379&gt; LRANGE list3 0 -1
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;hello&quot;
+4) &quot;3&quot;
+5) &quot;4&quot;
+</code></pre>
+<ol start="5">
+<li>lset  键  下标  新值<blockquote>
+<p>   给队列中指定元素设定新值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; lset list3 2 &quot;5&quot;
+OK
+127.0.0.1:6379&gt; LRANGE list3 0 -1
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;5&quot;
+4) &quot;3&quot;
+5) &quot;4&quot;
+</code></pre>
+<ol start="6">
+<li>lerm  键  n  指定值<blockquote>
+<p>从队列中删除n个值为“指定值”的元素</p>
+<ul>
+<li>n &gt; 0     从队列头向尾删除n个元素</li>
+<li>n &lt; 0     从队列尾向头删除n个元素</li>
+<li>n = 0    删除所有值为“指定值”的元素</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; rpush list4 hello 1 hello 2 hello 3 hello
+(integer) 7
+127.0.0.1:6379&gt; lrange list4 0 -1
+1) &quot;hello&quot;
+2) &quot;1&quot;
+3) &quot;hello&quot;
+4) &quot;2&quot;
+5) &quot;hello&quot;
+6) &quot;3&quot;
+7) &quot;hello&quot;
+127.0.0.1:6379&gt; lrem list4 -2 hello            //删除后两个hello
+(integer) 2
+127.0.0.1:6379&gt; lrange list4 0 -1
+1) &quot;hello&quot;
+2) &quot;1&quot;
+3) &quot;hello&quot;
+4) &quot;2&quot;
+5) &quot;3&quot;
+127.0.0.1:6379&gt; lrem list4 0 hello            //删除所有hello
+(integer) 2
+127.0.0.1:6379&gt; lrange list4 0 -1
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+</code></pre>
+<ol start="7">
+<li>ltrim  键  起始下标  结束下标<blockquote>
+<p>   修剪队列，让队列只保留指定指定范围内的元素</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; RPUSH list5 1 2 3 4
+(integer) 4
+127.0.0.1:6379&gt; ltrim list5 1 2
+OK
+127.0.0.1:6379&gt; lrange list5 0 -1
+1) &quot;2&quot;
+2) &quot;3&quot;
+</code></pre>
+<ol start="8">
+<li>lpop  键<blockquote>
+<p>   从指定的队列左面移除一个值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; lrange list1 0 -1
+1) &quot;4&quot;
+2) &quot;3&quot;
+3) &quot;2&quot;
+4) &quot;1&quot;
+127.0.0.1:6379&gt; lpop list1
+&quot;4&quot;
+127.0.0.1:6379&gt; lrange list1 0 -1
+1) &quot;3&quot;
+2) &quot;2&quot;
+3) &quot;1&quot;
+</code></pre>
+<ol start="9">
+<li>rpop  键<blockquote>
+<p>   从指定队列的右边移除一个值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; lrange list1 0 -1
+1) &quot;3&quot;
+2) &quot;2&quot;
+3) &quot;1&quot;
+127.0.0.1:6379&gt; rpop list1
+&quot;1&quot;
+127.0.0.1:6379&gt; lrange list1 0 -1
+1) &quot;3&quot;
+2) &quot;2&quot;
+</code></pre>
+<ol start="10">
+<li>rpoplpush  源队列  目标队列<blockquote>
+<p>   移除源队列的最后一个元素，并把该元素写入目标队列</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; lrange list1 0 -1
+1) &quot;3&quot;
+2) &quot;2&quot;
+127.0.0.1:6379&gt; lrange list5 0 -1
+1) &quot;2&quot;
+2) &quot;3&quot;
+127.0.0.1:6379&gt; RPOPLPUSH list1 list5
+&quot;2&quot;
+127.0.0.1:6379&gt; lrange list1 0 -1
+1) &quot;3&quot;
+127.0.0.1:6379&gt; lrange list5 0 -1
+1) &quot;2&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+</code></pre>
+<ol start="11">
+<li>lindex  键  下标<blockquote>
+<p>   获取队列中指定下标元素的值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; lrange list2 0 -1
+1) &quot;four&quot;
+2) &quot;three&quot;
+3) &quot;two&quot;
+4) &quot;one&quot;
+127.0.0.1:6379&gt; lindex list2 1
+&quot;three&quot;
+127.0.0.1:6379&gt; lindex list2 3
+&quot;one&quot;
+</code></pre>
+<ol start="12">
+<li>llen  键<blockquote>
+<p>   获得队列的长度</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; llen list2
+(integer) 4
+</code></pre>
+<h2 id="sets类型和操作"><a href="#sets类型和操作" class="headerlink" title="sets类型和操作"></a>sets类型和操作</h2><p>Set是集合，它是string类型的无序集合。对集合我们可以取并集、交集、差集。通过这些操作我们可以实现社交网站中的好友推荐和blog的tag功能。集合不允许有重复值。</p>
+<ol>
+<li>sadd  键  值1[值2…]<blockquote>
+<p>   添加一个或多个元素到集合中</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sadd mset1 1
+(integer) 1
+127.0.0.1:6379&gt; sadd mset1 2 3 4
+(integer) 3
+</code></pre>
+<ol start="2">
+<li>smembers  键<blockquote>
+<p>   获取集合里面所有的元素</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; smembers mset1
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+4) &quot;4&quot;
+</code></pre>
+<ol start="3">
+<li>srem  键  值1[值2…]<blockquote>
+<p>   从集合中删除指定的一个或多个元素</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; srem mset1 3 4
+(integer) 2
+127.0.0.1:6379&gt; smembers mset1
+1) &quot;1&quot;
+2) &quot;2&quot;
+
+（删除键，依然使用“del 键” 命令）
+</code></pre>
+<ol start="4">
+<li>spop  键  <blockquote>
+<p>   随机从集合中删除一个元素，并返回</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sadd mset2 4 5 6 7 8
+(integer) 5
+127.0.0.1:6379&gt; spop mset2
+&quot;4&quot;
+127.0.0.1:6379&gt; spop mset2
+&quot;5&quot;
+127.0.0.1:6379&gt; spop mset2
+&quot;8&quot;
+127.0.0.1:6379&gt; smembers mset2
+1) &quot;6&quot;
+2) &quot;7&quot;
+</code></pre>
+<ol start="5">
+<li>srandmember  键  值<blockquote>
+<p>   随机返回集合中一个元素，但不删除</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sadd mset3 4 5 6 7 8
+(integer) 5
+127.0.0.1:6379&gt; srandmember mset3
+&quot;5&quot;
+127.0.0.1:6379&gt; srandmember mset3
+&quot;5&quot;
+127.0.0.1:6379&gt; srandmember mset3
+&quot;4&quot;
+</code></pre>
+<ol start="6">
+<li>scard  键<blockquote>
+<p>   获取集合里面元素个数</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; scard mset1
+(integer) 2
+</code></pre>
+<ol start="7">
+<li>sismember  键  值<blockquote>
+<p>   确定一个指定的值是否是集合中的元素</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; smembers mset1
+1) &quot;1&quot;
+2) &quot;2&quot;
+127.0.0.1:6379&gt; sismember mset1 3
+(integer) 0
+127.0.0.1:6379&gt; sismember mset1 1
+(integer) 1
+</code></pre>
+<ol start="8">
+<li>sdiff  集合1  集合2<blockquote>
+<p>   返回集合1与集合2的差集。以集合1为主</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sadd mset4 1 2 3
+(integer) 3
+127.0.0.1:6379&gt; sadd mset5 2 3 4
+(integer) 3
+127.0.0.1:6379&gt; sdiff mset4 mset5
+1) &quot;1&quot;
+</code></pre>
+<ol start="9">
+<li>sdiffstore  新集合  集合1  集合2<blockquote>
+<p>   返回集合1和集合2的差集，并把结果存入新集合</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sadd mset4 1 2 3
+(integer) 3
+127.0.0.1:6379&gt; sadd mset5 2 3 4
+(integer) 3
+127.0.0.1:6379&gt; sdiffstore mset6 mset5 mset4
+(integer) 1                //返回值为1 ，证明成功
+127.0.0.1:6379&gt; smembers mset6
+1) &quot;4&quot;                    //结果存入了mset6，值为4
+</code></pre>
+<ol start="10">
+<li>sinter  集合1  集合2<blockquote>
+<p>   获得两个集合的交集</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; smembers mset4
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+127.0.0.1:6379&gt; smembers mset5
+1) &quot;2&quot;
+2) &quot;3&quot;
+3) &quot;4&quot;
+127.0.0.1:6379&gt; sinter mset4 mset5
+1) &quot;2&quot;
+2) &quot;3&quot;
+</code></pre>
+<ol start="11">
+<li>sinterstore  新集合  集合1  集合2<blockquote>
+<p>   获得集合1和集合2的交集，并把结果存入新集合</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sinterstore mset7 mset4 mset5
+(integer) 2
+127.0.0.1:6379&gt; smembers mset7
+1) &quot;2&quot;
+2) &quot;3&quot;
+</code></pre>
+<ol start="12">
+<li>sunion  集合1  集合2<blockquote>
+<p>   获得指定集合的并集</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sunion mset4 mset5
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+4) &quot;4&quot;
+</code></pre>
+<ol start="13">
+<li>sunionstore  新集合  集合1  集合2<blockquote>
+<p>   获得指定集合的并集，并把结果保存如新集合</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; sunionstore mset8 mset4 mset5
+(integer) 4
+127.0.0.1:6379&gt; smembers mset8
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+4) &quot;4&quot;
+</code></pre>
+<ol start="14">
+<li>smove  源集合  目标集合  值<blockquote>
+<p>   将指定的值从源集合移动到目标集合</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; smembers mset1
+1) &quot;1&quot;
+2) &quot;2&quot;
+127.0.0.1:6379&gt; smembers mset2
+1) &quot;6&quot;
+2) &quot;7&quot;
+127.0.0.1:6379&gt; smove mset1 mset2 1
+(integer) 1
+127.0.0.1:6379&gt; smembers mset1
+1) &quot;2&quot;
+127.0.0.1:6379&gt; smembers mset2
+1) &quot;1&quot;
+2) &quot;6&quot;
+3) &quot;7&quot;
+</code></pre>
+<h2 id="sorted-sets类型和操作"><a href="#sorted-sets类型和操作" class="headerlink" title="sorted sets类型和操作"></a>sorted sets类型和操作</h2><p>sorted set是set的一个升级版本，它给集合中每个元素都定义一个分数，集合中的元素按照其分数排序。也不允许有重复值</p>
+<ol>
+<li>zadd  键  分数1  值1  [分数2  值2…]<blockquote>
+<p>该命令添加指定的成员到key对应的有序集合中，每个成员都有一个分数。你可以指定多个分数/成员组合。如果一个指定的成员已经在对应的有序集合中了，那么其分数就会被更新成最新的，并且该成员会重新调整到正确的位置，以确保集合有序。分数的值必须是一个表示数字的字符串，并且可以是double类型的浮点数。</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zadd zset1 1 lm 2 sc 3 glf
+(integer) 3
+127.0.0.1:6379&gt; zadd zset1 1 ymj
+(integer) 1
+</code></pre>
+<ol start="2">
+<li>zrange  集合  起始下标  截止下标  [withscores]<blockquote>
+<p>   返回有序集合中，指定区间内的成员。其中成员按照score（分数）值从小到大排序。具有相同score值的成员按照字典顺序来排列。</p>
+<p>   起始下标与截止下标和list类型一致：</p>
+<ul>
+<li>   0代表队列中第一个元素，1代表第二个元素，依次类推</li>
+<li>   -1代表队列中最后一个元素，-2代表倒数第二个元素</li>
+</ul>
+<p>   withscores：返回集合中元素的同时，返回其分数（score）</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrange zset1 0 -1 withscores
+1) &quot;lm&quot;
+2) &quot;1&quot;
+3) &quot;ymj&quot;
+4) &quot;1&quot;
+5) &quot;sc&quot;
+6) &quot;2&quot;
+7) &quot;glf&quot;
+8) &quot;3&quot;
+</code></pre>
+<ol start="3">
+<li>zrevrange  集合  起始下标  截止下标  [withscores]<blockquote>
+<p>   返回有序集合中，指定区间的成员。其成员按照score从大到小来排列。</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrevrange zset1 0 -1 withscores
+1) &quot;glf&quot;        //下标为0
+2) &quot;3&quot;
+3) &quot;sc&quot;            //下标为1
+4) &quot;2&quot;
+5) &quot;ymj&quot;        //下标为2
+6) &quot;1&quot;
+7) &quot;lm&quot;            //下标为3
+8) &quot;1&quot;
+
+127.0.0.1:6379&gt; zrevrange zset1 1 2 withscores        //查看集合中下标是1-2的值
+1) &quot;sc&quot;
+2) &quot;2&quot;
+3) &quot;ymj&quot;
+4) &quot;1&quot;
+</code></pre>
+<ol start="4">
+<li>zrangebyscore  集合  起始分数  截止分数  withscores<blockquote>
+<p>   返回有序集合中score（分数）在指定区间的值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zadd zset2 1 one 2 two 3 three 4 four
+(integer) 4
+127.0.0.1:6379&gt; zrange zset2 0 -1 withscores        //按照下标区间返回值
+1) &quot;one&quot;
+2) &quot;1&quot;
+3) &quot;two&quot;
+4) &quot;2&quot;
+5) &quot;three&quot;
+6) &quot;3&quot;
+7) &quot;four&quot;
+8) &quot;4&quot;
+
+127.0.0.1:6379&gt; zrangebyscore zset2 2 3 withscores    //按照分数区间返回值
+1) &quot;two&quot;
+2) &quot;2&quot;
+3) &quot;three&quot;
+4) &quot;3&quot;
+</code></pre>
+<ol start="5">
+<li>zrem  集合  值1  [值2…]<blockquote>
+<p>   删除有序集合中指定的值</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrem zset1 lm
+(integer) 1
+127.0.0.1:6379&gt; zrange zset1 0 -1 withscores
+1) &quot;ymj&quot;
+2) &quot;1&quot;
+3) &quot;sc&quot;
+4) &quot;2&quot;
+5) &quot;glf&quot;
+6) &quot;3&quot;
+</code></pre>
+<ol start="6">
+<li>zincrby  集合  增量  值<blockquote>
+<p>   给有序集合中指定值的成员的分数（score）值加上增量（increment）。如果集合中没有这个值，则给添加一个分数是increment的值。</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zincrby zset1 2 ymj        //如果值存在，则在其分数上加增量
+&quot;3&quot;
+127.0.0.1:6379&gt; zrange zset1 0 -1 withscores
+1) &quot;sc&quot;
+2) &quot;2&quot;
+3) &quot;glf&quot;
+4) &quot;3&quot;
+5) &quot;ymj&quot;
+6) &quot;3&quot;
+
+127.0.0.1:6379&gt; zincrby zset1 4 bro        //如果值不存在，则加入值。并指定分数为增&quot;4&quot;                                        量
+
+127.0.0.1:6379&gt; zrange zset1 0 -1 withscores
+1) &quot;sc&quot;
+2) &quot;2&quot;
+3) &quot;glf&quot;
+4) &quot;3&quot;
+5) &quot;ymj&quot;
+6) &quot;3&quot;
+7) &quot;bro&quot;
+8) &quot;4&quot;
+</code></pre>
+<ol start="7">
+<li>zrank  集合  值<blockquote>
+<p>   返回有序集合中指定值的下标。值按照score从小到大排序</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrank zset1 sc
+(integer) 0
+127.0.0.1:6379&gt; zrank zset1 ymj
+(integer) 2
+</code></pre>
+<ol start="8">
+<li>zrevrank  集合  值<blockquote>
+<p>   返回有序集合中指定值的下标，值按照score从大到小排序</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrange zset1 0 -1 withscores
+1) &quot;sc&quot;
+2) &quot;2&quot;
+3) &quot;glf&quot;
+4) &quot;3&quot;
+5) &quot;ymj&quot;
+6) &quot;3&quot;
+7) &quot;bro&quot;
+8) &quot;4&quot;
+127.0.0.1:6379&gt; zrevrank zset1 ymj
+(integer) 1
+127.0.0.1:6379&gt; zrevrank zset1 sc
+(integer) 3
+</code></pre>
+<ol start="9">
+<li>zcount  集合  起始分数  截止分数<blockquote>
+<p>   返回有序集合中，score值在起始分数与截止分数之间的个数</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrange zset2 0 -1 withscores
+1) &quot;one&quot;
+2) &quot;1&quot;
+3) &quot;two&quot;
+4) &quot;2&quot;
+5) &quot;three&quot;
+6) &quot;3&quot;
+7) &quot;four&quot;
+8) &quot;4&quot;
+
+127.0.0.1:6379&gt; zcount zset2 2 4
+(integer) 3
+</code></pre>
+<ol start="10">
+<li>zcard  集合<blockquote>
+<p>   返回有序集合元素的个数</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zcard zset2
+(integer) 4
+</code></pre>
+<ol start="11">
+<li>zremrangebyrank  集合  起始下标  结束下标<blockquote>
+<p>   删除有序集合中，下标在指定区间的元素</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrange zset2 0 -1 withscores
+1) &quot;one&quot;
+2) &quot;1&quot;
+3) &quot;two&quot;
+4) &quot;2&quot;
+5) &quot;three&quot;
+6) &quot;3&quot;
+7) &quot;four&quot;
+8) &quot;4&quot;
+127.0.0.1:6379&gt; ZREMRANGEBYRANK zset2 0 1
+(integer) 2
+127.0.0.1:6379&gt; zrange zset2 0 -1 withscores
+1) &quot;three&quot;
+2) &quot;3&quot;
+3) &quot;four&quot;
+4) &quot;4&quot;
+</code></pre>
+<ol start="12">
+<li>zremrangebyscore  集合  起始分数  截止分数<blockquote>
+<p>删除有序集合中，分数在指定区间的元素</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zrange zset1 0 -1 withscores
+1) &quot;sc&quot;
+2) &quot;2&quot;
+3) &quot;glf&quot;
+4) &quot;3&quot;
+5) &quot;ymj&quot;
+6) &quot;3&quot;
+7) &quot;bro&quot;
+8) &quot;4&quot;
+127.0.0.1:6379&gt; ZREMRANGEBYSCORE zset1 2 3
+(integer) 3
+127.0.0.1:6379&gt; zrange zset1 0 -1 withscores
+1) &quot;bro&quot;
+2) &quot;4&quot;
+</code></pre>
+<ol start="13">
+<li>zinterstore  新集合  取交集的集合个数  集合1 集合2<blockquote>
+<p>   取集合1和集合2的交集，并把结果保存到新集合中。在计算交集之前，需要指定计算交集的集合的个数。交集中，值的分数是多个集合中分数的和。</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zadd zset1 1 one 2 two 3 three 4 four
+(integer) 4
+127.0.0.1:6379&gt; zadd zset2  2 two 3 three 4 four 5 five
+(integer) 4
+127.0.0.1:6379&gt; ZINTERSTORE zset3 2 zset1 zset2     
+//有两个集合计算交集，所以集合个数是2
+(integer) 3
+127.0.0.1:6379&gt; ZRANGE zset3 0 -1 withscores
+1) &quot;two&quot;
+2) &quot;4&quot;                //分数是两个集合中two值的分数和
+3) &quot;three&quot;
+4) &quot;6&quot;
+5) &quot;four&quot;
+6) &quot;8&quot;
+</code></pre>
+<ol start="14">
+<li>zunionstore  新集合  取并集的集合个数  集合1 集合2<blockquote>
+<p>   取集合1和集合2的并集，并把结果保存到新集合中。在计算并集之前，需要指定计算并集的集合的个数。并集中，值的分数是多个集合中分数的和。</p>
+</blockquote>
+</li>
+</ol>
+<pre><code>127.0.0.1:6379&gt; zadd zset1 1 one 2 two 3 three 4 four
+(integer) 4
+127.0.0.1:6379&gt; zadd zset2  2 two 3 three 4 four 5 five
+(integer) 4
+127.0.0.1:6379&gt; ZUNIONSTORE zset4 2 zset1 zset2
+(integer) 5
+127.0.0.1:6379&gt; ZRANGE zset4 0 -1 withscores
+ 1) &quot;one&quot;
+ 2) &quot;1&quot;
+ 3) &quot;two&quot;
+ 4) &quot;4&quot;
+ 5) &quot;five&quot;
+ 6) &quot;5&quot;
+ 7) &quot;three&quot;
+ 8) &quot;6&quot;
+ 9) &quot;four&quot;
+10) &quot;8&quot;
+</code></pre>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/09/27/Redis%E5%AE%89%E8%A3%85%E4%B8%8E%E7%AE%A1%E7%90%86/" rel="prev" title="Redis安装与管理">
+                  <i class="fa fa-chevron-left"></i> Redis安装与管理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/09/27/Redis%E9%AB%98%E7%BA%A7%E5%BA%94%E7%94%A8/" rel="next" title="Redis高级应用">
+                  Redis高级应用 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/09/27/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

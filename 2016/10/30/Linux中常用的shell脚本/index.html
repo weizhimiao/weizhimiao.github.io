@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux中常用的shell脚本">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161030/bash.png">
+<meta property="article:published_time" content="2016-10-30T12:30:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.613Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="shell">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161030/bash.png">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/","path":"2016/10/30/Linux中常用的shell脚本/","title":"Linux中常用的shell脚本"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux中常用的shell脚本 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux中常用的shell脚本<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-10-30 20:30:00" itemprop="dateCreated datePublished" datetime="2016-10-30T20:30:00+08:00">2016-10-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/10/30/Linux中常用的shell脚本/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><img data-src="http://n.sinaimg.cn/games/3ece443e/20161030/bash.png" alt="Linux中常用的shell脚本"></p>
+<span id="more"></span>
+<p>1、对于进程来说，查看其运行时的环境变量</p>
+<pre><code>cat /proc/$PID/environ
+</code></pre>
+<p>示例</p>
+<pre><code>#首先需要我们运行一个程序
+# pgrep inotifywait
+8977
+# cat /proc/8977/environ
+HOSTNAME=localhost.localdomainSELINUX_ROLE_REQUESTED=TERM=xterm-256colorSHELL=/bin/bashHISTSIZE=1000SSH_CLIENT=192.168.1.100 63684 22SELINUX_USE_CURRENT_RANGE=SSH_TTY=/dev/pts/0USER=rootLS_COLORS=rs=0:di=38;... %sG_BROKEN_FILENAMES=1_=/usr/local/bin/inotifywaitOLDPWD=/data
+#一般返回的环境变量会有很多，我们采用换行方式查看会更直观
+
+# cat /proc/8977/environ | tr &#39;\0&#39; &#39;\n&#39;
+HOSTNAME=localhost.localdomain
+SELINUX_ROLE_REQUESTED=
+TERM=xterm-256color
+SHELL=/bin/bash
+HISTSIZE=1000
+SSH_CLIENT=192.168.1.100 63684 22
+SELINUX_USE_CURRENT_RANGE=
+SSH_TTY=/dev/pts/0
+USER=root
+....
+</code></pre>
+<p>2、获得字符串长度</p>
+<pre><code># var=wahaha
+# echo $&#123;var&#125;
+wahaha
+# echo $&#123;#var&#125;
+6
+</code></pre>
+<p>3、识别当前使用的是哪种shell</p>
+<pre><code>echo $SHELL
+/bin/bash
+</code></pre>
+<p>4、shell脚本检查是执行当前脚本的是否为root用户</p>
+<pre><code># cat check_root.sh
+#!/bin/bash
+if [ $UID -ne 0 ]; then
+    echo &quot;Non root user. Please run as root.&quot;
+else
+    echo Root User
+fi
+</code></pre>
+<p>5、修改bash提示字符串（username@hastname:~$）</p>
+<pre><code>#利用PS1环境变量来定制
+# cat ~/.bashrc | grep PS1
+PS1=&#39;$&#123;debian_chroot:+$($debian_chroot)&#125;\u@\h:\w\$ &#39;
+# \u 用户名
+# \h 主机名
+# \w 当前工作目录
+</code></pre>
+<p>6、如何判断一个命令是否执行成功</p>
+<pre><code>当一个命令发生错误并退回时，他会返回一个非0的退出状态；
+而当命令成功完成后，它会返回数字0.
+退出状态可以从特殊变量 $? 中获得（在命令执行之后立刻运行 $? ,就可以打印出退出状态）
+</code></pre>
+<pre><code>#!/bin/bash
+CMD=&quot;commod&quot;  #commod代表需要检测退出状态的命令
+$CMD
+if [ $? -eq 0 ];
+then
+  echo &quot;$CMD executed succ&quot;
+else
+  echo &quot;$CMD excuted unsucc&quot;
+fi
+</code></pre>
+<p>7、shell中数组的定义与操作</p>
+<pre><code>#定义1
+array_var=(1 2 3 4 5)
+#定义2
+array_var[0]=&quot;test&quot;
+array_var[1]=&quot;test1&quot;
+array_var[2]=&quot;test2&quot;
+array_var[3]=&quot;test3&quot;
+#打印特定索引数组元素
+echo $&#123;array_var[0]&#125;
+#以清单形式打印出数组中的所有值
+echo $&#123;array_var[*]&#125;
+test test1 test2 test3
+#也可以
+echo $&#123;array_var[@]&#125;
+test test1 test2 test3
+#输出数组元素个数
+echo $&#123;#array_var[*]&#125;
+4
+</code></pre>
+<p>8、按照指定格式打印系统当前时间</p>
+<pre><code># date &quot;+%Y%m%d&quot;
+20161029
+# %a  星期  例，Sat
+# %A  星期  例，Saturday
+# %b  月    例，Nov
+# %B  月    例，November
+# %d  日   例，31
+# %D  固定格式(mm/dd/yy)  例，10/18/10
+# %y  年   例，16
+# %Y  年   例，2016
+# %I或%H 小时  例，08
+# %M  分钟  例，30
+# %S  秒   例，10
+# %N  纳秒  例，694394444
+</code></pre>
+<p>9、shell函数参数传递</p>
+<pre><code>#!/bin/bash
+func()&#123;
+  echo $1,$2  #访问参数1和参数2
+  echo &quot;$@&quot;   #以列表方式一次性打印所有参数
+  echo &quot;$*&quot;   #类似于$@,但是参数被作为单个实体
+  return 0;   #返回值
+&#125;
+
+# $1,  第一个参数
+# $2,  第二个参数
+# $n,  第n个参数
+# &quot;$@&quot;,   被扩展成&quot;$1&quot; &quot;$2&quot; &quot;$3&quot;等
+# &quot;$*&quot;,   被扩展成&quot;$1c$2c$3&quot; ，其中c是IFS的第一个字符
+# &quot;$@&quot;要比&quot;$*&quot;用的多。由于&quot;$*&quot;将所有参数当做单个字符串，因此它很少被使用
+</code></pre>
+<p>10、利用子shell生成独立进程</p>
+<pre><code># cat sub_shell.sh
+#!/bin/bash
+pwd;
+(cd /bin; pwd);
+pwd;
+# ./sub_shell.sh
+/root/shell
+/bin
+/root/shell
+
+# 我们可以发现（）中的子shell对于当前shell没有影响，它所有的改变仅限于（）内部
+</code></pre>
+<p>11、运行命令直至成功</p>
+<pre><code>repeat()&#123;
+  while true
+  do
+    $@  &amp;&amp; return
+  done
+&#125;
+# 原理：该函数通过$@接收传参。如果命令执行成功，则返回并退出循环，否则一直循环
+
+# Tips：将该函数加入的shell的rc文件中，方便我们使用
+
+# 示例：使用repeat（）从网上下载一个文件，直至成功
+repeat wget -c http://xxxx.com/example.tar.gz
+</code></pre>
+<p>12、删除多余的空行</p>
+<pre><code># cat -s file &gt;&gt; newfile
+</code></pre>
+<p>13、文件查找</p>
+<pre><code># find /home -name &quot;*.txt&quot;
+# find . \( -name &quot;*.txt&quot; -o -name &quot;*.pdf&quot; \)
+...
+</code></pre>
+<p>14、排序、去重</p>
+<pre><code># 排序  sort
+# 去重  uniq
+sort file.txt | uniq
+</code></pre>
+<pre><code># cat check_sorted.sh
+#!/bin/bash
+# 功能：检查文件是否已经排序过
+sort -C filename;
+if [ $? -eq 0 ]
+then
+  echo Sorted
+else
+  echo Unsorted
+fi
+</code></pre>
+<p>15、交互输出自动化实现</p>
+<pre><code>#!/bin/bash
+# 文件名：enter.sh
+read -p &quot;Enter number:&quot; no ;
+read -p &quot;Enter name&quot; name ;
+echo You have entered $no $name;
+</code></pre>
+<pre><code>#利用echo -e来生成输入序列
+echo -e &quot;1\nhello\n&quot; | ./enter.sh
+</code></pre>
+<p>16、利用并行进程加速命令执行</p>
+<pre><code>#!/bin/bash
+PIDARRAY=()
+for file in File1.ios File2.ios
+do
+  md5sum $file &amp;
+  PIDARRAY+=(&quot;$!&quot;)
+done
+wait $&#123;PIDARRAY[@]&#125;
+# 原理：利用bash的操作符&amp;，它使得shell将命令置于后台并继续执行脚本。使用 $! 来获得进程的PID（在bash中 $! 保存最近一个后台进程的PID）。将这些进程PID放入PIDARRAY数组中。使用wait命令等待这些进程执行完成。
+</code></pre>
+<p>17、查找并删除内容重复的文件</p>
+<pre><code>#创建测试文件testfile，testfile1，testfile2，newfile ;其中testfile1和testfile2都是testfile的副本
+
+# echo &quot;hello&quot; &gt;&gt; testfile
+# cp testfile testfile1
+# cp testfile testfile2
+# echo hello world &gt;&gt; newfile
+
+# cat remove_duplicates.sh
+#!/bin/bash
+
+ls -lS --time-style=long-iso | awk &#39;BEGIN &#123;
+    getline; getline;
+    name1=$8; size=$5;
+&#125;&#123;
+    name2=$8
+    if(size==$5)&#123;
+        &quot;md5sum &quot;name1 | getline; csum1=$1;
+        &quot;md5sum &quot;name2 | getline; csum2=$1;
+        if(csum1==csum2)&#123;
+            print name1;
+            print name2;
+        &#125;
+    &#125;
+    size=$5;
+    name1=name2;
+&#125;&#39; | sort -u &gt; duplicate_files
+
+cat duplicate_files | xargs -I &#123;&#125; md5sum &#123;&#125; | sort | uniq -w 32 | awk &#39;&#123;print &quot;^&quot;$2&quot;$&quot; &#125;&#39; | sort -u &gt; duplicate_sample
+
+echo Removing...
+comm duplicate_files duplicate_sample -2 -3 | tee /dev/stderr | xargs rm
+rm -f duplicate_files duplicate_sample
+echo Removed duplicates files successfully
+
+# 执行脚本
+# ./remove_duplicates.sh
+Removing...
+testfile
+testfile1
+Removed duplicates files successfully
+
+# 如上testfile、testfile1、testfile2这三个相同内容的文件，只保留了testfile2.
+
+# 脚本原理说明：
+# ls -lS 将当前目录下的所有文件按照文件大小进行排序，并列出文件的详细信息
+# awk命令的执行步骤：awk首先会执行BEGIN&#123;&#125;语句块，处理完&#123;&#125;中所有的命令后，在执行END&#123;&#125;语句块
+# 在awk中，外部的命令的输出可以用这样的方式来读取，&quot;cmd&quot; | getline ，随后我们就可以用 $0 来获取命令的输出 ，在$1,$2,$3...$n 获取命令输出中的每一列
+# BEGIN&#123;&#125;语句块中有两个getline;是因为 ls -lS --time-style=long-iso 命令的输出的第一行是文件的数量，所以我们直接跳过，来获取下一行数据
+# comm 通常只接受排过序的文件。所以在之前需要使用 sort -u 进行排序
+# tee 命令在这有一个妙用：它将文件名在传递给rm命令的同时，也起到了print的效果。tee将来自stdin的行写入文件，同事将其发送到stdout
+</code></pre>
+<p>18、解析文本中的电子邮件地址和URL</p>
+<pre><code># 正则表达式
+#   mail：[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,4&#125;
+#   URL： (http|https)://[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,3&#125;
+
+# wget www.sina.com.cn/index.html
+
+# 解析index.html中的email
+# egrep -o &quot;[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,4&#125;&quot; index.html
+jubao@vip.sina.com
+jubao@vip.sina.com
+
+# 解析index.html中的URL
+# egrep -o &quot;(http|https)://[a-zA-Z0-9.]+\.[a-zA-Z]&#123;2,3&#125;&quot; index.html
+http://www.sina.com.cn
+http://www.sina.com.cn
+http://auto.sina.com.cn
+http://www.sina.com.cn
+...
+http://hq.sinajs.cn
+http://rm.sina.com.cn
+http://d4.sina.com.cn
+http://d1.sina.com.cn
+http://i1.sinaimg.cn
+http://news.sina.com.cn
+http://login.sina.com.cn
+http://login.sina.com.cn
+</code></pre>
+<p>19、以纯文本形式下载网页</p>
+<pre><code>lynx:是一款基于命令行的web浏览器。我们可以利用它获取纯文本形式的网页
+
+命令：
+# lynx -dump http://www.sina.com.cn
+-dump 选项表示将网页内容以ASCII编码形式打印
+
+另，lynx会将页面中所有的超链接（&lt;a href=&quot;link&quot;&gt;）作为文本的页脚，单独放置在标题为 References 的文本区域。如果我们需要匹配除某个页面中所有的超链接也可以使用该方法，也省的我们用正则匹配
+</code></pre>
+<p>20、列出网络上所有的活动主机</p>
+<pre><code># cat ping.sh
+#!/bin/bash
+for ip in 192.168.1.&#123;1..255&#125;;
+do
+    ping $ip -c 2 &amp;&gt; /dev/null;
+
+    if [ $? -eq 0 ]
+    then
+        echo $ip is alive
+    fi
+done
+
+# 并行ping
+# cat ping_1.sh
+#!/bin/bash
+for ip in 192.168.1.&#123;1..255&#125;;
+do
+    (
+    ping $ip -c 2 &amp;&gt; /dev/null;
+
+    if [ $? -eq 0 ]
+    then
+        echo $ip is alive
+    fi
+    )&amp;
+done
+wait
+
+# 将wait放在脚本最后，它就会一直等到所有的子脚本进程全部结束
+</code></pre>
+<p>21、网络上利用套接字进行快速文件复制</p>
+<pre><code># 设置侦听套接字
+nc -l 1234
+
+# 在另一终端或主机中连接到该套接字
+nc 127.0.0.1 1234
+message_test
+
+# 连接到套接字后就可以在终端中输入信息回车就会发送
+
+# 文件复制
+在接收端执行以下命令：
+nc -l 1234 &gt; destination_filename
+在发送端执行下列命令：
+nc 127.0.0.1 1234 &lt; source_filename
+</code></pre>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/shell/" rel="tag"># shell</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/11/01/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC%EF%BC%88%E4%BA%8C%EF%BC%89/" rel="prev" title="Linux中常用的shell脚本（二）">
+                  <i class="fa fa-chevron-left"></i> Linux中常用的shell脚本（二）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/10/29/Linux%E4%B8%AD%E9%80%9A%E8%BF%87inotify-tools%E5%AE%9E%E7%8E%B0%E7%9B%91%E6%8E%A7%E6%96%87%E4%BB%B6%E5%8F%98%E5%8C%96/" rel="next" title="Linux中通过inotify-tools实现监控文件变化">
+                  Linux中通过inotify-tools实现监控文件变化 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/10/30/Linux%E4%B8%AD%E5%B8%B8%E7%94%A8%E7%9A%84shell%E8%84%9A%E6%9C%AC/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="ElasticSearch是由Shay Banon发起的一个开源搜索服务器项目。由于其分布式特性和实时搜索能力，成为当前搜索和数据分析解决方案领域的重要成员。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ElasticSearch整理">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/05/ElasticSearch%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="ElasticSearch是由Shay Banon发起的一个开源搜索服务器项目。由于其分布式特性和实时搜索能力，成为当前搜索和数据分析解决方案领域的重要成员。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20161006/ElasticSearch.png">
+<meta property="article:published_time" content="2016-10-05T13:00:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.613Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="ElasticSearch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20161006/ElasticSearch.png">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/10/05/ElasticSearch%E6%95%B4%E7%90%86/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/10/05/ElasticSearch%E6%95%B4%E7%90%86/","path":"2016/10/05/ElasticSearch整理/","title":"ElasticSearch整理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ElasticSearch整理 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">2.1.</span> <span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85Elasticsearch"><span class="nav-number">2.2.</span> <span class="nav-text">安装Elasticsearch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="nav-number">2.3.</span> <span class="nav-text">目录结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.4.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%A1%E7%90%86"><span class="nav-number">2.5.</span> <span class="nav-text">管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">2.6.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%EF%BC%88%E5%9F%BA%E4%BA%8EREST-API%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">使用（基于REST API数据操作）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#REST"><span class="nav-number">3.1.</span> <span class="nav-text">REST</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%96%87%E6%A1%A3"><span class="nav-number">3.2.</span> <span class="nav-text">创建文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E7%B4%A2%E6%96%87%E6%A1%A3"><span class="nav-number">3.3.</span> <span class="nav-text">检索文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E6%96%87%E6%A1%A3"><span class="nav-number">3.4.</span> <span class="nav-text">更新文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E6%96%87%E6%A1%A3"><span class="nav-number">3.5.</span> <span class="nav-text">删除文档</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/05/ElasticSearch%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ElasticSearch整理<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/ElasticSearch%E6%95%B4%E7%90%86.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-10-05 21:00:00" itemprop="dateCreated datePublished" datetime="2016-10-05T21:00:00+08:00">2016-10-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/10/05/ElasticSearch%E6%95%B4%E7%90%86/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/10/05/ElasticSearch整理/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>15k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>ElasticSearch是由Shay Banon发起的一个开源搜索服务器项目。由于其分布式特性和实时搜索能力，成为当前搜索和数据分析解决方案领域的重要成员。</p>
+<p><img data-src="http://n.sinaimg.cn/games/3ece443e/20161006/ElasticSearch.png" alt="ElasticSearch"></p>
+<span id="more"></span>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>索引</p>
+<blockquote>
+<p>索引（index）是ElasticSearch存放数据的一种逻辑结构。类比关系型数据库中的数据表。</p>
+</blockquote>
+<p>文档</p>
+<blockquote>
+<p>文档（document）是ElasticSearch中存储的主要实体。每个ElasticSearch文档类比关系型数据库中数据表的没一行数据。<br>文档由字段（行数据的列）组成，一个文档由多个字段组成，并且ElasticSearch允许一个字段重复出现多次，该类型字段被称为多只字段。每个字段对应一种类型（字符串型、数值型、日期型等），并且ElasticSearch可以自动确定字段类型。不同于关系型数据库，ElasticSearch的文档结构可以是不固定的。即不同的文档可以有不同的字段集合。</p>
+</blockquote>
+<p>文档类型</p>
+<blockquote>
+<p>ElasticSearch中，一个索引可以存储许多不同用途的对象。按照不同的用途我们可以将文档划分成不同的类型加以区分。</p>
+</blockquote>
+<p>节点和集群</p>
+<blockquote>
+<p>ElasticSearch既可以作为一个独立搜索服务器工作，也支持多台一起协作进行运行，构成一个集群（cluster），其中的每个服务器被称为节点（node）。ElasticSearch可以通过索引分片,将海量的数据进行分割并分布到不同的节点，来实现更强的可用性和更高的性能。</p>
+</blockquote>
+<p>分片</p>
+<blockquote>
+<p>对于存储大规模的文档，ElasticSearch会将数据进行切分，每部分切成一个单独的Apache Lucene索引，称为分片（shared）。每个分片可以存储在集群的不同的节点上，当一个查询需要用到多个分片时，ElasticSearch会将请求发送至多个分片，之后结果进行合并。</p>
+</blockquote>
+<p>副本</p>
+<blockquote>
+<p>分片副本是对原始分片的一个拷贝，每个主分片可以有零个或者多个副分片。当主分片丢失时，副分片就会被提升为主分片。启用分片副本功能，可以提高查询的吞吐或实现系统的高可用性。</p>
+</blockquote>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><p>JDK6+</p>
+<p>JDK的安装方式比较简单，只需将下载回来的程序包解压到相应的目录即可。</p>
+<pre><code>wget http://download.oracle.com/otn-pub/java/jdk/8u101-b13/jdk-8u101-linux-x64.tar.gz
+mkdir /usr/local/java
+tar -zxf jdk-8u101-linux-x64.tar.gz -C /usr/local/java/
+</code></pre>
+<p>设置JDK的环境变量，如下：</p>
+<pre><code># tail -3 ~/.bash_profile
+export JAVA_HOME=/usr/local/java/jdk1.8.0_101
+export PATH=$PATH:$JAVA_HOME/bin
+exportCLASSPATH=.:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar:$CLASSPATH
+</code></pre>
+<p>重新加载环境变量</p>
+<pre><code># source .bash_profile
+</code></pre>
+<p>在Shell提示符中执行java –version命令，显示如下结果，说明安装成功：</p>
+<pre><code># java -version
+java version &quot;1.8.0_45&quot;
+Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02,mixed mode)
+</code></pre>
+<h3 id="安装Elasticsearch"><a href="#安装Elasticsearch" class="headerlink" title="安装Elasticsearch"></a>安装Elasticsearch</h3><p>下载Elasticsearch后，解压到对应的目录就完成Elasticsearch的安装。</p>
+<pre><code># wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.7.0.zip
+# unzip elasticsearch-1.7.0.zip
+# mv elasticsearch-1.7.0 /usr/local/elasticsearch
+</code></pre>
+<h3 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h3><pre><code>elasticsearch/
+├── bin
+│   ...#运行elasticsearch和进行插件管理所需的脚本
+├── config
+│   ...#elasticsearch配置文件所在目录
+├── data
+│   ...#存储elasticsearch用到的数据
+├── lib
+│   ...#elasticsearch运行中用到的库
+├── LICENSE.txt
+├── logs
+│   ...#存储elasticsearch运行中产生的事件信息和错误信息
+├── nohup
+├── NOTICE.txt
+└── README.textile
+
+10 directories, 60 files
+</code></pre>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>所有的配置文件都位于config目录下。该目录下包含两个文件。</p>
+<pre><code>├── config
+│   ├── elasticsearch.yml
+│   └── logging.yml
+</code></pre>
+<p>elasticsearch.yml</p>
+<blockquote>
+<p>负责设置服务器的默认配置。<br>比较重要的两个值cluster.name 和 node.name.</p>
+<ul>
+<li>cluster.name,保存的是集群名称。通过集群名称可以区分不同的集群。配置具有相同名称的节点将尝试组成一个集群。</li>
+<li>node.name，节点名称。我们也可以不指定该名称，elasticsearch会自动为节点选择一个唯一名称。但每次启动时这个唯一名称会发生改变。</li>
+</ul>
+</blockquote>
+<p>其他配置</p>
+<pre><code>##################### Elasticsearch Configuration Example #####################
+
+＃此文件包含各种配置设置的概述，
+＃针对操作人员。应用程序开发人员应该
+＃在咨询&lt;http://elasticsearch.org/guide&gt;指南。
+#
+＃安装过程被覆盖在
+＃&lt;http://elasticsearch.org/guide/en/elasticsearch/reference/current/setup.html&gt;。
+#
+＃Elasticsearch附带了大多数设置合理的默认值，
+＃所以你可以尝试使用它而不用修改。
+#
+＃大多数时候，这些默认值是蛮好的运行生产
+＃集群。如果你正在微调群集，或者想知道的某些配置选项＃效果，请_DO ask_上
+＃邮件列表或IRC频道[http://elasticsearch.org/community。
+#
+＃配置中的任何元素都可以用环境变量替换
+＃通过将它们放置在$ &#123;...&#125;符号。 例如：
+#
+#node.rack: $&#123;RACK_ENV_VAR&#125;
+
+＃有关支持的格式和配置文件信息语法，请参阅
+＃&lt;http://elasticsearch.org/guide/en/elasticsearch/reference/current/setup-configuration.html&gt;
+
+################################### Cluster 集群###################################
+
+＃集群名称标识群集的自动发现。如果你在同一个网络上的正在运行多个群集，请确保您使用的是唯一的名称。
+＃
+＃cluster.name：elasticsearch
+
+#################################### Node 节点#####################################
+
+
+＃节点名称是在启动时动态生成的，但你也可以手动配置它们。你可以给这个节点起一个特定的名称：
+＃
+#node.name: &quot;Franz Kafka&quot;
+
+＃每个节点可以被配置为允许或拒绝称为集群主节点，
+＃和允许或拒绝来存储数据。
+＃
+＃允许此节点可以作为主节点（默认启用）：
+＃
+#node.master: true
+#
+# 允许此节点可以用来存储数据（默认启用）：
+#
+#node.data: true
+
+
+＃你可以利用这些设置，以设计高级集群拓扑。
+＃
+＃1，你想这个节点永远不会成为一个主节点，只保存数据。这将是群集的“主力”。
+＃
+＃
+#node.master: false
+#node.data: true
+#
+＃2，你要这个节点只能作为主：不存储任何数据和有免费的资源。这将是群集的“协调员”。
+＃
+＃
+#node.master: true
+#node.data: false
+#
+＃3，你希望这个节点是不是主数据节点，但可以充当“搜索负载平衡器”（取从节点的数据，聚集结果等）
+＃
+#node.master: false
+#node.data: false
+
+
+＃使用群集健康状况API[http://localhost:9200/_cluster/health]，
+＃节点信息API[http://localhost:9200/_nodes]或GUI工具
+＃如&lt;http://www.elasticsearch.org/overview/marvel/&gt;
+＃&lt;http://github.com/karmi/elasticsearch-paramedic&gt;
+＃&lt;http://github.com/lukas-vlcek/bigdesk&gt;和
+＃&lt;http://mobz.github.com/elasticsearch-head&gt;检查群集状态。
+
+
+
+＃一个节点可以有与之关联的通用属性，可用于定制分片分配过滤，或分配意识。
+＃
+＃属性是一个简单的键值对，类似node.key：值，下面是一个例子：
+＃
+#node.rack: rack314
+
+＃默认情况下，多个节点被允许从相同的安装位置
+# 如果要禁用的话，设置如下：
+#node.max_local_storage_nodes: 1
+
+
+#################################### Index 索引####################################
+
+#
+＃您可以设置一些选项（如分片/副本选项，映射或分析器的定义，事务日志设置...）对全局参数，在这个文件中。
+#
+# Note, that it makes more sense to configure index settings specifically for
+# a certain index, either when creating it or by using the index templates API.
+#
+＃请注意，它更有意义专门配置索引设置
+＃某个具体的索引，创造它或使用该索引模板API。
+# See &lt;http://elasticsearch.org/guide/en/elasticsearch/reference/current/index-modules.html&gt; and
+# &lt;http://elasticsearch.org/guide/en/elasticsearch/reference/current/indices-create-index.html&gt;
+# for more information.
+
+
+# 设置一个索引的分片（副本）数量（默认 5）
+#
+#index.number_of_shards: 5
+
+＃设置索引（默认值为1）的副本（额外副本）数量：
+＃
+#index.number_of_replicas: 1
+
+# Note, that for development on a local machine, with small indices, it usually
+# makes sense to &quot;disable&quot; the distributed features:
+#
+＃注意，对于在本地机器，它通常比较小的值。禁用分布式特点是很有必要的
+＃
+#index.number_of_shards: 1
+#index.number_of_replicas: 0
+
+
+＃这些设置直接影响索引和搜索操作的性能
+＃在集群中。假设你有足够多的机器来保存分片及
+＃副本，经验法则是：
+#
+# 1. 更多的分片能提高索引效率，一个大的索引允许存储在不同的服务器上
+# 2. 更多的副本能够提高搜索效率，并且能够增强系统的可用性
+#
+#  &quot;number_of_shards&quot; 对于一个索引不能动态修改设置一次.
+#
+# T &quot;number_of_replicas&quot; 可以增加或者减少在任何时候，通过索引更新或者api操作
+#
+# Elasticsearch takes care about load balancing, relocating, gathering the
+# results from nodes, etc. Experiment with different settings to fine-tune
+# your setup.
+
+＃Elasticsearch需要关心负载均衡，搬迁，从节点收集结果，等。
+# 你可以通过不断的微调进行设置
+
+＃使用索引状态API（&lt;http://localhost:9200/A/_status&gt;）检查
+＃索引状态。
+
+
+#################################### Paths ####################################
+
+# 路径包含目录配置（此文件并logging.yml）：
+#path.conf: /path/to/conf
+
+# 索引数据存储路径配置
+#path.data: /path/to/data
+#
+＃可以任选地包括一个以上的位置，方便扩展和使用。 例如：
+#
+#path.data: /path/to/data1,/path/to/data2
+
+# 临时文件路径：
+#
+#path.work: /path/to/work
+
+# 日志文件路径:
+#
+#path.logs: /path/to/logs
+
+# 插件安装目录
+#
+#path.plugins: /path/to/plugins
+
+
+#################################### Plugin ###################################
+
+# 如果这里列出的插件没有安装用于当前节点，该节点将无法启动。
+#
+#plugin.mandatory: mapper-attachments,lang-groovy
+
+
+################################### Memory ####################################
+
+＃Elasticsearch表现不佳时，JVM启动交换：你应该确保它永远不会_交换。
+#
+# 将此属性设置为true锁定内存：
+#
+#bootstrap.mlockall: true
+
+
+# 确保ES_MIN_MEM和ES_MAX_MEM环境变量设置
+＃为相同的值，并且该机器有足够的内存来分配
+＃为Elasticsearch，留出足够的内存为操作系统本身。
+＃
+#
+# You should also make sure that the Elasticsearch process is allowed to lock
+# the memory, eg. by using `ulimit -l unlimited`.
+# 你还应该确保该Elasticsearch允许进程锁定内存
+＃例如。通过使用`ulimit -l unlimited`。
+
+############################## Network And HTTP ###############################
+
+
+＃Elasticsearch，默认情况下，本身绑定到0.0.0.0地址，并监听
+＃端口[9200-9300] HTTP流量和端口[9300-9400]节点到节点
+＃沟通。（范围意味着，如果端口忙，它会自动将
+＃尝试下口）。
+
+# 设置绑定专用地址（IPv4或IPv6）：
+#network.bind_host: 192.168.0.1
+
+＃设置其他节点将使用与该节点通信的地址。否则
+＃，它会自动的产生。它必须指向一个实际的IP地址。
+#
+#network.publish_host: 192.168.0.1
+
+# 同时设置“bind_host&#39;和&#39;publish_host”：
+#
+#network.host: 192.168.0.1
+
+# 设置一个自定义的节点间通讯端口，（默认为 9300）
+#transport.tcp.port: 9300
+
+# 启用节点间通讯压缩
+#
+#transport.tcp.compress: true
+
+# 设置自定义端口侦听HTTP流量：
+#
+#http.port: 9200
+
+# 设置自定义允许的内容长度：
+#
+#http.max_content_length: 100mb
+
+# 完全禁用HTTP：
+#
+#http.enabled: false
+
+
+################################### Gateway ###################################
+
+
+＃网关允许持收集集群之间的群集状态
+＃集群中每个状态改变（例如添加一个索引），都将会存储
+＃在网关，并且当集群首次启动时，
+＃它会从网关读出其状态。
+
+
+＃有几种类型的网关实现的。欲了解更多信息，请参阅
+# &lt;http://elasticsearch.org/guide/en/elasticsearch/reference/current/modules-gateway.html&gt;.
+
+＃默认网关类型为“本地”网关（推荐）：
+#
+#gateway.type: local
+
+# 设置当集群崩溃时，如何重新启动并恢复进程（使用共享网关时，尽可能多的使用本地数据）
+
+# 允许恢复后，在一个集群中有N个节点：
+#
+#gateway.recover_after_nodes: 1
+
+＃设置超时时间，在启动恢复过程中，前面设置的N个节点全部重启（接受时间值）：
+#
+
+#gateway.recover_after_time: 5m
+
+＃设置在一个句群众预计的节点数
+#一旦这些N个节点全部启用（满足recover_after_nodes），立即开始恢复过程（无需等待恢复时间后到期）：
+#
+#gateway.expected_nodes: 2
+
+
+############################# Recovery Throttling 恢复节流 #############################
+
+
+＃这些设置可以控制碎片分配的过程，在节点恢复期间、副本定位、重新平衡，或添加和删除节点时
+
+
+#
+# 设置一个节点上同时恢复数量
+# 1. 初步恢复期间
+#
+#cluster.routing.allocation.node_initial_primaries_recoveries: 4
+#
+# 2. 在添加/删除节点，再平衡期间
+#
+#cluster.routing.allocation.node_concurrent_recoveries: 2
+
+# 设置一个恢复时的吞吐量值（如100MB，默认20MB）
+#
+#indices.recovery.max_bytes_per_sec: 20mb
+
+
+# 设置一个并发流数量限制，在同级别的分片恢复时
+#
+#indices.recovery.concurrent_streams: 5
+
+
+################################## Discovery 发现##################################
+
+
+＃发现基础设施，确保节点可以在群集内找到和主节点的选举。是默认是通过多播方式来进行发现。
+
+# 设置一个节点确保能在集群内发现N个其他合格的节点能成为主节点。
+
+#discovery.zen.minimum_master_nodes: 1
+
+
+# 设置一个过期时间，在通过ping发现其他节点时
+# 在一个较差的网络环境中设置一个较长的值，可以最大限度的减少报错
+
+#discovery.zen.ping.timeout: 3s
+
+# 更多的信息，请看
+# &lt;http://elasticsearch.org/guide/en/elasticsearch/reference/current/modules-discovery-zen.html&gt;
+
+
+＃单播发现允许明确地控制哪些节点将被用于发现群集。它可以在多播不存在，或限制集群通信时使用。
+#
+# 1. 多播发现（默认启用）
+#
+#discovery.zen.ping.multicast.enabled: false
+#
+# 2. 配置一个初始清单在集群的主节点上，为了发现一个刚启用的节点
+#
+#discovery.zen.ping.unicast.hosts: [&quot;host1&quot;, &quot;host2:port&quot;]
+
+# 为了发现 ，EC2允许使用AWS EC2 API
+# 你必须安装云AWS插件启用EC2发现。
+#
+# 更多信息请查看
+# &lt;http://elasticsearch.org/guide/en/elasticsearch/reference/current/modules-discovery-ec2.html&gt;
+#
+# See &lt;http://elasticsearch.org/tutorials/elasticsearch-on-ec2/&gt;
+# 一步一步的教程
+
+# 为了发现 ，GCE发现允许使用谷歌Compute Engine的API
+#
+# 你必须安装云GCE GCE插件启用的发现。
+#
+# For more information, see &lt;https://github.com/elasticsearch/elasticsearch-cloud-gce&gt;.
+
+# Azure的发现允许以执行发现使用Azure的API。
+#
+# 你必须安装云cloud-azure插件启用的发现。
+# For more information, see &lt;https://github.com/elasticsearch/elasticsearch-cloud-azure&gt;.
+
+################################## Slow Log ##################################
+
+# 分片级查询并会的对应等级的日志
+
+#index.search.slowlog.threshold.query.warn: 10s
+#index.search.slowlog.threshold.query.info: 5s
+#index.search.slowlog.threshold.query.debug: 2s
+#index.search.slowlog.threshold.query.trace: 500ms
+
+#index.search.slowlog.threshold.fetch.warn: 1s
+#index.search.slowlog.threshold.fetch.info: 800ms
+#index.search.slowlog.threshold.fetch.debug: 500ms
+#index.search.slowlog.threshold.fetch.trace: 200ms
+
+#index.indexing.slowlog.threshold.index.warn: 10s
+#index.indexing.slowlog.threshold.index.info: 5s
+#index.indexing.slowlog.threshold.index.debug: 2s
+#index.indexing.slowlog.threshold.index.trace: 500ms
+
+################################## GC Logging ################################
+
+#monitor.jvm.gc.young.warn: 1000ms
+#monitor.jvm.gc.young.info: 700ms
+#monitor.jvm.gc.young.debug: 400ms
+
+#monitor.jvm.gc.old.warn: 10s
+#monitor.jvm.gc.old.info: 5s
+#monitor.jvm.gc.old.debug: 2s
+
+################################## Security ################################
+
+# Uncomment if you want to enable JSONP as a valid return transport on the
+# http server. With this enabled, it may pose a security risk, so disabling
+# it unless you need it is recommended (it is disabled by default).
+
+＃不推荐，如果要启用JSONP作为HTTP服务器上的返回。
+#启用此功能，它可能会带来安全风险，因此禁用它，除非你需要的建议（它被默认禁用）。
+
+#http.jsonp.enable: true
+</code></pre>
+<p>logging.yml</p>
+<blockquote>
+<p>定义多少信息写入系统日志、定义日志文件，并定期创建新文件</p>
+</blockquote>
+<h3 id="管理"><a href="#管理" class="headerlink" title="管理"></a>管理</h3><p>启动Elasticsearch</p>
+<pre><code># /usr/local/elasticsearch/bin/elasticsearch  -d
+</code></pre>
+<blockquote>
+<p>-d 表示将进程放入后台运行</p>
+</blockquote>
+<p>或者通过nohup命令</p>
+<pre><code># nohup /usr/local/elasticsearch/bin/elasticsearch &gt; nohup
+</code></pre>
+<p>将elasticsearch设置成开机自启动</p>
+<pre><code># echo &quot;nohup /usr/local/elasticsearch/bin/elasticsearch &gt; nohup&quot; &gt; /etc/rc.local
+</code></pre>
+<p>确认elasticsearch的9200端口已监听，说明elasticsearch已成功运行</p>
+<pre><code># netstat -anp |grep :9200
+tcp        0      0 :::9200                     :::*                        LISTEN      3362/java
+</code></pre>
+<p>如何关闭elasticsearch</p>
+<ul>
+<li>方法一：如果节点与控制台相连并且当前elasticsearch是使用-f选项运行，则只需要按下Ctrl+C组合键即可</li>
+<li>方法二：通过发送TERM信号来终止服务器进程 kill -9 进程ID</li>
+<li>方法三：使用REST API</li>
+</ul>
+<p>关闭整个集群</p>
+<pre><code># curl -XPOST http://localhost:9200/_cluster/nodes/_shutdown
+</code></pre>
+<p>关闭单个节点</p>
+<pre><code># curl -XPOST  http://127.0.0.1:9200/_cluster/nodes/2ens0yuEQ12G6ct1UDpihQ/_shutdown
+</code></pre>
+<p>2ens0yuEQ12G6ct1UDpihQ ，为要关闭的节点标志符</p>
+<p>查看节点标志符，可以从elasticsearch日志中或者通过REST API中获得</p>
+<pre><code># curl http://localhost:9200/_nodes/?pretty
+&#123;
+  &quot;cluster_name&quot; : &quot;elasticsearch&quot;,
+  &quot;nodes&quot; : &#123;
+    &quot;13QfvIdATEurGAhVAlO6tQ&quot; : &#123;
+      &quot;name&quot; : &quot;Edwin Jarvis&quot;,
+      ...
+    &#125;
+  &#125;
+&#125;
+</code></pre>
+<p>13QfvIdATEurGAhVAlO6tQ,即为节点标志符</p>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><pre><code># curl http://localhost:9200
+&#123;
+  &quot;status&quot; : 200,
+  &quot;name&quot; : &quot;Destroyer of Demons&quot;,
+  &quot;cluster_name&quot; : &quot;elasticsearch&quot;,
+  &quot;version&quot; : &#123;
+    &quot;number&quot; : &quot;1.7.0&quot;,
+    &quot;build_hash&quot; : &quot;929b9739cae115e73c346cb5f9a6f24ba735a743&quot;,
+    &quot;build_timestamp&quot; : &quot;2015-07-16T14:31:07Z&quot;,
+    &quot;build_snapshot&quot; : false,
+    &quot;lucene_version&quot; : &quot;4.10.4&quot;
+  &#125;,
+  &quot;tagline&quot; : &quot;You Know, for Search&quot;
+&#125;
+</code></pre>
+<p>查看elasticsearch服务器当前运行状况</p>
+<pre><code># curl http://localhost:9200/_cluster/health?pretty
+&#123;
+  &quot;cluster_name&quot; : &quot;elasticsearch&quot;,
+  &quot;status&quot; : &quot;green&quot;,
+  &quot;timed_out&quot; : false,
+  &quot;number_of_nodes&quot; : 1,
+  &quot;number_of_data_nodes&quot; : 1,
+  &quot;active_primary_shards&quot; : 0,
+  &quot;active_shards&quot; : 0,
+  &quot;relocating_shards&quot; : 0,
+  &quot;initializing_shards&quot; : 0,
+  &quot;unassigned_shards&quot; : 0,
+  &quot;delayed_unassigned_shards&quot; : 0,
+  &quot;number_of_pending_tasks&quot; : 0,
+  &quot;number_of_in_flight_fetch&quot; : 0
+&#125;
+</code></pre>
+<h2 id="使用（基于REST-API数据操作）"><a href="#使用（基于REST-API数据操作）" class="headerlink" title="使用（基于REST API数据操作）"></a>使用（基于REST API数据操作）</h2><h3 id="REST"><a href="#REST" class="headerlink" title="REST"></a>REST</h3><p>REST 定义了一组体系架构原则，您可以根据这些原则设计以系统资源为中心的 Web 服务，包括使用不同语言编写的客户端如何通过 HTTP 处理和传输资源状态。 它用简洁易行的方式向HTTP中的条目暴露CRUD（Create、Replace、Update、Delete，创建、替换、更新、删除）的应用功能。</p>
+<h3 id="创建文档"><a href="#创建文档" class="headerlink" title="创建文档"></a>创建文档</h3><p>示例：创建一个文档用来存储一篇blog，内容如下：</p>
+<pre><code>&#123;
+  &quot;title&quot;:&quot;my first article title&quot;,
+  &quot;content&quot;:&quot;this is article content&quot;,
+  &quot;date&quot;:&quot;2016-10-05&quot;
+&#125;
+</code></pre>
+<p>操作：</p>
+<pre><code># curl -XPUT  http://localhost:9200/blog/article/1 -d &#39;&#123;&quot;title&quot;:&quot;my first article title&quot;,&quot;content&quot;:&quot;this is article content&quot;,&quot;date&quot;:&quot;2016-10-05&quot;&#125;&#39;
+</code></pre>
+<p>返回结果如下：</p>
+<pre><code>&#123;&quot;_index&quot;:&quot;blog&quot;,&quot;_type&quot;:&quot;article&quot;,&quot;_id&quot;:&quot;1&quot;,&quot;_version&quot;:1,&quot;created&quot;:true&#125;
+</code></pre>
+<p>返回了操作结果信息，并显示新文档的存储位置。并且包含文档的唯一标识符以及当前版本信息。</p>
+<h3 id="检索文档"><a href="#检索文档" class="headerlink" title="检索文档"></a>检索文档</h3><p>按照REST风格，我们想要查看刚才创建的文档。</p>
+<pre><code># curl -XGET  http://localhost:9200/blog/article/1
+</code></pre>
+<p>结果</p>
+<pre><code>curl -XGET  http://localhost:9200/blog/article/1?pretty
+&#123;
+  &quot;_index&quot; : &quot;blog&quot;,
+  &quot;_type&quot; : &quot;article&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 1,
+  &quot;found&quot; : true,
+  &quot;_source&quot;:&#123;&quot;title&quot;:&quot;my first article title&quot;,&quot;content&quot;:&quot;this is article content&quot;,&quot;date&quot;:&quot;2016-10-05&quot;&#125;
+&#125;
+</code></pre>
+<h3 id="更新文档"><a href="#更新文档" class="headerlink" title="更新文档"></a>更新文档</h3><p>Elasticsearch中更新索引中的文档是非常复杂的工作。必须先提取文档、从_source字段获得数据、移除旧文档、应用变更，作为新文档创建索引。</p>
+<p>示例，更改之前创建的blog，并增加author字段</p>
+<pre><code># curl -XPOST  http://localhost:9200/blog/article/1 -d &#39;&#123;&quot;title&quot;:&quot;my first article title&quot;,&quot;content&quot;:&quot;this is article content&quot;,&quot;date&quot;:&quot;2016-10-05&quot;,&quot;author&quot;:&quot;zhimiao&quot;&#125;&#39;
+</code></pre>
+<p>结果：</p>
+<pre><code># &#123;&quot;_index&quot;:&quot;blog&quot;,&quot;_type&quot;:&quot;article&quot;,&quot;_id&quot;:&quot;1&quot;,&quot;_version&quot;:3,&quot;created&quot;:false&#125;
+</code></pre>
+<p>查看是否更新成功</p>
+<pre><code># curl -XGET  http://localhost:9200/blog/article/1?pretty
+&#123;
+  &quot;_index&quot; : &quot;blog&quot;,
+  &quot;_type&quot; : &quot;article&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 4,
+  &quot;found&quot; : true,
+  &quot;_source&quot;:&#123;&quot;title&quot;:&quot;my first article title&quot;,&quot;content&quot;:&quot;this is article content&quot;,&quot;date&quot;:&quot;2016-10-05&quot;,&quot;author&quot;:&quot;zhimiao&quot;&#125;
+&#125;
+</code></pre>
+<h3 id="删除文档"><a href="#删除文档" class="headerlink" title="删除文档"></a>删除文档</h3><pre><code># curl -XDELETE  http://localhost:9200/blog/article/1?pretty
+&#123;
+  &quot;found&quot; : true,
+  &quot;_index&quot; : &quot;blog&quot;,
+  &quot;_type&quot; : &quot;article&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;_version&quot; : 7
+&#125;
+</code></pre>
+<p>查看是否已删除</p>
+<pre><code># curl -XGET  http://localhost:9200/blog/article/1?pretty
+&#123;
+  &quot;_index&quot; : &quot;blog&quot;,
+  &quot;_type&quot; : &quot;article&quot;,
+  &quot;_id&quot; : &quot;1&quot;,
+  &quot;found&quot; : false
+&#125;
+</code></pre>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ElasticSearch/" rel="tag"># ElasticSearch</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/10/06/Linux%E5%B8%B8%E8%A7%81%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/" rel="prev" title="Linux常见的配置文件">
+                  <i class="fa fa-chevron-left"></i> Linux常见的配置文件
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/10/05/keepalived%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8C%E9%85%8D%E7%BD%AE/" rel="next" title="keepalive工作原理和配置(转)">
+                  keepalive工作原理和配置(转) <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/10/05/ElasticSearch%E6%95%B4%E7%90%86/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="PEAR（the PHP Extension and Application Repository），PHP扩展与应用库。它是一个PHP扩展及应用的一个代码仓库。所有的扩展均以PHP代码的形式出现，功能强大，安装简单，甚至可以改改就用。使用的时候，要在代码中进行Include才能够使用。 官网： http:&#x2F;&#x2F;pear.php.net">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP扩展与应用库(PEAR)">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/10/12/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR)/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="PEAR（the PHP Extension and Application Repository），PHP扩展与应用库。它是一个PHP扩展及应用的一个代码仓库。所有的扩展均以PHP代码的形式出现，功能强大，安装简单，甚至可以改改就用。使用的时候，要在代码中进行Include才能够使用。 官网： http:&#x2F;&#x2F;pear.php.net">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-10-12T12:30:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.617Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="PEAR">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/10/12/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR)/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/10/12/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR)/","path":"2016/10/12/PHP扩展与应用库(PEAR)/","title":"PHP扩展与应用库(PEAR)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>PHP扩展与应用库(PEAR) | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#PEAR%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="nav-number">1.</span> <span class="nav-text">PEAR安装和使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.1.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8Cgo-pear-php"><span class="nav-number">1.2.</span> <span class="nav-text">运行go-pear.php</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8PEAR%E5%AE%89%E8%A3%85PHPDOC"><span class="nav-number">1.3.</span> <span class="nav-text">利用PEAR安装PHPDOC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PEAR%E5%B8%B8%E7%94%A8%E5%8A%9F%E8%83%BD%E5%8F%8A%E5%91%BD%E4%BB%A4"><span class="nav-number">2.</span> <span class="nav-text">PEAR常用功能及命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84PEAR%E6%A8%A1%E5%9D%97%E7%AE%80%E4%BB%8B"><span class="nav-number">3.</span> <span class="nav-text">常用的PEAR模块简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PEAR%E4%B8%8EPECL%E5%85%B3%E7%B3%BB"><span class="nav-number">4.</span> <span class="nav-text">PEAR与PECL关系</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/10/12/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PHP扩展与应用库(PEAR)<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR).md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-10-12 20:30:00" itemprop="dateCreated datePublished" datetime="2016-10-12T20:30:00+08:00">2016-10-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/10/12/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR)/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/10/12/PHP扩展与应用库(PEAR)/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>PEAR（the PHP Extension and Application Repository），PHP扩展与应用库。它是一个PHP扩展及应用的一个代码仓库。所有的扩展均以PHP代码的形式出现，功能强大，安装简单，甚至可以改改就用。使用的时候，要在代码中进行Include才能够使用。</p>
+<p>官网：</p>
+<p><a target="_blank" rel="noopener" href="http://pear.php.net/">http://pear.php.net</a></p>
+<span id="more"></span>
+
+<h2 id="PEAR安装和使用"><a href="#PEAR安装和使用" class="headerlink" title="PEAR安装和使用"></a>PEAR安装和使用</h2><p>在官网上有说明详细的安装信息，这里作简单说明。<br><a target="_blank" rel="noopener" href="http://pear.php.net/manual/en/about-pear.php">http://pear.php.net/manual/en/about-pear.php</a></p>
+<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>#curl -o go-pear.php  <a target="_blank" rel="noopener" href="http://pear.php.net/go-pear">http://pear.php.net/go-pear</a></p>
+<pre><code>$ curl -o go-pear.php  http://pear.php.net/go-pear
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 88959  100 88959    0     0  43329      0  0:00:02  0:00:02 --:--:-- 43352
+</code></pre>
+<h3 id="运行go-pear-php"><a href="#运行go-pear-php" class="headerlink" title="运行go-pear.php"></a>运行go-pear.php</h3><pre><code># /usr/local/php5/bin/php go-pear.php
+</code></pre>
+<h3 id="利用PEAR安装PHPDOC"><a href="#利用PEAR安装PHPDOC" class="headerlink" title="利用PEAR安装PHPDOC"></a>利用PEAR安装PHPDOC</h3><pre><code>$ pear install phpdoc/phpDocumentor-alpha
+Attempting to discover channel &quot;phpdoc&quot;...
+Attempting fallback to https instead of http on channel &quot;phpdoc&quot;...
+unknown channel &quot;phpdoc&quot; in &quot;phpdoc/phpDocumentor-alpha&quot;
+invalid package name/package file &quot;phpdoc/phpDocumentor-alpha&quot;
+install failed
+</code></pre>
+<p>如出现上面错误，需要我们增加一个phpDocumentor pear渠道</p>
+<pre><code>$ pear channel-discover pear.phpdoc.org
+Adding Channel &quot;pear.phpdoc.org&quot; succeeded
+Discovery of channel &quot;pear.phpdoc.org&quot; succeeded
+</code></pre>
+<p>重新安装</p>
+<pre><code>$ pear install phpdoc/phpDocumentor-alpha
+downloading phpDocumentor-2.8.5.tgz ...
+Starting to download phpDocumentor-2.8.5.tgz (8,184,822 bytes)
+.................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................done: 8,184,822 bytes
+install ok: channel://pear.phpdoc.org/phpDocumentor-2.8.5
+</code></pre>
+<p>查看是否安装成功</p>
+<pre><code>$ phpdoc -V
+phpDocumentor version 2.8.5
+</code></pre>
+<h2 id="PEAR常用功能及命令"><a href="#PEAR常用功能及命令" class="headerlink" title="PEAR常用功能及命令"></a>PEAR常用功能及命令</h2><pre><code>$ phpdoc --help
+Usage:
+ project:run [-t|--target[=&quot;...&quot;]] [--cache-folder[=&quot;...&quot;]] [-f|--filename[=&quot;...&quot;]] [-d|--directory[=&quot;...&quot;]] [--encoding[=&quot;...&quot;]] [-e|--extensions[=&quot;...&quot;]] [-i|--ignore[=&quot;...&quot;]] [--ignore-tags[=&quot;...&quot;]] [--hidden] [--ignore-symlinks] [-m|--markers[=&quot;...&quot;]] [--title[=&quot;...&quot;]] [--force] [--validate] [--visibility[=&quot;...&quot;]] [--defaultpackagename[=&quot;...&quot;]] [--sourcecode] [-p|--progressbar] [--template[=&quot;...&quot;]] [--parseprivate] [--log[=&quot;...&quot;]]
+
+Aliases: run
+Options:
+ --target (-t)         模板文件生成路径
+ --cache-folder        缓存文件路径
+ --filename (-f)       要解析的文件的逗号分隔列表。 通配符？ 和*（支持多个值）
+ --directory (-d)      逗号分隔的目录列表（递归）解析（允许多个值）
+ --encoding            编码用于解释源文件
+ --extensions (-e)     以逗号分隔的解析扩展列表，默认为php，php3和phtml（允许多个值）
+ --ignore (-i)         以逗号分隔的将被忽略的文件和目录（相对于源代码目录）列表。 通配符*和？ 支持（允许多个值）
+ --ignore-tags         将忽略的逗号分隔的标签列表，默认为none。 package，subpackage和ignore不能被忽略。 （允许多个值）
+ --hidden              使用此选项可以告诉phpDocumentor解析以句点（。）开头的文件和目录，默认情况下这些被忽略
+ --ignore-symlinks     忽略到其他文件或目录的符号链接，默认值为on
+ --markers (-m)        要过滤的标记/标记的逗号分隔列表（允许多个值）
+ --title               设置此项目的标题; 默认是phpDocumentor标志
+ --force               强制完整构建文档，不会增加现有文档
+ --validate            使用PHP Lint验证每个处理的文件，成本很高的性能
+ --visibility          指定应在文档中显示的解析可见性（逗号分隔，例如“public，protected”）（允许多个值）
+ --defaultpackagename  用于默认软件包的名称。(default: &quot;Default&quot;)
+ --sourcecode          是否包含语法高亮的源代码
+ --progressbar (-p)    是否显示进度条; 将自动静默记录到stdout
+ --template            要使用的模板的名称（可选）（允许多个值）
+ --parseprivate        是否解析标记有@internal标签的DocBlocks
+ --log                 要写入的日志文件
+ --help (-h)           显示此帮助消息
+ --quiet (-q)          不输出任何消息
+ --verbose (-v|vv|vvv) 增加消息的详细程度：1用于正常输出，2用于更详细的输出，3用于调试
+ --version (-V)        显示此应用程序版本
+ --ansi                强制ANSI输出
+ --no-ansi             禁用ANSI输出
+ --no-interaction (-n) 不要问任何互动问题
+ --config (-c)         自定义配置文件的位置
+
+Help:
+  phpDocumentor从PHP源文件创建文档。 最简单的方法
+  使用它是：
+
+     $ phpdoc run -d [directory to parse] -t [output directory]
+
+ 这将解析在&lt;directory to parse&gt;中以.php，.php3和.phtml结尾的每个文件，然后在&lt;output directory&gt;中输出一个包含易于阅读的文档的HTML网站。
+
+ phpDocumentor will try to look for a phpdoc.dist.xml or phpdoc.xml file in your
+ current working directory and use that to override the default settings if
+ present. In the configuration file can you specify the same settings (and
+ more) as the command line provides.
+
+phpDocumentor将尝试在当前工作目录中查找phpdoc.dist.xml或phpdoc.xml文件，
+并使用该文件覆盖默认设置（如果存在）。 在配置文件中，您可以指定与命令行提供的相同的设置（和更多）。
+
+
+
+ Other commands
+ 除了这个命令phpDocumentor还支持附加命令：
+
+ Available commands:
+   help
+   list
+   parse
+   run
+   transform
+ project
+   project:parse
+   project:run
+   project:transform
+ template
+   template:generate
+   template:list
+   template:package
+
+您可以使用list命令获取更详细的命令列表，并通过在命令名前添加help来获取帮助。
+</code></pre>
+<h2 id="常用的PEAR模块简介"><a href="#常用的PEAR模块简介" class="headerlink" title="常用的PEAR模块简介"></a>常用的PEAR模块简介</h2><ul>
+<li><p>Benchmark/Timer 测试你的一段php代码的运行效率  </p>
+</li>
+<li><p>Benchmark/Benchmark_Iterate 测试你某个函数循环执行时的性能  </p>
+</li>
+<li><p>Cache/Output 可以将你的php脚本的输出进行缓存，可以使用多种方式缓存（存在文件，数据库或者是共享内存中）,如果使用这个模块有可能增大服务器的负载，所以，如果你想通过动态脚本的缓存来提供效率，不妨使用Zend optimize,这个模块未必适合  </p>
+</li>
+<li><p>Cache/Graphics 可以将你需要动态输出的图片进行缓存  </p>
+</li>
+<li><p>Console/Getopt 命令行参数的处理模块  </p>
+</li>
+<li><p>CMD 一个虚拟的shell，可以用它来运行一些系统的命令  </p>
+</li>
+<li><p>Crypt/CBC 实现Perl Crypt::CBC 模块的仿真  </p>
+</li>
+<li><p>Crypt/HCEMD5 实现Perl Crypt::HCE_MD5 模块的功能  </p>
+</li>
+<li><p>Date/Calc 实现日期的相关操作  </p>
+</li>
+<li><p>Date/Human Human历法的转换  </p>
+</li>
+<li><p>DB 提供统一的、抽象的数据库操作层，后端支持多种数据库  </p>
+</li>
+<li><p>File/Find 文件查找  </p>
+</li>
+<li><p>File/Passwd 操纵password类的文件，如password,httppass,cvspassword  </p>
+</li>
+<li><p>File/SearchReplace 在文件中查找替换字符串  </p>
+</li>
+<li><p>HTML/Form 可以在html中快速地创建form  </p>
+</li>
+<li><p>HTML/IT 实现模板定制，动态生成页面的功能，类似phplib中的模板功能，但是要简单易用  </p>
+</li>
+<li><p>HTML/ITX 实现对IT的扩展功能，可以更加灵活地定制你的模板，实现更复杂的操作  </p>
+</li>
+<li><p>HTML/Processor XML_Parser的扩展，使之可以应用于html文件的操作  </p>
+</li>
+<li><p>HTTP/Compress 用于Php 输出缓冲机制的一个包装类，同时可以对缓冲的内容进行压缩存储  </p>
+</li>
+<li><p>Image/Remote 无需把整个图片都下载到本地就可以获取远端系统的图片的信息，  </p>
+</li>
+<li><p>Log/composite Horde对log抽象类做的一个扩展，可以使多个日志处理对象能够获得同一个日志事件。注意，Log目录下面的模块都是Horde项目的一部分，大部分都是抽象的超类  </p>
+</li>
+<li><p>Log/file 将日志信息写入文件  </p>
+</li>
+<li><p>Log/mcal 将信息发送到本地或远端的日程管理软件-mcal的数据库中  </p>
+</li>
+<li><p>Log/observer Horder中Observer的一个超类  </p>
+</li>
+<li><p>Log/sql 将日志信息发送到sql数据库中  </p>
+</li>
+<li><p>Log/syslog 将信息发送到syslog中  </p>
+</li>
+<li><p>Mail/RFC822 检查一个email地址是否是合法的rf822 email地址  </p>
+</li>
+<li><p>Mail/sendmail 使用sendmail来发送信件  </p>
+</li>
+<li><p>Mail/smtp 使用smtp服务器来发送信件  </p>
+</li>
+<li><p>Math/Fraction 处理分形的数学计算  </p>
+</li>
+<li><p>Math/Util 计算最大公约数  </p>
+</li>
+<li><p>NET/Curl 对php的Curl扩展所作的面向对象的包装  </p>
+</li>
+<li><p>NET/Dig 操纵dig，进行dns相关的查询操作  </p>
+</li>
+<li><p>NET/SMTP 使用NET/Socket实现SMTP协议  </p>
+</li>
+<li><p>NET/Socket 通用的Socket类，实现了常用的socket操作的包装  </p>
+</li>
+<li><p>Numbers/Roman 阿拉伯数字和罗马数字的相互转换  </p>
+</li>
+<li><p>Payment/Verisign 实现和Verisign支付网关的交互  </p>
+</li>
+<li><p>Pear 提供Pear模块的2个基本类，PEAR 和PEARError类  </p>
+</li>
+<li><p>PEAR/Installer pear的安装类，提供Perl中的CPAN模块类似的功能  </p>
+</li>
+<li><p>PHPDoc 从php代码中自动生成API文档  </p>
+</li>
+<li><p>Schedule/at 和Unix 上的AT守护进程进行交互  </p>
+</li>
+<li><p>XML/Parser 基于php的xml扩展所作的xml的解析器  </p>
+</li>
+<li><p>XML/Render 将xml文档生成其它的格式（html,pdf),这只是一个抽象类，在最新的pear cvs代码中已经有了html的实现  </p>
+</li>
+<li><p>XML/RPC 用php实现xml-rpc的一个抽象类，在最新的pear cvs代码中已经有了xml/RPC/Server的实现  </p>
+</li>
+</ul>
+<h2 id="PEAR与PECL关系"><a href="#PEAR与PECL关系" class="headerlink" title="PEAR与PECL关系"></a>PEAR与PECL关系</h2><p>PEAR（the PHP Extension and Application Repository），PHP扩展与应用库。它是一个PHP扩展及应用的一个代码仓库。</p>
+<p>PECL（PHP Extension Community Library），PHP的扩展库。它提供了一系列已知的扩展库，由C、C++等其他语言编写而成，以.so形式出现，.so 为共享库,是shared object,用于动态连接的,和dll差不多，为比PEAR更快，但是与PEAR不同的是，PECL需要在服务器上配置并被注册到主机中。</p>
+<p>基于他们的实现方式不同，在使用时候也有不同。</p>
+<p>Pear：是PHP的扩展代码包，所有的扩展均以PHP代码的形式出现，功能强大，安装简单，甚至可以改改就用。使用的时候，要在代码中进行Include才能够使用。</p>
+<p>Pecl：是PHP的标准扩展，可以补充实际开发中所需的功能，所有的扩展都需要安装，在Windows下面以Dll的形式出现，在linux下面，需要单独进行编译，它的表现形式为根据PHP官方的标准用C语言写成，尽管源码开放但是一般人无法随意更改源码。</p>
+<p><strong>最直接的表述：Pear是PHP的上层扩展，Pecl是PHP的底层扩展。</strong></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/PEAR/" rel="tag"># PEAR</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/10/12/PHP%E7%9A%84MVC%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" rel="prev" title="PHP魔术方法小结">
+                  <i class="fa fa-chevron-left"></i> PHP魔术方法小结
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/10/08/Linux%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%91%BD%E4%BB%A4%E4%B9%8Brsync/" rel="next" title="Linux常用工具命令之rsync">
+                  Linux常用工具命令之rsync <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/10/12/PHP%E6%89%A9%E5%B1%95%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BA%93(PEAR)/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

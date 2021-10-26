@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="谈到web性能优化，一般我们可以把它分为两个部分来讲，页面加载（Page Speed）和页面渲染（Page Performance）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Web性能优化随笔">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/07/31/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E9%9A%8F%E7%AC%94/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="谈到web性能优化，一般我们可以把它分为两个部分来讲，页面加载（Page Speed）和页面渲染（Page Performance）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://sfault-image.b0.upaiyun.com/315/063/3150630289-5766c21f45ef4_articlex">
+<meta property="og:image" content="https://sfault-image.b0.upaiyun.com/951/893/951893846-5766c220cc68c_articlex">
+<meta property="og:image" content="https://sfault-image.b0.upaiyun.com/396/985/3969857354-5766c2228ceed_articlex">
+<meta property="article:published_time" content="2016-07-31T06:22:23.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.617Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="Web">
+<meta property="article:tag" content="性能优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://sfault-image.b0.upaiyun.com/315/063/3150630289-5766c21f45ef4_articlex">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/07/31/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E9%9A%8F%E7%AC%94/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/07/31/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E9%9A%8F%E7%AC%94/","path":"2016/07/31/Web性能优化随笔/","title":"Web性能优化随笔"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Web性能优化随笔 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%B5%E9%9D%A2%E5%8A%A0%E8%BD%BD"><span class="nav-number">1.</span> <span class="nav-text">页面加载</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E5%BF%AB%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%84%9A%E6%9C%AC%E7%9A%84%E8%AE%A1%E7%AE%97%E9%80%9F%E5%BA%A6"><span class="nav-number">1.1.</span> <span class="nav-text">加快服务器脚本的计算速度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9%E6%BA%90%E7%A0%81%E5%92%8C%E5%9B%BE%E7%89%87"><span class="nav-number">1.2.</span> <span class="nav-text">压缩源码和图片</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E6%8B%A9%E5%90%88%E9%80%82%E7%9A%84%E5%9B%BE%E7%89%87"><span class="nav-number">1.3.</span> <span class="nav-text">选择合适的图片</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90"><span class="nav-number">1.4.</span> <span class="nav-text">合并静态资源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%90%AF%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9F%AD%E7%9A%84Gzip%E5%8E%8B%E7%BC%A9"><span class="nav-number">1.5.</span> <span class="nav-text">开启服务器短的Gzip压缩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8CDN"><span class="nav-number">1.6.</span> <span class="nav-text">使用CDN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BD%E5%8F%AF%E8%83%BD%E7%BC%93%E5%AD%98%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90"><span class="nav-number">1.7.</span> <span class="nav-text">尽可能缓存静态资源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BD%E5%8F%AF%E8%83%BD%E5%B0%86CSS%E6%96%87%E4%BB%B6%E6%94%BE%E5%9C%A8%E9%A1%B5%E9%9D%A2%E5%A4%B4%E9%83%A8%EF%BC%8CJavaScript%E6%94%BE%E5%9C%A8%E9%A1%B5%E9%9D%A2%E5%BA%95%E9%83%A8"><span class="nav-number">1.8.</span> <span class="nav-text">尽可能将CSS文件放在页面头部，JavaScript放在页面底部</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%B5%E9%9D%A2%E6%B8%B2%E6%9F%93"><span class="nav-number">2.</span> <span class="nav-text">页面渲染</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E6%B8%B2%E6%9F%93%E8%B7%AF%E5%BE%84"><span class="nav-number">2.1.</span> <span class="nav-text">关键渲染路径</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8C%96JavaScript%E7%9A%84%E6%89%A7%E8%A1%8C"><span class="nav-number">2.1.1.</span> <span class="nav-text">优化JavaScript的执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B7%E5%BC%8F%E8%AE%A1%E7%AE%97"><span class="nav-number">2.1.2.</span> <span class="nav-text">样式计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%83%E5%B1%80"><span class="nav-number">2.1.3.</span> <span class="nav-text">布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%98%E5%88%B6"><span class="nav-number">2.1.4.</span> <span class="nav-text">绘制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E6%88%90"><span class="nav-number">2.1.5.</span> <span class="nav-text">合成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">2.1.6.</span> <span class="nav-text">其他</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/07/31/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E9%9A%8F%E7%AC%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Web性能优化随笔<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E9%9A%8F%E7%AC%94.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-31 14:22:23" itemprop="dateCreated datePublished" datetime="2016-07-31T14:22:23+08:00">2016-07-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/07/31/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E9%9A%8F%E7%AC%94/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/07/31/Web性能优化随笔/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>谈到web性能优化，一般我们可以把它分为两个部分来讲，页面加载（Page Speed）和页面渲染（Page Performance）。</p>
+<span id="more"></span>
+
+
+<h1 id="页面加载"><a href="#页面加载" class="headerlink" title="页面加载"></a>页面加载</h1><h2 id="加快服务器脚本的计算速度"><a href="#加快服务器脚本的计算速度" class="headerlink" title="加快服务器脚本的计算速度"></a>加快服务器脚本的计算速度</h2><ul>
+<li>动态内容缓存</li>
+<li>数据缓存</li>
+<li>动态内容静态化</li>
+<li>选择适合的web服务器软件（Apache、nginx等）</li>
+<li>数据库优化</li>
+<li>等等···</li>
+</ul>
+<h2 id="压缩源码和图片"><a href="#压缩源码和图片" class="headerlink" title="压缩源码和图片"></a>压缩源码和图片</h2><ul>
+<li>Js 混淆压缩</li>
+<li>CSS 普通压缩</li>
+<li>JPG 根据具体质量压缩到50%~70%</li>
+<li>PNG 色彩压缩、去除一些格式信息等</li>
+</ul>
+<h2 id="选择合适的图片"><a href="#选择合适的图片" class="headerlink" title="选择合适的图片"></a>选择合适的图片</h2><ul>
+<li>颜色较多，则使用JPG格式</li>
+<li>颜色较少，则使用PNG格式</li>
+<li>尽量使用WebP、SVG</li>
+</ul>
+<blockquote>
+<p>总之就是，尽量减少每一个资源的体积</p>
+</blockquote>
+<h2 id="合并静态资源"><a href="#合并静态资源" class="headerlink" title="合并静态资源"></a>合并静态资源</h2><p>合并CSS、Javascript和小图片</p>
+<blockquote>
+<p>尽量减少同一域下的HTTP请求数</p>
+</blockquote>
+<h2 id="开启服务器短的Gzip压缩"><a href="#开启服务器短的Gzip压缩" class="headerlink" title="开启服务器短的Gzip压缩"></a>开启服务器短的Gzip压缩</h2><p>Gzip开启以后会将输出到用户浏览器的数据进行压缩的处理，这样就会减小通过网络传输的数据量，提高浏览的速度。所以Gzip对文本资源非常有效。</p>
+<h2 id="使用CDN"><a href="#使用CDN" class="headerlink" title="使用CDN"></a>使用CDN</h2><p>一些公用的静态资源（比如jquery、angular、bootstrap等）。使用这些公用的静态资源一方面可以增加页面文件并发下载量，另一方面还能和其他网站共享这些缓存。</p>
+<h2 id="尽可能缓存静态资源"><a href="#尽可能缓存静态资源" class="headerlink" title="尽可能缓存静态资源"></a>尽可能缓存静态资源</h2><p>尽可能延长静态资源的缓存时间，不但能使频繁访问网站的用户更快的访问，还能减轻服务器压力。至于静态资源的更新，则可以结合<code>修改文件名和+版本号</code>的方式来确保资源更新时，用户会加载到新的内容。</p>
+<h2 id="尽可能将CSS文件放在页面头部，JavaScript放在页面底部"><a href="#尽可能将CSS文件放在页面头部，JavaScript放在页面底部" class="headerlink" title="尽可能将CSS文件放在页面头部，JavaScript放在页面底部"></a>尽可能将CSS文件放在页面头部，JavaScript放在页面底部</h2><p>应为javascript在加载的时候会出现阻塞，所以为避免出现阻塞页面渲染，让页面页面出现长时间空白，尽量将Javascript文件放在页面底部。</p>
+<h1 id="页面渲染"><a href="#页面渲染" class="headerlink" title="页面渲染"></a>页面渲染</h1><h2 id="关键渲染路径"><a href="#关键渲染路径" class="headerlink" title="关键渲染路径"></a>关键渲染路径</h2><p><img data-src="https://sfault-image.b0.upaiyun.com/315/063/3150630289-5766c21f45ef4_articlex" alt="CRP"></p>
+<blockquote>
+<p>上图是浏览器渲染的关键路径，首先，让我们从浏览器解析一个页面开始吧。</p>
+</blockquote>
+<ul>
+<li><em><strong>转化</strong></em>： 浏览器从磁盘或网络读取 HTML 的原始字节，浏览器会将这段原始文件按照相应编码规范进行解码（现在一般为 utf-8）。</li>
+<li><em><strong>符号化</strong></em>： 根据 W3C 标准转化为对应的符号（一般在尖括号内）。</li>
+<li><em><strong>DOM 构建</strong></em>：HTML 解析器会解析其中的 tag 标签，生成 token ，遇到 CSS 或 JS 会发送相应请求。HTML 解析时阻塞主进程的，CSS 一般也是阻塞主进程的（媒体查询时例外），也就是说它们在解析过程中是无法做出响应的。而 JS 手动添加 async 后达到异步加载，根据 token 生成相应 DOM 树。</li>
+<li><em><strong>CSSDOM 构建</strong></em>：添加 CSS 样式生成 CSSDOM 树。</li>
+<li><em><strong>渲染树构建</strong></em>：从 DOM 树的根节点开始，遍历每个可见的节点，给每个可见节点找到相应匹配的 CSSOM 规则，并应用这些规则，连带其内容及计算的样式。</li>
+<li><em><strong>样式计算</strong></em>：浏览器会将所有的相对位置转换成绝对位置等一系列的样式计算。</li>
+<li><em><strong>布局</strong></em>：浏览器将元素进行定位、布局。</li>
+<li><em><strong>绘制</strong></em>：绘制元素样式，颜色、背景、大小、边框等。</li>
+<li><em><strong>合成</strong></em>：将各层合成到一起、显示在屏幕上。</li>
+</ul>
+<p><img data-src="https://sfault-image.b0.upaiyun.com/951/893/951893846-5766c220cc68c_articlex"></p>
+<p>如果我们是做一个动画，一般会用 JS 更改相应样式，接着浏览器就会经历 JS 运行、样式计算、布局、绘制、合成等多个重要步骤（后面还会讲到这个步骤实际过程中可以更长或者更短）。那么要做的优化就是在这几个步骤中进行优化并且尽量去掉中间的耗时步骤。<br><img data-src="https://sfault-image.b0.upaiyun.com/396/985/3969857354-5766c2228ceed_articlex"></p>
+<h3 id="优化JavaScript的执行"><a href="#优化JavaScript的执行" class="headerlink" title="优化JavaScript的执行"></a>优化JavaScript的执行</h3><ul>
+<li>函数的输入事件处理</li>
+<li>优化处理</li>
+</ul>
+<h3 id="样式计算"><a href="#样式计算" class="headerlink" title="样式计算"></a>样式计算</h3><ul>
+<li>减小选择器的复杂性</li>
+<li>减少样式的计算量</li>
+</ul>
+<h3 id="布局"><a href="#布局" class="headerlink" title="布局"></a>布局</h3><ul>
+<li>避免触发布局</li>
+<li>使用Flexbox布局</li>
+<li>避免强制同步布局事件</li>
+<li>避免快速连续的布局</li>
+</ul>
+<h3 id="绘制"><a href="#绘制" class="headerlink" title="绘制"></a>绘制</h3><ul>
+<li>提升移动或渐变元素的绘制层</li>
+<li>仔细规划动画和简化绘制的复杂度</li>
+</ul>
+<h3 id="合成"><a href="#合成" class="headerlink" title="合成"></a>合成</h3><ul>
+<li>使用transform/opacity实现动画效果</li>
+<li>管理渲染层、避免过多数量的层</li>
+</ul>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><ul>
+<li>关注趋势，今天很多的性能瓶颈很可能在将来都不再是问题。</li>
+<li>充分利用工具 Chrome DevTools。</li>
+<li>不要进行微优化，有时花上很短的带来的性能提升却很小，对于日常快速迭代的业务是没必要这样做的。</li>
+</ul>
+<p>[更多详细关于页面渲染的内容，请查看][Performance]<br>[Performance]:<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000005754881">https://segmentfault.com/a/1190000005754881</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Web/" rel="tag"># Web</a>
+              <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" rel="tag"># 性能优化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/08/09/Apache%E5%AE%89%E8%A3%85%E6%B1%87%E6%80%BB/" rel="prev" title="Apache的安装">
+                  <i class="fa fa-chevron-left"></i> Apache的安装
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/07/31/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E9%9A%8F%E7%AC%94/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>

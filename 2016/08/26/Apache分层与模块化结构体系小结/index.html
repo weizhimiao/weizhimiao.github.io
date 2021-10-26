@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weizhimiao.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.6.1","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"b2t":true,"scrollpercent":true},"copycode":true,"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"algolia":{"appID":"M4TET13RR0","apiKey":"76a7982151d733e41f6bb834dc49c20f","indexName":"blog","hits":{"per_page":10}}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Apache的分层体系结构最新版本的Apache按照其功能一般会被划分为五层，  操作系统平台功能层  各操作系统本身提供的底层功能，比如进程、线程管理,进程和线程之间通信、网络套接字通信、文件操作等   可移植运行库层（操作系统适配层）  封装不同操作系统的底层细节，向上提供统一的接口。   Apache核心功能层  提供最基本的HTTP服务功能，对其他模块提供对应的API。   Apache可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache分层与模块化体系结构小结">
+<meta property="og:url" content="https://weizhimiao.github.io/2016/08/26/Apache%E5%88%86%E5%B1%82%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%E7%B3%BB%E5%B0%8F%E7%BB%93/index.html">
+<meta property="og:site_name" content="行云流水">
+<meta property="og:description" content="Apache的分层体系结构最新版本的Apache按照其功能一般会被划分为五层，  操作系统平台功能层  各操作系统本身提供的底层功能，比如进程、线程管理,进程和线程之间通信、网络套接字通信、文件操作等   可移植运行库层（操作系统适配层）  封装不同操作系统的底层细节，向上提供统一的接口。   Apache核心功能层  提供最基本的HTTP服务功能，对其他模块提供对应的API。   Apache可">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://n.sinaimg.cn/games/3ece443e/20160826/apacheFenCengYuMoKuaiHuaTiXiJieGou.png">
+<meta property="article:published_time" content="2016-08-26T02:10:00.000Z">
+<meta property="article:modified_time" content="2021-10-26T06:53:41.613Z">
+<meta property="article:author" content="zhimiao">
+<meta property="article:tag" content="Apache分层">
+<meta property="article:tag" content="Apache模块">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://n.sinaimg.cn/games/3ece443e/20160826/apacheFenCengYuMoKuaiHuaTiXiJieGou.png">
+
+
+<link rel="canonical" href="https://weizhimiao.github.io/2016/08/26/Apache%E5%88%86%E5%B1%82%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%E7%B3%BB%E5%B0%8F%E7%BB%93/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weizhimiao.github.io/2016/08/26/Apache%E5%88%86%E5%B1%82%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%E7%B3%BB%E5%B0%8F%E7%BB%93/","path":"2016/08/26/Apache分层与模块化结构体系小结/","title":"Apache分层与模块化体系结构小结"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Apache分层与模块化体系结构小结 | 行云流水</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="行云流水" type="application/atom+xml">
+<link rel="stylesheet" href="/css/prism-material-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">行云流水</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">却也碎碎念念</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">11</span></a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">95</span></a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">78</span></a></li>
+        <li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container"></div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container">
+  <div class="algolia-stats"><hr></div>
+  <div class="algolia-hits"></div>
+  <div class="algolia-pagination"></div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Apache%E7%9A%84%E5%88%86%E5%B1%82%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">Apache的分层体系结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B9%B3%E5%8F%B0%E5%8A%9F%E8%83%BD%E5%B1%82"><span class="nav-number">1.1.</span> <span class="nav-text">操作系统平台功能层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E7%A7%BB%E6%A4%8D%E8%BF%90%E8%A1%8C%E5%BA%93%EF%BC%88%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%80%82%E9%85%8D%E5%B1%82%EF%BC%8CAPR%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">可移植运行库（操作系统适配层，APR）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Apache%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD%E5%B1%82"><span class="nav-number">1.3.</span> <span class="nav-text">Apache核心功能层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Apache%E5%8F%AF%E9%80%89%E5%8A%9F%E8%83%BD%E5%B1%82"><span class="nav-number">1.4.</span> <span class="nav-text">Apache可选功能层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Apache%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8A%9F%E8%83%BD%E5%BA%93"><span class="nav-number">1.5.</span> <span class="nav-text">Apache第三方功能库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Apache%E6%A8%A1%E5%9D%97%E5%8C%96%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">Apache模块化体系结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97-amp-%E5%8F%AF%E9%80%89%E6%A8%A1%E5%9D%97"><span class="nav-number">2.1.</span> <span class="nav-text">核心模块&amp;可选模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97"><span class="nav-number">2.1.1.</span> <span class="nav-text">核心模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97"><span class="nav-number">2.1.2.</span> <span class="nav-text">非核心模块</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E6%A8%A1%E5%9D%97-amp-%E5%8A%A8%E6%80%81%E6%A8%A1%E5%9D%97"><span class="nav-number">2.2.</span> <span class="nav-text">静态模块&amp;动态模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5-amp-%E5%8C%BA%E5%88%AB"><span class="nav-number">2.2.1.</span> <span class="nav-text">概念&amp;区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link"><span class="nav-number">2.2.2.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%9D%97%E7%AE%A1%E7%90%86"><span class="nav-number">2.2.3.</span> <span class="nav-text">模块管理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-%E6%A8%A1%E5%9D%97%E7%9A%84%E7%B1%BB%E5%9E%8B%EF%BC%9A"><span class="nav-number">2.2.3.1.</span> <span class="nav-text">1. 模块的类型：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-%E5%8A%A8%E6%80%81%E6%A8%A1%E5%9D%97%E7%AE%A1%E7%90%86"><span class="nav-number">2.2.3.2.</span> <span class="nav-text">2. 动态模块管理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%A9%E7%94%A8APXS%E5%B7%A5%E5%85%B7%E5%8A%A8%E6%80%81%E4%B8%BAApache%E7%BC%96%E8%AF%91%E6%96%B0%E7%9A%84DSO%EF%BC%88%E5%8A%A8%E6%80%81%E5%85%B1%E4%BA%AB%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="nav-number">2.2.3.3.</span> <span class="nav-text">利用APXS工具动态为Apache编译新的DSO（动态共享对象）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">2.2.3.4.</span> <span class="nav-text">示例</span></a></li></ol></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zhimiao"
+      src="https://avatars.githubusercontent.com/u/11239812?v=4">
+  <p class="site-author-name" itemprop="name">zhimiao</p>
+  <div class="site-description" itemprop="description">为己备忘，为他参考。</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">95</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="http://weibo.com/weizhimiao/home" title="微博 → http:&#x2F;&#x2F;weibo.com&#x2F;weizhimiao&#x2F;home" rel="noopener" target="_blank"><i class="weibo fa-fw"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/weizhimiao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;weizhimiao" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weizhimiao/weizhimiao.github.io" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://weizhimiao.github.io/2016/08/26/Apache%E5%88%86%E5%B1%82%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%E7%B3%BB%E5%B0%8F%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/11239812?v=4">
+      <meta itemprop="name" content="zhimiao">
+      <meta itemprop="description" content="为己备忘，为他参考。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="行云流水">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Apache分层与模块化体系结构小结<a href="https://github.com/weizhimiao/xylsh_blog_data/edit/master/_posts/Apache%E5%88%86%E5%B1%82%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%E7%B3%BB%E5%B0%8F%E7%BB%93.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pen-nib"></i></a>
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-26 10:10:00" itemprop="dateCreated datePublished" datetime="2016-08-26T10:10:00+08:00">2016-08-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Apache/" itemprop="url" rel="index"><span itemprop="name">Apache</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Changyan：</span>
+    
+    
+      <a title="changyan" href="/2016/08/26/Apache%E5%88%86%E5%B1%82%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%E7%B3%BB%E5%B0%8F%E7%BB%93/#SOHUCS" itemprop="discussionUrl">
+        <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/08/26/Apache分层与模块化结构体系小结/" itemprop="commentCount"></span>
+      </a>
+    
+  </span>
+  
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="Apache的分层体系结构"><a href="#Apache的分层体系结构" class="headerlink" title="Apache的分层体系结构"></a>Apache的分层体系结构</h2><p>最新版本的Apache按照其功能一般会被划分为五层，</p>
+<ol>
+<li><p>操作系统平台功能层</p>
+<blockquote>
+<p>各操作系统本身提供的底层功能，比如进程、线程管理,进程和线程之间通信、网络套接字通信、文件操作等</p>
+</blockquote>
+</li>
+<li><p>可移植运行库层（操作系统适配层）</p>
+<blockquote>
+<p>封装不同操作系统的底层细节，向上提供统一的接口。</p>
+</blockquote>
+</li>
+<li><p>Apache核心功能层</p>
+<blockquote>
+<p>提供最基本的HTTP服务功能，对其他模块提供对应的API。</p>
+</blockquote>
+</li>
+<li><p>Apache可选功能层</p>
+<blockquote>
+<p>这一层通常指 Apache模块，Apache核心功能层提供不了的功能交给不同的Apache模块来处理。</p>
+</blockquote>
+</li>
+<li><p>Apache第三方功能层</p>
+<blockquote>
+<p>Apache的一些模块中用到的一些第三方开发的类库等</p>
+</blockquote>
+</li>
+</ol>
+<p><img data-src="http://n.sinaimg.cn/games/3ece443e/20160826/apacheFenCengYuMoKuaiHuaTiXiJieGou.png" alt="Apache的分层体系结构"></p>
+<span id="more"></span>
+
+<p><strong>Apache源码目录结构简介</strong></p>
+<pre><code>build/    #
+docs/     #包含一些相关文档
+include/  #包含一些必须的头文件
+modules/  #包含Apache的各种模块
+os/       #各种操作系统的依赖文件
+server/   #Apache核心功能（请求处理、协议处理、多处理模块mpm等）
+srclib/   #Apache开发和运行需要的基础库（Apr_util,apr,pcre）
+support/  #一些辅助工具等
+test/     #APR的测试函数
+</code></pre>
+<h3 id="操作系统平台功能层"><a href="#操作系统平台功能层" class="headerlink" title="操作系统平台功能层"></a>操作系统平台功能层</h3><p>Apache实质上还是运行在操作系统上面的应用程序，因此必须使用操作系统本身提供的底层功能，比如进程和线程、进程和线程的通信，网络套接字通信和文件操作等。</p>
+<h3 id="可移植运行库（操作系统适配层，APR）"><a href="#可移植运行库（操作系统适配层，APR）" class="headerlink" title="可移植运行库（操作系统适配层，APR）"></a>可移植运行库（操作系统适配层，APR）</h3><p>APR(Apache portable runtime) 是操作系统的适配层，通过APR也实现了Apache的跨平台。因为不同的操作系统提供的底层API不同，也就是实现同一个操作所用的函数方法不同，这时在Apache和操作系统中间设计一个APR，这样APR根据不同的操作系统分别实现一个相同的功能，这样apache可以调用APR的提供的一个API接口。</p>
+<p>例如，如果Apache要创建一个进程，这时会调用 APR中的 apr_proc_create()函数，此时APR会自动识别操作系统的类型根据不同的类型调用操作系统通过的API，如是Unix系列则会调用unix中的fork()方法实现创建进程；如果是windows系统，则调用createProcess()创建进程。</p>
+<p>所以，Apache在处理与操作系统有关的事物时，不用考虑是基于哪一个操作系统，直接用APR的统一API接口就可，具体的由APR来实现跨操作系统。</p>
+<p>实际上任何应用程序都可以借助APR进行跨平台。</p>
+<h3 id="Apache核心功能层"><a href="#Apache核心功能层" class="headerlink" title="Apache核心功能层"></a>Apache核心功能层</h3><ol>
+<li>核心功能层主要实现Apache的基本功能和核心功能，包括读取和响应HTTP请求，处理HTTP协议；核心功能层包括核心程序和核心模块</li>
+</ol>
+<p><strong>核心程序</strong> 主要是实现Apache的基本功能：</p>
+<ul>
+<li>启动和终止apache</li>
+<li>处理配置文件(config.c)</li>
+<li>接受和处理HTTP连接</li>
+<li>读取HTTP请求并对该请求进行处理</li>
+<li>处理HTTP协议</li>
+</ul>
+<p>核心功能层另一个是 <strong>核心模块</strong></p>
+<ol start="2">
+<li>Apache 最基本的核心功能由apache 核心完成，除此之外，核心无法提供的功能则全部由模块提供。为了允许这些模块能完成控制apache的处理，apache核心程序提供了对应的API；这些API是指每个模块中包含的一系列的函数(核心程序处理HTTP请求的时候用来将信息传递给模块)，以及一些列apr的函数。</li>
+</ol>
+<h3 id="Apache可选功能层"><a href="#Apache可选功能层" class="headerlink" title="Apache可选功能层"></a>Apache可选功能层</h3><p>Apache有很多模块，包括mod_ssl mod_proxy mod_perl ；apache的文件都是C语言开发的，如果有perl脚本写的模块，必须把mod_perl 模块加载，否则不能运行</p>
+<h3 id="Apache第三方功能库"><a href="#Apache第三方功能库" class="headerlink" title="Apache第三方功能库"></a>Apache第三方功能库</h3><p>apahe的一些模块会使用到第三方的开发库，比如 mod_ssl 使用了 openssl；mod_perl 使用了perl 开发库，这些库并不属于apache，是第三方库。</p>
+<h2 id="Apache模块化体系结构"><a href="#Apache模块化体系结构" class="headerlink" title="Apache模块化体系结构"></a>Apache模块化体系结构</h2><p>Apache体系结构的模块化特点，主要体现在第三层（核心功能层）与第四层（可选功能层）。Apache采用模块化体系结构，使它作为一个HTTP服务器的大部分功能都被分割为相互独立的模块，使我们能够通过增加或者删除模块就可以扩展和修改Apache的功能。</p>
+<h3 id="核心模块-amp-可选模块"><a href="#核心模块-amp-可选模块" class="headerlink" title="核心模块&amp;可选模块"></a>核心模块&amp;可选模块</h3><p>Apache中大部分模块都是可选择的，这意味着这些模块的缺失至多影响Apache的功能完整性，而不影响起运行。但有两个模块是必须的，mod_core和mod_so。</p>
+<h4 id="核心模块"><a href="#核心模块" class="headerlink" title="核心模块"></a>核心模块</h4><ul>
+<li><strong>mod_core:</strong> 负责处理配置文件中的大部分配置指令，并根据这些指令运行Apache。</li>
+<li><strong>mod_so:</strong> 负责动态加载其余的模块。没有该模块，其余的模块就无法被加载使用。</li>
+<li><strong>MPM模块</strong> 即，多进程处理模块，虽然该模块是一个可选模块，但一般情况下，我们都会使用，所以我们将其也视为核心模块。<blockquote>
+<p>前两个模块我们必须静态编译。mpm模块的话，当我们在编译Apache是已经确定使用某一MPM模块之后通过也可将其采用静态编译的方式进行编译。但是如果我们想要在Apache安装之后动态修改MPM模式的话，那么在Apache编译安装的时候，MPM模块就需要通过动态编译的方式进行编译安装。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="非核心模块"><a href="#非核心模块" class="headerlink" title="非核心模块"></a>非核心模块</h4><p>一些常见的可选模块：</p>
+<ul>
+<li><p>mod_alias</p>
+<blockquote>
+<p>Provides for mapping different parts of the host filesystem in the document tree and for URL redirection<br>为不同的url地址映射到文件系统的指定位置，即『起别名』</p>
+</blockquote>
+</li>
+<li><p>mod_autoindex</p>
+<blockquote>
+<p>用于生成目录索引</p>
+</blockquote>
+</li>
+<li><p>mod_cache</p>
+<blockquote>
+<p>RFC 2616标准的HTTP缓存的过滤器。是apache中基于URI键的内容动态缓冲(内存或磁盘)。<br>从Apache2.2起，mod_cache和mod_file_cache将不再是试验模块，它们已经足够稳定，可以用于实际生产中了。这些缓冲体系提供了一个强有力的途径来加速原始web服务器(origin webserver)和代理服务器(proxy)的HTTP处理速度。</p>
+</blockquote>
+</li>
+<li><p>mod_cgi</p>
+<blockquote>
+<p> 执行cgi脚本</p>
+</blockquote>
+</li>
+<li><p>mod_dir</p>
+<blockquote>
+<p>目录的索引可以来自两个来源：</p>
+<ul>
+<li>由用户编写的文件，通常被称为 index.html。该DirectoryIndex指令设置该文件的名称。这是由控制 mod_dir。</li>
+<li>否则，由服务器生成的列表。这是通过提供mod_autoindex。</li>
+</ul>
+<p>这两种功能是分开的，这样如果你想你可以完全删除（或更换）自动索引生成。</p>
+<p>当服务器收到一个URL请求的“斜线”重定向发出 <a target="_blank" rel="noopener" href="http://servername/foo/dirname%E9%82%A3%E9%87%8C">http://servername/foo/dirname那里</a> dirname是一个目录。目录需要一个结尾斜杠，所以mod_dir发出一个重定向 <a target="_blank" rel="noopener" href="http://servername/foo/dirname/%E3%80%82">http://servername/foo/dirname/。</a></p>
+</blockquote>
+</li>
+<li><p>mod_filter</p>
+<blockquote>
+<p>该模块实现输出内容过滤器的智能，上下文相关的配置。例如，Apache可以被配置为处理不同的内容类型通过不同的过滤器，即使当内容类型是不是预先已知的（例如，在一个代理）。</p>
+</blockquote>
+</li>
+<li><p>mod_include</p>
+<blockquote>
+<p>服务器端包含</p>
+</blockquote>
+</li>
+<li><p>mod_isapi</p>
+<blockquote>
+<p>ISAPI Extensions within Apache for Windows<br>本模块实现了互联网服务扩展应用程序编程接口(Internet Server extension API)。本模块使得Windows上的Apache能有限地实现互联网服务扩展(比如调用ISAPI的动态连接库)。</p>
+</blockquote>
+</li>
+<li><p>mod_mime</p>
+<blockquote>
+<p>关联请求的文件名的扩展名与文件的行为（处理器和过滤器）和内容（MIME类型，语言，字符集和编码)</p>
+</blockquote>
+</li>
+<li><p>mod_mime_magic</p>
+<blockquote>
+<p>通过读取部分文件内容自动猜测文件的MIME类型<br>本模块采取Unix系统下file(1)命令相同的方法：检查文件开始的几个字节，来判定文件的MIME类型。它被作为当mod_mime无法解析时，用来处理的”第二道防线”。</p>
+</blockquote>
+</li>
+<li><p>mod_proxy</p>
+<blockquote>
+<p>用于提供代理服务，能够支持的包括正向代理、反向代理、透明代理、缓存、负载均衡，HTTP代理、FTP代理、SSL代理等若干强大的功能.</p>
+</blockquote>
+</li>
+<li><p>mod_rewrite</p>
+<blockquote>
+<p>提供了一个基于规则的重写动态URL重写引擎。</p>
+</blockquote>
+</li>
+<li><p>mod_session</p>
+<blockquote>
+<p>会话支持</p>
+</blockquote>
+</li>
+<li><p>mod_ssl</p>
+<blockquote>
+<p>提供使用安全套接字层（SSL）和传输层安全（TLS）协议强加密。（https协议必须）</p>
+</blockquote>
+</li>
+<li><p>mod_status</p>
+<blockquote>
+<p>提供有关服务器活动和性能信息</p>
+</blockquote>
+</li>
+<li><p>mod_vhost_alias</p>
+<blockquote>
+<p>虚拟主机配置支持</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="静态模块-amp-动态模块"><a href="#静态模块-amp-动态模块" class="headerlink" title="静态模块&amp;动态模块"></a>静态模块&amp;动态模块</h3><h4 id="概念-amp-区别"><a href="#概念-amp-区别" class="headerlink" title="概念&amp;区别"></a>概念&amp;区别</h4><p><strong>什么是静态？</strong>  其实就是编译的时候所有的模块自己编译进 httpd 这个文件中 ，启动的时候这些模块就已经加载进来了，也就是可以使用了。</p>
+<p>查看当前Apache通过静态编译的模块</p>
+<pre><code>[root@MyServer ~]# httpd -l
+Compiled in modules:
+core.c
+mod_so.c
+http_core.c
+event.c
+</code></pre>
+<p><strong>那么什么是动态？</strong>  静态是直接编译进httpd中， 那么动态显然就不编译进去了，也就是你启动的时候根本不会加载这个模块， 而是给你一个module.so 文件，你一定要使用 loadmodule 这个语法来加载，这个模块才有效。</p>
+<p><em><strong>配置方法：</strong></em><br>静态的模块通常在http.conf中用<ifmodule></ifmodule> 来配置，动态的要先loadmoule来加载，然后再<ifmodule></ifmodule>配置。<br>官方说静态的比动态的在性能方面多5%左右。</p>
+<p><em><strong>比较：</strong></em><br>相对来说，静态的效率高些，而动态方式配置方面灵活。想想如果编译进去的C这个module你想升级或者去掉，静态方式的就只能重新编译Apache了。</p>
+<p>下面这句在Apache源文件夹下运行，可以查看默认情况下Apache都给你装了那些module进去：</p>
+<pre><code>./configure –help | grep disable
+</code></pre>
+<h4 id><a href="#" class="headerlink" title></a></h4><h4 id="模块管理"><a href="#模块管理" class="headerlink" title="模块管理"></a>模块管理</h4><h5 id="1-模块的类型："><a href="#1-模块的类型：" class="headerlink" title="1. 模块的类型："></a>1. 模块的类型：</h5><ul>
+<li>基本(B)模块默认包含，必须明确禁用；</li>
+<li>扩展(E)/实验(X)模块默认不包含，必须明确启用。</li>
+</ul>
+<p>那么，针对以上这些类型的模块，在编译时有以下几种操作方式：</p>
+<p><strong>–disable-MODULE</strong><br>禁用MODULE模块(仅用于基本模块)</p>
+<p><strong>–enable-MODULE=shared</strong><br>将MODULE编译为DSO(可用于所有模块)</p>
+<p><strong>–enable-MODULE=static</strong><br>将MODULE静态连接进核心(仅用于扩展和实验模块)</p>
+<p><strong>–enable-mods-shared=MODULE-LIST</strong><br>将MODULE-LIST中的所有模块都编译成DSO(可用于所有模块)</p>
+<p><strong>–enable-modules=MODULE-LIST</strong><br>将MODULE-LIST静态连接进核心(可用于所有模块)</p>
+<p><em><strong>针对–enable-modules和–enable-mods-shared有两个懒办法就是 most参数和all参数，分别表示“很多的”和“所有”。</strong></em><br><strong>例如：</strong></p>
+<pre><code>mod_alias是个基本模块，不想安装的话就： --disable-alias
+mod_rewrite是个扩展模块，想动态加载它：--enable-rewrite=shared，想静态加载就是：--enable-rewrite=static
+想静态编译mod_alias和mod_rewrite：--enable-modules=&#39;alias rewrite&#39;
+想动态编译mod_alias和mod_rewrite：--enable-mods-shared=&#39;alias rewrite&#39;
+</code></pre>
+<h5 id="2-动态模块管理"><a href="#2-动态模块管理" class="headerlink" title="2. 动态模块管理"></a>2. 动态模块管理</h5><p><strong>Tips:</strong> 让Apache日后可以动态编译和加载模块：<br>如果想让Apache日后可以支持动态编译(DSO)更多的module，需要在初次安装时把so这个模块编译到核心（即，静态编译）。</p>
+<blockquote>
+<p>如果编译中包含任何DSO模块，则mod_so会被自动包含进核心。如果希望核心以后能够装载DSO，但不实际编译任何DSO模块，则需明确指定：</p>
+<ul>
+<li>针对apache1.x: –enable-module=so</li>
+<li>针对apache2.x: –enable-so=static</li>
+</ul>
+</blockquote>
+<p>针对Apache2.2.x的一些例子：</p>
+<pre><code>最大化静态安装Apache:
+./configure --prefix=/usr/local/apache --enable-modules=all
+最大化动态安装Apache:
+./configure --prefix=/usr/local/apache --enable-mods-shared=all
+静态安装rewrite、动态安装deflate以及headers
+./configure --prefix=/usr/local/apache --enable-rewrite=static --enable-deflate=shared --enable-headers=shared
+不安装基本的alais，保留以后的扩展DSO能力：
+./configure --prefix=/usr/local/apache --enable-so=static --disable-alias
+</code></pre>
+<h5 id="利用APXS工具动态为Apache编译新的DSO（动态共享对象）"><a href="#利用APXS工具动态为Apache编译新的DSO（动态共享对象）" class="headerlink" title="利用APXS工具动态为Apache编译新的DSO（动态共享对象）"></a>利用APXS工具动态为Apache编译新的DSO（动态共享对象）</h5><p>一般如果我们需要开启或者关闭某一些模块，只需要在 <code>httpd.conf</code> 中注释相应的模块的加载指令或者去掉指令前面的注释。<br>但如果我们需要的模块在 Apache编译安装的时候没有编译进去，我们可以用APXS工具来动态编译，并加入到Apache中。</p>
+<p>APXS,是一个给Apache服务器编译和安装扩展模块的工具。即将一个或者多个源代码或者目标文件编译成一个动态共享对象（DSO），然后可以通过Apache的 LoadModule 指令加载运行。<br>因此，要使用该工具，我们的Apache必须支持DSO特性，即已经安装有mod_so 模块，否则安装会报错。</p>
+<p>apxs命令选项说明：</p>
+<pre><code>apxs -g [ -S name=value ] -n modname
+apxs -q [ -v ] [ -S name=value ] query ...
+apxs -c [ -S name=value ] [ -o dsofile ] [ -I incdir ] [ -D name=value ] [ -L libdir ] [ -l libname ] [ -Wc,compiler-flags ] [ -Wl,linker-flags ] files ...
+apxs -i [ -S name=value ] [ -n modname ] [ -a ] [ -A ] dso-file ...
+apxs -e [ -S name=value ] [ -n modname ] [ -a ] [ -A ] dso-file ...
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>-n modname<blockquote>
+<p>明确的设置模块名称, -i(安装)和-g（模板生成）选项</p>
+</blockquote>
+</li>
+</ul>
+<p>执行选项：</p>
+<ul>
+<li>-q<blockquote>
+<p>设置编译httpd时的变量和环境</p>
+</blockquote>
+</li>
+</ul>
+<p>配置选项：</p>
+<ul>
+<li>-S name=value<blockquote>
+<p>此选项更改apxs的上述设置。</p>
+</blockquote>
+</li>
+</ul>
+<p>模板生成选项：</p>
+<ul>
+<li>-g<blockquote>
+<p>该选项将生成一个子目录（名称将取决 -n设置），并会生成两个文件，一个要编译模块的源文件，用来创建模块或作为一个快速启动的apxs机制。另一个，用于编译和安装此模块，如mod_name.cMakefile</p>
+</blockquote>
+</li>
+</ul>
+<p>DSO 编译选项</p>
+<ul>
+<li><p>-c</p>
+<blockquote>
+<p>表明将进行编译操作。它首先编译C源文件(.c)，到对应的目标文件（.o），然后通过连接这些目标文件以及其余的目标文件（.a和.a）构建一个动态的共享对象dsofile</p>
+</blockquote>
+</li>
+<li><p>-o dsofile</p>
+<blockquote>
+<p>明确规定创建动态共享对象文件名。如果没有指定，并且不能从文件名猜测到，则会生成 mod_unknow.so</p>
+</blockquote>
+</li>
+<li><p>-D name=value</p>
+<blockquote>
+<p>直接传给编译命令自定义参数</p>
+</blockquote>
+</li>
+<li><p>-L libdir</p>
+<blockquote>
+<p>设置编译时将要用到的自定义类库路径</p>
+</blockquote>
+</li>
+<li><p>-l libname</p>
+<blockquote>
+<p>设置编译时用到的自定义类库名称</p>
+</blockquote>
+</li>
+<li><p>-Wc，compiler-flags</p>
+<blockquote>
+<p>设置或添加本地编译器特定的选项</p>
+</blockquote>
+</li>
+<li><p>-Wl，linker-flags</p>
+<blockquote>
+<p>设置或添加本地特定连接的选项。</p>
+</blockquote>
+</li>
+<li><p>-p</p>
+<blockquote>
+<p>该选项将会使apxs 连接和引用apr/apr-util类库，使用apr/apr-util将会对编译非常有用。</p>
+</blockquote>
+</li>
+</ul>
+<p>DSO的安装和配置选项</p>
+<ul>
+<li><p>-i</p>
+<blockquote>
+<p>表明安装操作，安装一个或多个动态共享对象到服务器的模块目录</p>
+</blockquote>
+</li>
+<li><p>-a</p>
+<blockquote>
+<p>自动添加 LoadModule 指令到 httpd.conf 配置文件，或者开启该指令。</p>
+</blockquote>
+</li>
+<li><p>-A</p>
+<blockquote>
+<p>同 -a 选项，但创建的 LoadModule指令是被注释的状态，也就是说该模块已经准备就绪，但没开启。</p>
+</blockquote>
+</li>
+<li><p>-e</p>
+<blockquote>
+<p>类似于 -a 和 -A 用来编辑 httpd.conf 而不安装该模块。</p>
+</blockquote>
+</li>
+</ul>
+<h5 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h5><p>示例：我们有一个可用的Apache 模块 mod_foo.c 想要编译进Apache的DSO。</p>
+<pre><code>$ apxs -c mod_foo.c
+/path/to/libtool --mode=compile gcc ... -c mod_foo.c
+/path/to/libtool --mode=link gcc ... -o mod_foo.la mod_foo.slo
+$ _
+</code></pre>
+<p>然后，在Apache的配置文件中加入 loadModule 指令加载此共享对象。为了简化该步骤 apxs 提供了自动更新配置文件的的功能选项(-a,-A)。</p>
+<pre><code>$ apxs -i -a mod_foo.la
+/path/to/instdso.sh mod_foo.la /path/to/apache/modules
+/path/to/libtool --mode=install cp mod_foo.la /path/to/apache/modules ... chmod 755 /path/to/apache/modules/mod_foo.so
+[activating module `foo&#39; in /path/to/apache/conf/httpd.conf]
+$ _
+</code></pre>
+<p>这时，我们在httpd.conf 中就能看到这条指令。</p>
+<pre><code>LoadModule foo_module modules/mod_foo.so
+</code></pre>
+<p>如果没有使用 -a 选项自动添加，则需要手动添加进去。</p>
+<p>如果想默认不开启该模块，可以使用 -A 选项。即</p>
+<pre><code>$ apxs -i -A mod_foo.c
+</code></pre>
+<p><strong>apxs快速测试</strong></p>
+<p>我们可以通过创建一个Apache的测试模块，通过对应的Makefile</p>
+<pre><code>$ apxs -g -n foo
+Creating [DIR] foo
+Creating [FILE] foo/Makefile
+Creating [FILE] foo/modules.mk
+Creating [FILE] foo/mod_foo.c
+Creating [FILE] foo/.deps
+$ _
+</code></pre>
+<p>然后可以立即编译该测试模块到DSO，并加载到Apache。</p>
+<pre><code>$ cd foo
+$ make all reload
+apxs -c mod_foo.c
+/path/to/libtool --mode=compile gcc ... -c mod_foo.c
+/path/to/libtool --mode=link gcc ... -o mod_foo.la mod_foo.slo
+apxs -i -a -n &quot;foo&quot; mod_foo.la
+/path/to/instdso.sh mod_foo.la /path/to/apache/modules
+/path/to/libtool --mode=install cp mod_foo.la /path/to/apache/modules ... chmod 755 /path/to/apache/modules/mod_foo.so
+[activating module `foo&#39; in /path/to/apache/conf/httpd.conf]
+apachectl restart
+/path/to/apache/sbin/apachectl restart: httpd not running, trying to start
+[Tue Mar 31 11:27:55 1998] [debug] mod_so.c(303): loaded module foo_module
+/path/to/apache/sbin/apachectl restart: httpd started
+$ _
+</code></pre>
+<p>over~</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Apache%E5%88%86%E5%B1%82/" rel="tag"># Apache分层</a>
+              <a href="/tags/Apache%E6%A8%A1%E5%9D%97/" rel="tag"># Apache模块</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/09/05/htaccess%20%E6%96%87%E4%BB%B6%E5%8A%9F%E8%83%BD%E5%8F%8A%E9%85%8D%E7%BD%AE%E6%95%B4%E7%90%86/" rel="prev" title=".htaccess 文件功能及配置介绍">
+                  <i class="fa fa-chevron-left"></i> .htaccess 文件功能及配置介绍
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/08/23/Apache%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/" rel="next" title="Apache性能监控">
+                  Apache性能监控 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="SOHUCS"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">京ICP备 16031041号-1 </a>
+      <img src="https://s1.ljcdn.com/pegasus/redskull/images/common/beian.png" alt=""><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=16031041" rel="noopener" target="_blank">京ICP备 16031041号 </a>
+  </div>
+
+<div class="copyright">
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhimiao</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">475k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:11</span>
+  </span>
+</div>
+  <div class="addthis_inline_share_toolbox">
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=5bc1b6fcd580b13d" async="async"></script>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.10.2/dist/algoliasearch-lite.umd.js" integrity="sha256-QpiEPiLTebWnaWu14/C5XhRzUyh/OYx0CYWEHd9mv7o=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.24.2/dist/instantsearch.production.min.js" integrity="sha256-m6RnEITznVydRlSHfl3EknCIK6aL72SHYL9Ol+v5nNw=" crossorigin="anonymous"></script><script src="/js/third-party/search/algolia-search.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/quicklink@2.2.0/dist/quicklink.umd.js" integrity="sha256-4kQf9z5ntdQrzsBC3YSHnEz02Z9C1UeW/E9OgnvlzSY=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":false,"archive":false,"delay":true,"timeout":3000,"priority":true,"url":"https://weizhimiao.github.io/2016/08/26/Apache%E5%88%86%E5%B1%82%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%E7%B3%BB%E5%B0%8F%E7%BB%93/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+<script class="next-config" data-name="changyan" type="application/json">{"enable":true,"appid":"IDcysYwmWlG","appkey":"SECRETaf1dfc2a51fa2d8f9ae8a1c0f25558c9"}</script>
+<script src="/js/third-party/comments/changyan.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":100,"vOffset":-20},"mobile":{"show":true},"log":false});</script></body>
+</html>
